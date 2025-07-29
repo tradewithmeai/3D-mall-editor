@@ -462,6 +462,58 @@
         lobbyCeiling.position.y = wallHeight;
         scene.add(lobbyCeiling);
         
+        // ========================================================================
+        // WALL LABELING SYSTEM - Debug labels for all walls
+        // ========================================================================
+        
+        function createWallLabel(text, x, y, z, rotationY = 0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            
+            // Clear background
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, 512, 128);
+            
+            // Add border
+            context.strokeStyle = '#000000';
+            context.lineWidth = 4;
+            context.strokeRect(0, 0, 512, 128);
+            
+            // Add text
+            context.fillStyle = '#000000';
+            context.font = 'bold 32px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, 256, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.MeshBasicMaterial({ 
+                map: texture, 
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(3, 0.75),
+                labelMaterial
+            );
+            label.position.set(x, y, z);
+            label.rotation.y = rotationY;
+            
+            return label;
+        }
+        
+        // LOBBY WALL LABELS
+        scene.add(createWallLabel('LOBBY - NORTH WALL', 0, 8, -29.5));
+        scene.add(createWallLabel('LOBBY - EAST WALL', 29.5, 8, 0, -Math.PI/2));
+        scene.add(createWallLabel('LOBBY - SOUTH WALL', 0, 8, 29.5, Math.PI));
+        scene.add(createWallLabel('LOBBY - WEST WALL', -29.5, 8, 0, Math.PI/2));
+        
+        // LOBBY CENTER LABEL
+        scene.add(createWallLabel('CENTRAL MALL LOBBY', 0, 9, 0));
+        
         console.log('Mall lobby walls created with 3 office doorways');
         
         // ========================================================================
@@ -522,6 +574,12 @@
         officeACeiling.position.set(0, officeHeight, -45);
         scene.add(officeACeiling);
         
+        // OFFICE A WALL LABELS
+        scene.add(createWallLabel('OFFICE A - NORTH WALL (GALLERY)', 0, 7, -59.5));
+        scene.add(createWallLabel('OFFICE A - EAST WALL', 19.5, 7, -45, -Math.PI/2));
+        scene.add(createWallLabel('OFFICE A - WEST WALL', -19.5, 7, -45, Math.PI/2));
+        scene.add(createWallLabel('OFFICE A - SOUTH → LOBBY', 0, 7, -30.5, Math.PI));
+        
         // OFFICE B - BLANK SPACE (South of lobby)
         console.log('Creating Office B - Blank Template Space...');
         
@@ -572,6 +630,12 @@
         officeBCeiling.position.set(0, officeHeight, 45);
         scene.add(officeBCeiling);
         
+        // OFFICE B WALL LABELS
+        scene.add(createWallLabel('OFFICE B - SOUTH WALL', 0, 7, 59.5, Math.PI));
+        scene.add(createWallLabel('OFFICE B - EAST WALL', 14.5, 7, 45, -Math.PI/2));
+        scene.add(createWallLabel('OFFICE B - WEST WALL', -14.5, 7, 45, Math.PI/2));
+        scene.add(createWallLabel('OFFICE B - NORTH → LOBBY', 0, 7, 30.5));
+        
         // OFFICE C - TECH OFFICE (East of lobby)
         console.log('Creating Office C - Tech Office...');
         
@@ -620,6 +684,12 @@
         officeCCeiling.rotation.x = Math.PI / 2;
         officeCCeiling.position.set(45, officeHeight, 0);
         scene.add(officeCCeiling);
+        
+        // OFFICE C WALL LABELS
+        scene.add(createWallLabel('OFFICE C - NORTH WALL', 45, 7, -19.5));
+        scene.add(createWallLabel('OFFICE C - EAST WALL', 59.5, 7, 0, -Math.PI/2));
+        scene.add(createWallLabel('OFFICE C - SOUTH WALL', 45, 7, 19.5, Math.PI));
+        scene.add(createWallLabel('OFFICE C - WEST → LOBBY', 30.5, 7, 0, Math.PI/2));
         
         console.log('All office spaces created!');
         
