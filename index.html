@@ -221,8 +221,8 @@
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        console.log('🚀 3D Office Simulator - Local Development Mode');
-        console.log('Ready for customization with Claude Code!');
+        console.log('🏢 3D Virtual Mall Simulator - Multi-Office Environment');
+        console.log('Central Lobby connecting 3 office spaces!');
         
         // Scene setup
         const scene = new THREE.Scene();
@@ -299,27 +299,27 @@
             moodLight.color.setHSL(hue * 0.6 + 0.6, 0.5, 0.3);
         }
         
-        // Floor with pattern
-        const floorGeometry = new THREE.PlaneGeometry(40, 40);
+        // Central Mall Lobby Floor (60x60 units)
+        const floorGeometry = new THREE.PlaneGeometry(60, 60);
         const floorMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xdcdcdc,
-            roughness: 0.7,
-            metalness: 0.1
+            color: 0xe0e0e0,  // Lighter mall floor
+            roughness: 0.6,
+            metalness: 0.2
         });
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
         
-        // Add floor tiles pattern
-        const tileGeometry = new THREE.PlaneGeometry(2, 2);
-        const tileMaterial1 = new THREE.MeshStandardMaterial({ color: 0xe8e8e8 });
-        const tileMaterial2 = new THREE.MeshStandardMaterial({ color: 0xf0f0f0 });
+        // Mall-style tile pattern (larger tiles for commercial feel)
+        const tileGeometry = new THREE.PlaneGeometry(3, 3);
+        const tileMaterial1 = new THREE.MeshStandardMaterial({ color: 0xf2f2f2 }); // Light gray
+        const tileMaterial2 = new THREE.MeshStandardMaterial({ color: 0xe8e8e8 }); // Darker gray
         
-        for (let x = -20; x < 20; x += 2) {
-            for (let z = -20; z < 20; z += 2) {
-                const tile = new THREE.Mesh(tileGeometry, ((x + z) / 2) % 2 === 0 ? tileMaterial1 : tileMaterial2);
-                tile.position.set(x + 1, 0.01, z + 1);
+        for (let x = -30; x < 30; x += 3) {
+            for (let z = -30; z < 30; z += 3) {
+                const tile = new THREE.Mesh(tileGeometry, ((x + z) / 3) % 2 === 0 ? tileMaterial1 : tileMaterial2);
+                tile.position.set(x + 1.5, 0.01, z + 1.5);
                 tile.rotation.x = -Math.PI / 2;
                 tile.receiveShadow = true;
                 scene.add(tile);
@@ -340,64 +340,291 @@
             metalness: 0.5
         });
         
-        // Back wall with windows - make it more visible
-        const backWallMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xe5e7eb,  // Light gray
-            roughness: 0.8,
-            metalness: 0.1
-        });
-        const backWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(40, 10),
-            backWallMaterial
-        );
-        backWall.position.set(0, 5, -19.9);
-        backWall.receiveShadow = true;
-        scene.add(backWall);
-        console.log('Back wall created and added to scene at:', backWall.position);
-        console.log('Back wall material:', backWallMaterial);
+        // ========================================================================
+        // CENTRAL MALL LOBBY WALLS WITH DOORWAYS (60x60 lobby space)
+        // ========================================================================
+        console.log('Creating central mall lobby with office doorways...');
         
-        // Add windows to back wall
-        for (let x = -15; x <= 15; x += 10) {
-            const window = new THREE.Mesh(
-                new THREE.PlaneGeometry(4, 3),
-                windowMaterial
-            );
-            window.position.set(x, 5, -19.9);
-            scene.add(window);
-        }
+        // Doorway dimensions
+        const doorwayWidth = 4;
+        const doorwayHeight = 8;
+        const wallHeight = 12; // Taller for commercial feel
         
-        // Side walls
-        const leftWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(40, 10),
+        // NORTH WALL - Office A (Art Gallery) entrance
+        // Left section of north wall
+        const northWallLeft = new THREE.Mesh(
+            new THREE.PlaneGeometry((60 - doorwayWidth) / 2, wallHeight),
             wallMaterial
         );
-        leftWall.position.set(-20, 5, 0);
-        leftWall.rotation.y = Math.PI / 2;
-        leftWall.receiveShadow = true;
-        scene.add(leftWall);
+        northWallLeft.position.set(-15 - doorwayWidth/4, wallHeight/2, -30);
+        northWallLeft.receiveShadow = true;
+        scene.add(northWallLeft);
         
-        const rightWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(40, 10),
+        // Right section of north wall  
+        const northWallRight = new THREE.Mesh(
+            new THREE.PlaneGeometry((60 - doorwayWidth) / 2, wallHeight),
             wallMaterial
         );
-        rightWall.position.set(20, 5, 0);
-        rightWall.rotation.y = -Math.PI / 2;
-        rightWall.receiveShadow = true;
-        scene.add(rightWall);
+        northWallRight.position.set(15 + doorwayWidth/4, wallHeight/2, -30);
+        northWallRight.receiveShadow = true;
+        scene.add(northWallRight);
         
-        // Front wall (was missing!)
-        const frontWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(40, 10),
+        // North wall header above doorway
+        const northWallHeader = new THREE.Mesh(
+            new THREE.PlaneGeometry(doorwayWidth, wallHeight - doorwayHeight),
             wallMaterial
         );
-        frontWall.position.set(0, 5, 20);
-        frontWall.rotation.y = Math.PI; // Face inward
-        frontWall.receiveShadow = true;
-        scene.add(frontWall);
-        console.log('Front wall created and added to scene at:', frontWall.position);
+        northWallHeader.position.set(0, wallHeight - (wallHeight - doorwayHeight)/2, -30);
+        northWallHeader.receiveShadow = true;
+        scene.add(northWallHeader);
+        
+        // EAST WALL - Office C (Tech Office) entrance
+        // Front section of east wall
+        const eastWallFront = new THREE.Mesh(
+            new THREE.PlaneGeometry((60 - doorwayWidth) / 2, wallHeight),
+            wallMaterial
+        );
+        eastWallFront.position.set(30, wallHeight/2, -15 - doorwayWidth/4);
+        eastWallFront.rotation.y = -Math.PI / 2;
+        eastWallFront.receiveShadow = true;
+        scene.add(eastWallFront);
+        
+        // Back section of east wall
+        const eastWallBack = new THREE.Mesh(
+            new THREE.PlaneGeometry((60 - doorwayWidth) / 2, wallHeight),
+            wallMaterial
+        );
+        eastWallBack.position.set(30, wallHeight/2, 15 + doorwayWidth/4);
+        eastWallBack.rotation.y = -Math.PI / 2;
+        eastWallBack.receiveShadow = true;
+        scene.add(eastWallBack);
+        
+        // East wall header above doorway
+        const eastWallHeader = new THREE.Mesh(
+            new THREE.PlaneGeometry(doorwayWidth, wallHeight - doorwayHeight),
+            wallMaterial
+        );
+        eastWallHeader.position.set(30, wallHeight - (wallHeight - doorwayHeight)/2, 0);
+        eastWallHeader.rotation.y = -Math.PI / 2;
+        eastWallHeader.receiveShadow = true;
+        scene.add(eastWallHeader);
+        
+        // SOUTH WALL - Office B entrance
+        // Left section of south wall
+        const southWallLeft = new THREE.Mesh(
+            new THREE.PlaneGeometry((60 - doorwayWidth) / 2, wallHeight),
+            wallMaterial
+        );
+        southWallLeft.position.set(-15 - doorwayWidth/4, wallHeight/2, 30);
+        southWallLeft.rotation.y = Math.PI;
+        southWallLeft.receiveShadow = true;
+        scene.add(southWallLeft);
+        
+        // Right section of south wall
+        const southWallRight = new THREE.Mesh(
+            new THREE.PlaneGeometry((60 - doorwayWidth) / 2, wallHeight),
+            wallMaterial
+        );
+        southWallRight.position.set(15 + doorwayWidth/4, wallHeight/2, 30);
+        southWallRight.rotation.y = Math.PI;
+        southWallRight.receiveShadow = true;
+        scene.add(southWallRight);
+        
+        // South wall header above doorway
+        const southWallHeader = new THREE.Mesh(
+            new THREE.PlaneGeometry(doorwayWidth, wallHeight - doorwayHeight),
+            wallMaterial
+        );
+        southWallHeader.position.set(0, wallHeight - (wallHeight - doorwayHeight)/2, 30);
+        southWallHeader.rotation.y = Math.PI;
+        southWallHeader.receiveShadow = true;
+        scene.add(southWallHeader);
+        
+        // WEST WALL - Solid (could be main entrance or future expansion)
+        const westWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(60, wallHeight),
+            wallMaterial
+        );
+        westWall.position.set(-30, wallHeight/2, 0);
+        westWall.rotation.y = Math.PI / 2;
+        westWall.receiveShadow = true;
+        scene.add(westWall);
+        
+        // Lobby ceiling
+        const lobbyCeiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(60, 60),
+            new THREE.MeshStandardMaterial({ 
+                color: 0xfafafa,
+                roughness: 0.9
+            })
+        );
+        lobbyCeiling.rotation.x = Math.PI / 2;
+        lobbyCeiling.position.y = wallHeight;
+        scene.add(lobbyCeiling);
+        
+        console.log('Mall lobby walls created with 3 office doorways');
         
         // ========================================================================
-        // ART GALLERY - Back Wall (where you can actually see it!)
+        // OFFICE SPACES - Three connected offices
+        // ========================================================================
+        
+        // Office dimensions
+        const officeWidth = 40;
+        const officeDepth = 30;
+        const officeHeight = 10;
+        
+        // OFFICE A - ART GALLERY (North of lobby)
+        console.log('Creating Office A - Art Gallery...');
+        
+        // Office A Floor
+        const officeAFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeWidth, officeDepth),
+            new THREE.MeshStandardMaterial({ 
+                color: 0xf5f5f5,  // Slightly warmer than lobby
+                roughness: 0.8
+            })
+        );
+        officeAFloor.rotation.x = -Math.PI / 2;
+        officeAFloor.position.set(0, 0, -45); // 30 (lobby edge) + 15 (office center)
+        officeAFloor.receiveShadow = true;
+        scene.add(officeAFloor);
+        
+        // Office A Walls (North, East, West - South opens to lobby)
+        const officeANorthWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeWidth, officeHeight),
+            wallMaterial
+        );
+        officeANorthWall.position.set(0, officeHeight/2, -60);
+        scene.add(officeANorthWall);
+        
+        const officeAEastWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeHeight),
+            wallMaterial
+        );
+        officeAEastWall.position.set(20, officeHeight/2, -45);
+        officeAEastWall.rotation.y = -Math.PI / 2;
+        scene.add(officeAEastWall);
+        
+        const officeAWestWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeHeight),
+            wallMaterial
+        );
+        officeAWestWall.position.set(-20, officeHeight/2, -45);
+        officeAWestWall.rotation.y = Math.PI / 2;
+        scene.add(officeAWestWall);
+        
+        // Office A Ceiling
+        const officeACeiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeWidth, officeDepth),
+            new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.9 })
+        );
+        officeACeiling.rotation.x = Math.PI / 2;
+        officeACeiling.position.set(0, officeHeight, -45);
+        scene.add(officeACeiling);
+        
+        // OFFICE B - BLANK SPACE (South of lobby)
+        console.log('Creating Office B - Blank Template Space...');
+        
+        // Office B Floor
+        const officeBFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeWidth), // Rotated dimensions
+            new THREE.MeshStandardMaterial({ 
+                color: 0xf8f8f8,  // Clean white for template
+                roughness: 0.7
+            })
+        );
+        officeBFloor.rotation.x = -Math.PI / 2;
+        officeBFloor.position.set(0, 0, 45);
+        officeBFloor.receiveShadow = true;
+        scene.add(officeBFloor);
+        
+        // Office B Walls (South, East, West - North opens to lobby)
+        const officeBSouthWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeHeight),
+            wallMaterial
+        );
+        officeBSouthWall.position.set(0, officeHeight/2, 60);
+        officeBSouthWall.rotation.y = Math.PI;
+        scene.add(officeBSouthWall);
+        
+        const officeBEastWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeWidth, officeHeight),
+            wallMaterial
+        );
+        officeBEastWall.position.set(15, officeHeight/2, 45);
+        officeBEastWall.rotation.y = -Math.PI / 2;
+        scene.add(officeBEastWall);
+        
+        const officeBWestWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeWidth, officeHeight),
+            wallMaterial
+        );
+        officeBWestWall.position.set(-15, officeHeight/2, 45);
+        officeBWestWall.rotation.y = Math.PI / 2;
+        scene.add(officeBWestWall);
+        
+        // Office B Ceiling
+        const officeBCeiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeWidth),
+            new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.9 })
+        );
+        officeBCeiling.rotation.x = Math.PI / 2;
+        officeBCeiling.position.set(0, officeHeight, 45);
+        scene.add(officeBCeiling);
+        
+        // OFFICE C - TECH OFFICE (East of lobby)
+        console.log('Creating Office C - Tech Office...');
+        
+        // Office C Floor
+        const officeCFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeWidth),
+            new THREE.MeshStandardMaterial({ 
+                color: 0xf0f0f0,  // Tech gray
+                roughness: 0.8
+            })
+        );
+        officeCFloor.rotation.x = -Math.PI / 2;
+        officeCFloor.position.set(45, 0, 0);
+        officeCFloor.receiveShadow = true;
+        scene.add(officeCFloor);
+        
+        // Office C Walls (North, East, South - West opens to lobby)
+        const officeCNorthWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeHeight),
+            wallMaterial
+        );
+        officeCNorthWall.position.set(45, officeHeight/2, -20);
+        scene.add(officeCNorthWall);
+        
+        const officeCEastWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeWidth, officeHeight),
+            wallMaterial
+        );
+        officeCEastWall.position.set(60, officeHeight/2, 0);
+        officeCEastWall.rotation.y = -Math.PI / 2;
+        scene.add(officeCEastWall);
+        
+        const officeCSouthWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeHeight),
+            wallMaterial
+        );
+        officeCSouthWall.position.set(45, officeHeight/2, 20);
+        officeCSouthWall.rotation.y = Math.PI;
+        scene.add(officeCSouthWall);
+        
+        // Office C Ceiling
+        const officeCCeiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(officeDepth, officeWidth),
+            new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.9 })
+        );
+        officeCCeiling.rotation.x = Math.PI / 2;
+        officeCCeiling.position.set(45, officeHeight, 0);
+        scene.add(officeCCeiling);
+        
+        console.log('All office spaces created!');
+        
+        // ========================================================================
+        // ART GALLERY - Now positioned in Office A
         // ========================================================================
         
         // Gallery configuration - your 3 artworks
@@ -554,13 +781,13 @@
             frameGroup.position.set(
                 startX + (index * spacing), // X: spread horizontally  
                 3, // Y: lower for character eye level
-                -19.0 // Z: on BACK wall where you can actually see it!
+                -58 // Z: on north wall of Office A
             );
             
             // Add simple gallery lighting
             const spotlight = new THREE.SpotLight(0xffffff, 0.8, 10, Math.PI / 8, 0.3);
-            spotlight.position.set(startX + (index * spacing), 7, 17);
-            spotlight.target.position.set(startX + (index * spacing), 5, 19.8);
+            spotlight.position.set(startX + (index * spacing), 7, -50); // Above Office A
+            spotlight.target.position.set(startX + (index * spacing), 3, -58); // Point at gallery wall
             spotlight.castShadow = false; // Avoid shadow complexity
             
             scene.add(frameGroup);
@@ -1237,8 +1464,8 @@
                     character.userData.initialPosition.z + Math.sin(angle) * distance
                 );
                 
-                character.userData.targetPosition.x = Math.max(-18, Math.min(18, character.userData.targetPosition.x));
-                character.userData.targetPosition.z = Math.max(-18, Math.min(18, character.userData.targetPosition.z));
+                character.userData.targetPosition.x = Math.max(-28, Math.min(55, character.userData.targetPosition.x)); // Characters stay in lobby+offices
+                character.userData.targetPosition.z = Math.max(-55, Math.min(55, character.userData.targetPosition.z)); // Avoid walls
                 
                 character.userData.moveTimer = 5 + Math.random() * 5;
             }
@@ -1504,9 +1731,9 @@
             player.position.add(forward.multiplyScalar(player.velocity.z));
             player.position.add(right.multiplyScalar(player.velocity.x));
             
-            // Keep player in bounds
-            player.position.x = Math.max(-18, Math.min(18, player.position.x));
-            player.position.z = Math.max(-18, Math.min(18, player.position.z));
+            // Keep player in bounds - expanded for virtual mall
+            player.position.x = Math.max(-58, Math.min(58, player.position.x)); // Allows access to all offices
+            player.position.z = Math.max(-58, Math.min(58, player.position.z)); // Full mall coverage
             
             // Dancing animation
             if (player.isDancing && dialogueBox.style.display !== 'block') {
