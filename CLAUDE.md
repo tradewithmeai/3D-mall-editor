@@ -343,4 +343,21 @@ gh repo view --web                    # Open GitHub repo
 - 🔬 **Comprehensive Test Suite:** 13 test categories with remove/add cycle validation (`test-component-catalog.html`)
 - 🎯 **Agent-Ready Properties:** Permission system and natural language command patterns for AI integration
 - 📊 **Performance Monitoring:** Real-time memory statistics and leak detection with automated assertions
+
+---
+
+## 🔄 Current Session: Manual Room Build Protocol (2025-08-05)
+
+**Git Tree Strategy:**
+- `step-2-remove-add-cycle` branch: Contains session work with JSON fixes and factory simplification  
+- `manual-room-build` branch: ✅ **ACTIVE** - Clean workspace for step-by-step manual construction
+- **Rollback Protocol:** Use `git checkout step-2-remove-add-cycle` to restore session work if needed
+
+**Essential Missing Stage Identified:** Manual construction with visual validation before factory automation
+
+**Files Cleaned:**
+- Removed: `component-manager.js`, `enhanced-components.json`, `test-component-catalog.html`, `test-logging-framework.html`
+- Kept: `componentFactory.js` (simplified), `components.json` (flat), `room-layout.json` (will regenerate)
+
+**Next:** Step-by-step room build with visual checks at each micro-step
 - 🗂️ **Git Tree Implementation:** Systematic branching strategy with step-1-foundation and step-2-remove-add-cycle branches
