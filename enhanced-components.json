@@ -1,0 +1,337 @@
+{
+  "metadata": {
+    "version": "2.0",
+    "created": "2025-08-04",
+    "description": "Enhanced component definitions with semantic data for Diana AI agent",
+    "agentEditable": true
+  },
+  
+  "components": {
+    "referencePole": {
+      "model": "cylinder",
+      "size": [0.1, 0.1, 1, 8],
+      "material": {
+        "type": "MeshBasicMaterial",
+        "color": "#000000"
+      },
+      "collision": false,
+      "semanticId": "reference-pole",
+      "semanticName": "Reference Pole",
+      "category": "utility",
+      "agentEditable": {
+        "color": false,
+        "position": false,
+        "size": false,
+        "visibility": true
+      },
+      "description": "Origin reference point for coordinate system"
+    },
+    
+    "lobbyFloor": {
+      "model": "plane",
+      "size": [40, 30],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#90EE90",
+        "roughness": 0.6,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "lobby-floor",
+      "semanticName": "Lobby Floor",
+      "category": "structure",
+      "room": "lobby",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Main lobby floor surface with pastel green color"
+    },
+    
+    "lobbyCeiling": {
+      "model": "plane", 
+      "size": [40, 30],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#e6e6fa",
+        "roughness": 0.8,
+        "metalness": 0.0
+      },
+      "collision": false,
+      "semanticId": "lobby-ceiling",
+      "semanticName": "Lobby Ceiling",
+      "category": "structure",
+      "room": "lobby",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Lobby ceiling with lavender color"
+    },
+    
+    "lobbyNorthWall": {
+      "model": "plane",
+      "size": [40, 8],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#f8f8f8",
+        "roughness": 0.9,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "north-wall",
+      "semanticName": "North Wall",
+      "category": "structure", 
+      "room": "lobby",
+      "direction": "north",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Northern wall of lobby facing south"
+    },
+    
+    "lobbySouthWall": {
+      "model": "plane", 
+      "size": [40, 8],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#f8f8f8",
+        "roughness": 0.9,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "south-wall",
+      "semanticName": "South Wall",
+      "category": "structure",
+      "room": "lobby",
+      "direction": "south",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Southern wall of lobby with entrance"
+    },
+    
+    "lobbyEastWall": {
+      "model": "plane",
+      "size": [30, 8],
+      "material": {
+        "type": "MeshStandardMaterial", 
+        "color": "#f8f8f8",
+        "roughness": 0.9,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "east-wall",
+      "semanticName": "East Wall", 
+      "category": "structure",
+      "room": "lobby",
+      "direction": "east",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Eastern wall of lobby facing west"
+    },
+    
+    "lobbyWestWall": {
+      "model": "plane",
+      "size": [30, 8],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#f8f8f8", 
+        "roughness": 0.9,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "west-wall",
+      "semanticName": "West Wall",
+      "category": "structure",
+      "room": "lobby", 
+      "direction": "west",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Western wall of lobby facing east"
+    },
+    
+    "debugBall": {
+      "model": "sphere",
+      "size": [0.3, 16, 16],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#00ff00",
+        "emissive": "#004400",
+        "roughness": 0.3,
+        "metalness": 0.0
+      },
+      "collision": true,
+      "semanticId": "debug-ball",
+      "semanticName": "Debug Ball",
+      "category": "debug",
+      "interactive": true,
+      "physics": {
+        "enabled": true,
+        "bouncy": true,
+        "gravity": true
+      },
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": true,
+        "position": true,
+        "visibility": true
+      },
+      "description": "Interactive green debug ball with physics and grid toggle capability"
+    },
+    
+    "officeFloor": {
+      "model": "plane",
+      "size": [20, 15],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#f0f0f0",
+        "roughness": 0.8,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "office-floor",
+      "semanticName": "Office Floor",
+      "category": "structure",
+      "room": "office",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Office space floor with light gray color"
+    },
+    
+    "officeBackWall": {
+      "model": "plane",
+      "size": [20, 7],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#f8f8f8",
+        "roughness": 0.9,
+        "metalness": 0.1
+      },
+      "collision": true,
+      "semanticId": "office-back-wall",
+      "semanticName": "Office Back Wall",
+      "category": "structure",
+      "room": "office",
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Back wall of office space"
+    },
+    
+    "officeGlassFront": {
+      "model": "plane",
+      "size": [20, 7],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#87ceeb",
+        "opacity": 0.3,
+        "transparent": true,
+        "roughness": 0.1,
+        "metalness": 0.0
+      },
+      "collision": false,
+      "semanticId": "office-glass-front",
+      "semanticName": "Office Glass Wall",
+      "category": "structure",
+      "room": "office",
+      "agentEditable": {
+        "color": true,
+        "opacity": true,
+        "roughness": true,
+        "size": false,
+        "position": false
+      },
+      "description": "Transparent glass front wall of office"
+    }
+  },
+  
+  "colorPalettes": {
+    "modern": {
+      "name": "Modern Office",
+      "colors": ["#2c3e50", "#ecf0f1", "#3498db", "#e74c3c"],
+      "description": "Clean modern office colors"
+    },
+    "warm": {
+      "name": "Warm Tones", 
+      "colors": ["#d35400", "#f39c12", "#e67e22", "#f1c40f"],
+      "description": "Warm, inviting colors"
+    },
+    "cool": {
+      "name": "Cool Tones",
+      "colors": ["#2980b9", "#8e44ad", "#16a085", "#27ae60"], 
+      "description": "Cool, professional colors"
+    },
+    "pastel": {
+      "name": "Pastel Colors",
+      "colors": ["#ffeaa7", "#fab1a0", "#fd79a8", "#fdcb6e"],
+      "description": "Soft pastel colors"
+    }
+  },
+  
+  "rooms": {
+    "lobby": {
+      "name": "Central Lobby",
+      "dimensions": [40, 8, 30],
+      "center": [20, 4, 15],
+      "description": "Main entrance and circulation space"
+    },
+    "office": {
+      "name": "Office Space",
+      "dimensions": [20, 7, 15], 
+      "center": [10, 3.5, 7.5],
+      "description": "Private office or meeting room"
+    }
+  },
+  
+  "dianaCommands": {
+    "colorChange": {
+      "patterns": ["make * red", "change * color to *", "paint * *"],
+      "targets": ["walls", "floor", "ceiling", "all", "north-wall", "south-wall", "east-wall", "west-wall"],
+      "colors": ["red", "blue", "green", "yellow", "white", "black", "gray", "orange", "purple", "pink"]
+    },
+    "materialChange": {
+      "patterns": ["make * glossy", "make * rough", "make * metallic"],
+      "properties": ["glossy", "rough", "metallic", "matte", "shiny"]
+    },
+    "objectManagement": {
+      "patterns": ["add *", "remove *", "delete *", "create *"],
+      "objects": ["desk", "chair", "table", "lamp", "plant", "monitor", "keyboard"]
+    }
+  }
+}
