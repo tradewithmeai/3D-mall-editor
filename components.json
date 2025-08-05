@@ -11,6 +11,7 @@
   "lobbyFloor": {
     "model": "plane",
     "size": [40, 30],
+    "rotation": [-1.5707963267948966, 0, 0],
     "material": {
       "color": "#90EE90"
     },
@@ -20,6 +21,7 @@
   "lobbyCeiling": {
     "model": "plane", 
     "size": [40, 30],
+    "rotation": [1.5707963267948966, 0, 0],
     "material": {
       "color": "#e6e6fa"
     },

@@ -27,18 +27,16 @@ class ComponentManager {
      */
     async loadRegistry() {
         try {
-            const response = await fetch('enhanced-components.json');
+            const response = await fetch('components.json');
             this.registry = await response.json();
             
-            logFactory('LOAD_REGISTRY', 'enhanced-components.json', true, {
-                componentCount: Object.keys(this.registry.components).length,
-                palettes: Object.keys(this.registry.colorPalettes).length,
-                rooms: Object.keys(this.registry.rooms).length
+            logFactory('LOAD_REGISTRY', 'components.json', true, {
+                componentCount: Object.keys(this.registry).length
             });
             
             return true;
         } catch (error) {
-            logFactory('LOAD_REGISTRY', 'enhanced-components.json', false, { error: error.message });
+            logFactory('LOAD_REGISTRY', 'components.json', false, { error: error.message });
             console.error('❌ Failed to load component registry:', error);
             return false;
         }
@@ -54,7 +52,7 @@ class ComponentManager {
         }
         
         const startTime = performance.now();
-        const definition = this.registry.components[componentType];
+        const definition = this.registry[componentType];
         
         if (!definition) {
             logFactory('CREATE', componentType, false, { error: 'Component type not found' });
@@ -108,13 +106,13 @@ class ComponentManager {
             // Apply semantic userData for Diana
             mesh.userData = {
                 componentType: componentType,
-                semanticId: definition.semanticId,
-                semanticName: definition.semanticName,
-                category: definition.category,
-                room: definition.room,
-                direction: definition.direction,
+                semanticId: definition.semanticId || componentType,
+                semanticName: definition.semanticName || componentType,
+                category: definition.category || 'unknown',
+                room: definition.room || 'unknown',
+                direction: definition.direction || null,
                 uniqueId: uniqueId,
-                agentEditable: definition.agentEditable,
+                agentEditable: definition.agentEditable || {},
                 interactive: definition.interactive || false,
                 physics: definition.physics || null,
                 createdAt: Date.now(),
@@ -454,9 +452,9 @@ class ComponentManager {
             components: components,
             memoryStats: this.getMemoryStats(),
             registryInfo: this.registry ? {
-                componentTypes: Object.keys(this.registry.components).length,
-                colorPalettes: Object.keys(this.registry.colorPalettes).length,
-                rooms: Object.keys(this.registry.rooms).length
+                componentTypes: Object.keys(this.registry).length,
+                colorPalettes: 0,
+                rooms: 0
             } : null
         };
     }

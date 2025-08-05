@@ -58,21 +58,22 @@ export function createComponent(type, config, registry, scene) {
         mesh.rotation.set(...config.rotation);
     }
     
-    // Store metadata
-    mesh.userData.componentType = type;
-    if (config.name) {
-        mesh.userData.name = config.name;
-    }
-
-    // 4. Add to scene
-    scene.add(mesh);
-
-    // 5. If def.collision, create collider
+    // 4. Add collision detection if enabled
     if (def.collision) {
         mesh.userData.collider = new THREE.Box3().setFromObject(mesh);
     }
 
-    console.log(`🏗️ ComponentFactory: Created ${type} at position [${config.position?.join(', ') || '0,0,0'}]`);
+    // 5. Set minimal metadata
+    mesh.userData = {
+        id: `${type}-${Date.now()}`,
+        type: type,
+        ...(mesh.userData || {}) // preserve any existing collider
+    };
+
+    // 6. Add to scene
+    scene.add(mesh);
+
+    console.log('Created', mesh.userData.type, mesh.userData.id);
     
     return mesh;
 }
