@@ -404,4 +404,29 @@ gh repo view --web                    # Open GitHub repo
 - Multi-room expansion and navigation
 
 **Baseline Tag:** `v1.0-RoomBlueprint` - Complete validated room construction system
+
+---
+
+## 🤖 NEXT PHASE: AI AGENT INTEGRATION
+
+### Phase 4: Beth the Builder
+**Objective:** Integrate AI agent with factory system for autonomous room creation
+
+**Implementation Plan:**
+1. **Factory Integration** - Connect componentFactory.js with validated JSON baseline
+2. **Agent Commands** - "Beth, create an office", "Beth, add a meeting room"  
+3. **Character Movement** - Integrate WASD controls for real collision testing
+4. **Collision Validation** - Complete deferred boundary and navigation tests
+
+**Technical Requirements:**
+- Use validated `components.json` and `room-layout.json` as foundation
+- Extend factory system to accept natural language commands
+- Implement character controller for movement validation
+- Add Diana AI decorator for semantic object manipulation
+
+**Success Criteria:**
+- AI agent can create rooms via factory calls
+- Character movement respects wall boundaries  
+- Navigation mesh properly constrains player movement
+- Interactive zones trigger debug grid and other functions
 - 🗂️ **Git Tree Implementation:** Systematic branching strategy with step-1-foundation and step-2-remove-add-cycle branches
