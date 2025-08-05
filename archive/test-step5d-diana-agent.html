@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diana Agent Integration - Step 5D: AI Scene Modification</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 420px;
+            max-height: 380px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 10px;
+            max-width: 360px;
+        }
+        .btn-group {
+            margin: 8px 0;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+        .btn {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 9px;
+        }
+        .btn:hover { background: #0f0; color: #000; }
+        .btn.diana { border-color: #f4f; color: #f4f; }
+        .btn.diana:hover { background: #f4f; color: #000; }
+        .btn.command { border-color: #4ff; color: #4ff; }
+        .btn.command:hover { background: #4ff; color: #000; }
+        .btn.test { border-color: #fa0; color: #fa0; }
+        .btn.test:hover { background: #fa0; color: #000; }
+        #toggle-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        #command-input {
+            width: 100%;
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 9px;
+            margin: 5px 0;
+        }
+        .diana-response {
+            background: rgba(255, 68, 255, 0.1);
+            border-left: 3px solid #f4f;
+            padding: 5px;
+            margin: 5px 0;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>🤖 Diana Agent Integration</h3>
+        
+        <div class="btn-group">
+            <strong>Diana Commands:</strong><br>
+            <input type="text" id="command-input" placeholder="Type command for Diana..." onkeypress="handleCommandInput(event)">
+            <button class="btn diana" onclick="executeCommand()">🤖 Ask Diana</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Quick Diana Tests:</strong><br>
+            <button class="btn diana" onclick="dianaCommand('make the walls red')">Make Walls Red</button>
+            <button class="btn diana" onclick="dianaCommand('add a desk and chair')">Add Office Set</button><br>
+            <button class="btn diana" onclick="dianaCommand('make the room cozy')">Make Room Cozy</button>
+            <button class="btn diana" onclick="dianaCommand('create a modern office')">Modern Office</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Scene Analysis:</strong><br>
+            <button class="btn command" onclick="dianaAnalyze()">🔍 Diana Analyze Scene</button>
+            <button class="btn command" onclick="dianaInventory()">📋 Diana List Items</button><br>
+            <button class="btn command" onclick="dianaMemory()">🧠 Diana Memory</button>
+            <button class="btn command" onclick="dianaSuggestions()">💡 Diana Suggestions</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Complex Commands:</strong><br>
+            <button class="btn test" onclick="dianaCommand('remove all furniture and make walls blue')">Multi-Command</button>
+            <button class="btn test" onclick="dianaCommand('create a conference room setup')">Conference Room</button><br>
+            <button class="btn test" onclick="dianaCommand('make this look like a gallery')">Art Gallery</button>
+            <button class="btn test" onclick="dianaCommand('undo last change')">Undo Test</button>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="resetRoom()">🔄 Reset Room</button>
+            <button class="btn" onclick="showDianaState()">🤖 Diana State</button>
+            <button class="btn" onclick="toggleDianaMode()">🎭 Diana Mode</button>
+        </div>
+    </div>
+
+    <div id="toggle-info" onclick="toggleInfo()">HIDE INFO</div>
+    <div id="info">
+        <h3>🤖 Diana AI Agent Integration</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Extended component definitions including furniture for Diana
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder", "size": [0.1, 0.1, 1, 8],
+                    "material": { "type": "MeshBasicMaterial", "color": "#000000" },
+                    "properties": { "castShadow": false, "receiveShadow": false }
+                },
+                "debugBall": {
+                    "model": "sphere", "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial", "color": "#44ff44", "roughness": 0.3,
+                        "metalness": 0.2, "transparent": true, "opacity": 0.8,
+                        "emissive": "#114411", "emissiveIntensity": 0.2
+                    },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "floor": {
+                    "model": "plane", "size": [10, 8], "rotation": [-1.5707963267948966, 0, 0],
+                    "material": { "type": "MeshStandardMaterial", "color": "#90EE90", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "receiveShadow": true }
+                },
+                "wall": {
+                    "model": "plane", "size": [10, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#f8f8f8", "roughness": 0.9, "metalness": 0.1 },
+                    "properties": { "castShadow": false, "receiveShadow": true }
+                },
+                // Furniture for Diana to work with
+                "desk": {
+                    "model": "box", "size": [1.5, 0.8, 0.1],
+                    "material": { "type": "MeshStandardMaterial", "color": "#8B4513", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "chair": {
+                    "model": "box", "size": [0.5, 0.5, 0.9],
+                    "material": { "type": "MeshStandardMaterial", "color": "#2F2F2F", "roughness": 0.4, "metalness": 0.2 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "lamp": {
+                    "model": "cylinder", "size": [0.15, 0.15, 0.8, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#FFD700", "roughness": 0.2, "metalness": 0.3 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "plant": {
+                    "model": "sphere", "size": [0.3, 8, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#228B22", "roughness": 0.8, "metalness": 0.0 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "bookshelf": {
+                    "model": "box", "size": [0.3, 1.8, 0.1],
+                    "material": { "type": "MeshStandardMaterial", "color": "#8B4513", "roughness": 0.7, "metalness": 0.0 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "table": {
+                    "model": "box", "size": [2.0, 1.0, 0.1],
+                    "material": { "type": "MeshStandardMaterial", "color": "#654321", "roughness": 0.5, "metalness": 0.1 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "sofa": {
+                    "model": "box", "size": [1.8, 0.8, 0.9],
+                    "material": { "type": "MeshStandardMaterial", "color": "#800080", "roughness": 0.6, "metalness": 0.0 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                }
+            }
+        };
+
+        // Diana AI Agent - Enhanced factory integration
+        class DianaAgent {
+            constructor(factory, scene) {
+                this.factory = factory;
+                this.scene = scene;
+                this.memory = [];
+                this.personality = "helpful";
+                this.mode = "decorator"; // decorator, analyst, assistant
+                this.undoStack = [];
+                this.maxUndoSteps = 5;
+            }
+            
+            // Natural language command processing
+            processCommand(command) {
+                const cmd = command.toLowerCase().trim();
+                
+                this.addToMemory(`User said: "${command}"`);
+                
+                // Save state for undo
+                this.saveState();
+                
+                // Command parsing and execution
+                if (cmd.includes('make') && cmd.includes('wall') && this.extractColor(cmd)) {
+                    return this.changeWallColor(this.extractColor(cmd));
+                }
+                else if (cmd.includes('add') && cmd.includes('desk')) {
+                    return this.addOfficeSetup();
+                }
+                else if (cmd.includes('remove all furniture')) {
+                    return this.removeAllFurniture();
+                }
+                else if (cmd.includes('cozy')) {
+                    return this.makeCozy();
+                }
+                else if (cmd.includes('modern office')) {
+                    return this.createModernOffice();
+                }
+                else if (cmd.includes('conference room')) {
+                    return this.createConferenceRoom();
+                }
+                else if (cmd.includes('gallery')) {
+                    return this.createGallery();
+                }
+                else if (cmd.includes('undo')) {
+                    return this.undo();
+                }
+                else if (cmd.includes('reset')) {
+                    return this.resetRoom();
+                }
+                else {
+                    return this.handleUnknownCommand(command);
+                }
+            }
+            
+            // Color extraction from natural language
+            extractColor(text) {
+                const colorMap = {
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'purple': '#800080', 'orange': '#ffa500',
+                    'pink': '#ffc0cb', 'white': '#ffffff', 'black': '#000000',
+                    'grey': '#808080', 'gray': '#808080', 'brown': '#8b4513'
+                };
+                
+                for (let [colorName, colorValue] of Object.entries(colorMap)) {
+                    if (text.includes(colorName)) {
+                        return colorValue;
+                    }
+                }
+                return null;
+            }
+            
+            // Diana's room modification actions
+            changeWallColor(color) {
+                const walls = this.factory.getAllWalls();
+                walls.forEach(wallId => {
+                    this.factory.setColor(wallId, color);
+                });
+                
+                this.addToMemory(`Changed all walls to ${color}`);
+                return `I've changed all the walls to ${color}. The room has a completely different feel now!`;
+            }
+            
+            addOfficeSetup() {
+                const desk = this.factory.addComponent('desk', {
+                    position: [1, 0.45, 0],
+                    scene: this.scene
+                });
+                
+                const chair = this.factory.addComponent('chair', {
+                    position: [1, 0.45, -1.2],
+                    scene: this.scene
+                });
+                
+                const lamp = this.factory.addComponent('lamp', {
+                    position: [1.5, 0.85, 0.2],
+                    scene: this.scene
+                });
+                
+                this.addToMemory(`Added office setup: desk, chair, lamp`);
+                return "I've added a complete office setup with a desk, chair, and lamp. Perfect for productivity!";
+            }
+            
+            removeAllFurniture() {
+                let removedCount = 0;
+                const components = this.factory.listAllComponents();
+                
+                components.filter(c => c.isAdded).forEach(component => {
+                    if (this.factory.removeComponent(component.id, this.scene)) {
+                        removedCount++;
+                    }
+                });
+                
+                this.addToMemory(`Removed ${removedCount} furniture items`);
+                return `I've removed all ${removedCount} furniture items. The room is now clean and spacious.`;
+            }
+            
+            makeCozy() {
+                // Add soft lighting and comfortable furniture
+                this.factory.setColor('north-wall', '#f5deb3'); // Wheat color
+                this.factory.setColor('south-wall', '#f5deb3');
+                this.factory.setColor('east-wall', '#f5deb3');
+                this.factory.setColor('west-wall', '#f5deb3');
+                
+                this.factory.addComponent('sofa', {
+                    position: [-2, 0.45, 1],
+                    scene: this.scene
+                });
+                
+                this.factory.addComponent('plant', {
+                    position: [2, 0.3, 2],
+                    scene: this.scene
+                });
+                
+                this.factory.addComponent('lamp', {
+                    position: [-1, 0.8, 2],
+                    scene: this.scene
+                });
+                
+                this.addToMemory(`Made room cozy: warm walls, sofa, plant, soft lighting`);
+                return "I've made the room cozy with warm beige walls, a comfortable sofa, a plant, and soft lighting. Perfect for relaxation!";
+            }
+            
+            createModernOffice() {
+                // Clean, minimal modern office
+                this.factory.setColor('north-wall', '#ffffff');
+                this.factory.setColor('south-wall', '#ffffff');
+                this.factory.setColor('east-wall', '#ffffff');
+                this.factory.setColor('west-wall', '#ffffff');
+                
+                this.factory.addComponent('desk', {
+                    position: [0, 0.45, 1],
+                    scene: this.scene
+                });
+                
+                this.factory.addComponent('chair', {
+                    position: [0, 0.45, -0.2],
+                    scene: this.scene
+                });
+                
+                this.factory.addComponent('bookshelf', {
+                    position: [-3, 0.9, 2],
+                    scene: this.scene
+                });
+                
+                this.addToMemory(`Created modern office: clean white walls, minimal furniture`);
+                return "I've created a modern office with clean white walls, a sleek desk setup, and a bookshelf. Very professional!";
+            }
+            
+            createConferenceRoom() {
+                // Large table with chairs
+                this.factory.addComponent('table', {
+                    position: [0, 0.55, 0],
+                    scene: this.scene
+                });
+                
+                // Add chairs around table
+                const chairPositions = [
+                    [1.5, 0.45, 0], [-1.5, 0.45, 0],
+                    [0, 0.45, 1.2], [0, 0.45, -1.2]
+                ];
+                
+                chairPositions.forEach((pos, i) => {
+                    this.factory.addComponent('chair', {
+                        position: pos,
+                        scene: this.scene
+                    });
+                });
+                
+                this.addToMemory(`Created conference room: large table with 4 chairs`);
+                return "I've set up a conference room with a large table and chairs for meetings. Ready for collaboration!";
+            }
+            
+            createGallery() {
+                this.factory.setColor('north-wall', '#f0f0f0');
+                this.factory.setColor('south-wall', '#f0f0f0');
+                this.factory.setColor('east-wall', '#f0f0f0');
+                this.factory.setColor('west-wall', '#f0f0f0');
+                
+                // Add minimal furniture for gallery feel
+                this.factory.addComponent('plant', {
+                    position: [-2, 0.3, -2],
+                    scene: this.scene
+                });
+                
+                this.factory.addComponent('plant', {
+                    position: [2, 0.3, -2],
+                    scene: this.scene
+                });
+                
+                this.addToMemory(`Created gallery: light grey walls, minimal decor`);
+                return "I've transformed this into a gallery space with light grey walls and minimal decoration. Perfect for displaying art!";
+            }
+            
+            // Scene analysis capabilities
+            analyzeScene() {
+                const components = this.factory.listAllComponents();
+                const original = components.filter(c => !c.isAdded);
+                const added = components.filter(c => c.isAdded);
+                
+                const analysis = {
+                    totalObjects: components.length,
+                    originalObjects: original.length,
+                    addedObjects: added.length,
+                    furniture: added.filter(c => ['desk', 'chair', 'sofa', 'table'].includes(c.type)),
+                    decorations: added.filter(c => ['plant', 'lamp', 'bookshelf'].includes(c.type))
+                };
+                
+                this.addToMemory(`Analyzed scene: ${analysis.totalObjects} total objects`);
+                
+                return `I can see ${analysis.totalObjects} objects total. The room has ${analysis.furniture.length} furniture pieces and ${analysis.decorations.length} decorative items. The space feels ${this.assessMood(added)}.`;
+            }
+            
+            assessMood(addedItems) {
+                if (addedItems.length === 0) return "empty and spacious";
+                if (addedItems.some(item => item.type === 'sofa')) return "cozy and comfortable";
+                if (addedItems.some(item => item.type === 'desk')) return "productive and business-like";
+                if (addedItems.length > 5) return "busy and full of activity";
+                return "nicely furnished";
+            }
+            
+            getInventory() {
+                const components = this.factory.listAllComponents();
+                const added = components.filter(c => c.isAdded);
+                
+                const inventory = {};
+                added.forEach(item => {
+                    inventory[item.type] = (inventory[item.type] || 0) + 1;
+                });
+                
+                this.addToMemory(`Listed inventory: ${Object.keys(inventory).length} item types`);
+                
+                let response = "Here's what I can see in the room:\n";
+                for (let [type, count] of Object.entries(inventory)) {
+                    response += `• ${count} ${type}${count > 1 ? 's' : ''}\n`;
+                }
+                
+                return response || "The room only has the basic structure - walls, floor, and reference objects.";
+            }
+            
+            getSuggestions() {
+                const components = this.factory.listAllComponents();
+                const added = components.filter(c => c.isAdded);
+                
+                const suggestions = [];
+                
+                if (added.length === 0) {
+                    suggestions.push("Add some furniture to make the space more functional");
+                    suggestions.push("Change the wall colors to set a mood");
+                }
+                
+                const hasDesk = added.some(item => item.type === 'desk');
+                const hasChair = added.some(item => item.type === 'chair');
+                const hasLamp = added.some(item => item.type === 'lamp');
+                
+                if (hasDesk && !hasChair) suggestions.push("Add a chair to complete the desk setup");
+                if (hasDesk && !hasLamp) suggestions.push("Add a lamp for better lighting");
+                if (!added.some(item => item.type === 'plant')) suggestions.push("Add a plant to bring life to the space");
+                
+                this.addToMemory(`Generated ${suggestions.length} suggestions`);
+                
+                return suggestions.length > 0 ? 
+                    "Here are some suggestions:\n• " + suggestions.join("\n• ") :
+                    "The room looks well-balanced! Maybe try a different color scheme?";
+            }
+            
+            // State management for undo
+            saveState() {
+                const state = {
+                    timestamp: Date.now(),
+                    components: this.factory.listAllComponents()
+                };
+                
+                this.undoStack.push(state);
+                if (this.undoStack.length > this.maxUndoSteps) {
+                    this.undoStack.shift();
+                }
+            }
+            
+            undo() {
+                if (this.undoStack.length < 2) {
+                    return "Nothing to undo.";
+                }
+                
+                // Remove current state
+                this.undoStack.pop();
+                
+                // Get previous state
+                const previousState = this.undoStack[this.undoStack.length - 1];
+                
+                // This would require implementing state restoration
+                // For now, just acknowledge
+                this.addToMemory(`Undo requested (not fully implemented)`);
+                return "I understand you want to undo the last change. This feature is being developed!";
+            }
+            
+            // Memory and personality
+            addToMemory(event) {
+                this.memory.push({
+                    timestamp: Date.now(),
+                    event: event
+                });
+                
+                // Keep memory manageable
+                if (this.memory.length > 20) {
+                    this.memory.shift();
+                }
+            }
+            
+            getMemory() {
+                const recent = this.memory.slice(-5);
+                let response = "Recent activity:\n";
+                recent.forEach((item, index) => {
+                    const time = new Date(item.timestamp).toLocaleTimeString();
+                    response += `${index + 1}. [${time}] ${item.event}\n`;
+                });
+                return response;
+            }
+            
+            handleUnknownCommand(command) {
+                const responses = [
+                    `I'm not sure how to "${command}", but I'm learning! Try commands like "make walls red" or "add a desk".`,
+                    `That's an interesting request! I can help with colors, furniture, and room layouts. What would you like to try?`,
+                    `I didn't quite understand "${command}". I can change colors, add furniture, or analyze the room. What sounds good?`
+                ];
+                
+                const response = responses[Math.floor(Math.random() * responses.length)];
+                this.addToMemory(`Unknown command: ${command}`);
+                return response;
+            }
+            
+            resetRoom() {
+                this.addToMemory(`Room reset requested`);
+                return "I'll help reset the room to start fresh!";
+            }
+        }
+
+        // Component factory with Diana integration
+        class DianaIntegratedFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map();
+                this.addedItems = new Map();
+                this.replacementHistory = [];
+                this.nextId = 1;
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                const params = {};
+                
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    case 'box': return new THREE.BoxGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) return null;
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                
+                const materialConfig = config.material || componentDef.material;
+                const material = this.createMaterial(materialConfig);
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                const uniqueId = config.id || `${componentType}-${this.nextId++}`;
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.compass || null,
+                    id: uniqueId,
+                    createdBy: 'DianaIntegratedFactory',
+                    createdAt: Date.now(),
+                    isAdded: config.isAdded || false,
+                    dianaEditable: true // All objects can be modified by Diana
+                };
+                
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                
+                if (config.isAdded) {
+                    this.addedItems.set(uniqueId, mesh);
+                }
+                
+                return mesh;
+            }
+            
+            // Add component with smart positioning for Diana
+            addComponent(componentType, options = {}) {
+                const scene = options.scene || window.scene;
+                
+                let position = options.position;
+                if (!position) {
+                    position = this.generateSmartPosition(componentType);
+                }
+                
+                const config = {
+                    id: `diana-${componentType}-${this.nextId}`,
+                    position: position,
+                    rotation: options.rotation,
+                    size: options.size,
+                    material: options.material,
+                    isAdded: true
+                };
+                
+                return this.createComponent(componentType, config, scene);
+            }
+            
+            generateSmartPosition(componentType) {
+                const floorLevel = 0.05;
+                
+                switch (componentType) {
+                    case 'desk':
+                        return [(Math.random() - 0.5) * 6, floorLevel + 0.4, (Math.random() - 0.5) * 4];
+                    case 'chair':
+                        return [(Math.random() - 0.5) * 6, floorLevel + 0.45, (Math.random() - 0.5) * 4];
+                    case 'table':
+                        return [0, floorLevel + 0.5, 0]; // Center for conference table
+                    case 'sofa':
+                        return [(Math.random() - 0.5) * 4, floorLevel + 0.45, (Math.random() - 0.5) * 3];
+                    case 'bookshelf':
+                        // Place against walls
+                        const wall = Math.floor(Math.random() * 4);
+                        switch (wall) {
+                            case 0: return [0, 0.9, 3.8]; // North
+                            case 1: return [0, 0.9, -3.8]; // South
+                            case 2: return [4.5, 0.9, 0]; // East
+                            case 3: return [-4.5, 0.9, 0]; // West
+                        }
+                        break;
+                    default:
+                        return [(Math.random() - 0.5) * 6, floorLevel + 0.3, (Math.random() - 0.5) * 4];
+                }
+            }
+            
+            setColor(identifier, color) {
+                const mesh = this.findObject(identifier);
+                if (!mesh || !mesh.material) return false;
+                
+                if (typeof color === 'string' && color.startsWith('#')) {
+                    mesh.material.color = new THREE.Color(color);
+                } else {
+                    mesh.material.color = color;
+                }
+                
+                mesh.material.needsUpdate = true;
+                return true;
+            }
+            
+            removeComponent(identifier, scene) {
+                const mesh = this.findObject(identifier);
+                if (!mesh) return false;
+                
+                mesh.geometry.dispose();
+                if (mesh.material.dispose) mesh.material.dispose();
+                scene.remove(mesh);
+                
+                // Remove from both maps
+                for (let [key, value] of this.createdObjects) {
+                    if (value === mesh) {
+                        this.createdObjects.delete(key);
+                        break;
+                    }
+                }
+                
+                for (let [key, value] of this.addedItems) {
+                    if (value === mesh) {
+                        this.addedItems.delete(key);
+                        break;
+                    }
+                }
+                
+                return true;
+            }
+            
+            findObject(identifier) {
+                // Find by ID first
+                for (let [key, mesh] of this.createdObjects) {
+                    if (key === identifier || mesh.userData.id === identifier) {
+                        return mesh;
+                    }
+                }
+                
+                // Find by semantic name
+                const semanticMap = {
+                    'floor': (obj) => obj.userData.componentType === 'floor',
+                    'north-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'north',
+                    'south-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'south',
+                    'east-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'east',
+                    'west-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'west',
+                    'referencePole': (obj) => obj.userData.componentType === 'referencePole',
+                    'debugBall': (obj) => obj.userData.componentType === 'debugBall'
+                };
+                
+                if (semanticMap[identifier]) {
+                    for (let [key, mesh] of this.createdObjects) {
+                        if (semanticMap[identifier](mesh)) {
+                            return mesh;
+                        }
+                    }
+                }
+                
+                return null;
+            }
+            
+            getAllWalls() {
+                return ['north-wall', 'south-wall', 'east-wall', 'west-wall'];
+            }
+            
+            listAllComponents() {
+                const components = [];
+                for (let [id, mesh] of this.createdObjects) {
+                    components.push({
+                        id: id,
+                        type: mesh.userData.componentType,
+                        position: mesh.position.toArray(),
+                        isAdded: mesh.userData.isAdded || false
+                    });
+                }
+                return components;
+            }
+        }
+
+        // Global variables
+        const status = document.getElementById('status');
+        let factory;
+        let diana;
+        let scene, camera, renderer;
+        let dianaMode = true;
+        
+        function updateStatus(message, isError = false) {
+            console.log(message);
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML += `<br>[${timestamp}] ${isError ? '❌' : '✅'} ${message}`;
+        }
+        
+        function dianaResponse(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML += `<br><div class="diana-response">[${timestamp}] 🤖 Diana: ${message}</div>`;
+        }
+
+        // Scene setup
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(6, 5, 6);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+            
+            // Enhanced lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+            
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.7);
+            directionalLight1.position.set(8, 8, 5);
+            directionalLight1.castShadow = true;
+            scene.add(directionalLight1);
+            
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+            
+            // Make scene globally accessible
+            window.scene = scene;
+            
+            updateStatus("Scene initialized for Diana agent integration");
+        }
+
+        // Create initial room with Diana
+        function createInitialRoom() {
+            factory = new DianaIntegratedFactory();
+            diana = new DianaAgent(factory, scene);
+            
+            factory.createComponent('referencePole', { id: 'ref-pole', position: [0, 0.5, 0] }, scene);
+            factory.createComponent('debugBall', { id: 'debug-ball', position: [2, 0.3, 1] }, scene);
+            factory.createComponent('floor', { id: 'floor', position: [0, 0, 0] }, scene);
+            
+            factory.createComponent('wall', { 
+                id: 'north-wall', position: [0, 4, 4], rotation: [0, Math.PI, 0], compass: 'north' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'south-wall', position: [0, 4, -4], rotation: [0, 0, 0], compass: 'south' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'east-wall', position: [5, 4, 0], rotation: [0, -Math.PI/2, 0], 
+                size: [8, 8], compass: 'east' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'west-wall', position: [-5, 4, 0], rotation: [0, Math.PI/2, 0], 
+                size: [8, 8], compass: 'west' 
+            }, scene);
+            
+            updateStatus("Room created with Diana AI agent integration");
+            dianaResponse("Hello! I'm Diana, your AI decorator. I can help you modify this space with natural language commands. Try asking me to change colors or add furniture!");
+        }
+
+        // Diana interaction functions
+        function handleCommandInput(event) {
+            if (event.key === 'Enter') {
+                executeCommand();
+            }
+        }
+        
+        function executeCommand() {
+            const input = document.getElementById('command-input');
+            const command = input.value.trim();
+            
+            if (command) {
+                updateStatus(`You: "${command}"`);
+                const response = diana.processCommand(command);
+                dianaResponse(response);
+                input.value = '';
+            }
+        }
+        
+        function dianaCommand(command) {
+            updateStatus(`Quick command: "${command}"`);
+            const response = diana.processCommand(command);
+            dianaResponse(response);
+        }
+        
+        function dianaAnalyze() {
+            const analysis = diana.analyzeScene();
+            dianaResponse(analysis);
+        }
+        
+        function dianaInventory() {
+            const inventory = diana.getInventory();
+            dianaResponse(inventory);
+        }
+        
+        function dianaMemory() {
+            const memory = diana.getMemory();
+            dianaResponse(memory);
+        }
+        
+        function dianaSuggestions() {
+            const suggestions = diana.getSuggestions();
+            dianaResponse(suggestions);
+        }
+        
+        function showDianaState() {
+            updateStatus("=== DIANA AGENT STATE ===");
+            updateStatus(`Memory entries: ${diana.memory.length}`);
+            updateStatus(`Mode: ${diana.mode}`);
+            updateStatus(`Personality: ${diana.personality}`);
+            updateStatus(`Undo stack: ${diana.undoStack.length} steps`);
+        }
+        
+        function toggleDianaMode() {
+            dianaMode = !dianaMode;
+            if (dianaMode) {
+                diana.mode = "decorator";
+                updateStatus("Diana mode: DECORATOR (room modifications)");
+                dianaResponse("I'm in decorator mode - ready to help you design this space!");
+            } else {
+                diana.mode = "analyst";
+                updateStatus("Diana mode: ANALYST (scene analysis)");
+                dianaResponse("I'm in analyst mode - I'll focus on understanding and describing the space.");
+            }
+        }
+
+        function resetRoom() {
+            for (let [key, mesh] of factory.createdObjects) {
+                mesh.geometry.dispose();
+                if (mesh.material.dispose) mesh.material.dispose();
+                scene.remove(mesh);
+            }
+            
+            factory = null;
+            diana = null;
+            updateStatus("Scene cleared");
+            
+            setTimeout(() => {
+                createInitialRoom();
+                updateStatus("Room reset with Diana agent");
+            }, 200);
+        }
+
+        // Initialize
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                initScene();
+                createInitialRoom();
+                updateStatus("🤖 DIANA AGENT INTEGRATION READY");
+                updateStatus("Try typing commands or use the quick buttons!");
+            } else {
+                updateStatus("❌ THREE.js failed to load", true);
+            }
+        }, 1000);
+        
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // UI functions
+        function toggleInfo() {
+            const info = document.getElementById('info');
+            const toggle = document.getElementById('toggle-info');
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                toggle.textContent = 'HIDE INFO';
+            } else {
+                info.style.display = 'none';
+                toggle.textContent = 'SHOW INFO';
+            }
+        }
+
+        // Mouse controls
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);
+        });
+    </script>
+</body>
+</html>

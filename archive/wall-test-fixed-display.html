@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Test - Fixed Display</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; font-family: monospace; }
+        #status {
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            color: #0f0;
+            background: rgba(0,0,0,0.9); 
+            padding: 15px; 
+            border-radius: 5px;
+            max-width: 350px; 
+            max-height: 80vh;
+            overflow-y: auto;
+            font-size: 11px;
+            z-index: 1000;
+        }
+        .test-result {
+            color: #4f4;
+            background: rgba(0,255,0,0.1);
+            padding: 2px 4px;
+            margin: 2px 0;
+            border-left: 3px solid #0f0;
+        }
+        .wall-info {
+            color: #ff4;
+            background: rgba(255,255,0,0.1);
+            padding: 2px 4px;
+            margin: 2px 0;
+            border-left: 3px solid #ff0;
+        }
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="status"><strong>🧪 Wall Test - 4 Walls Controlled</strong></div>
+    <div id="controls">
+        <strong>Expected:</strong> 4 WHITE walls<br>
+        <strong>Camera:</strong> Arrow keys to move, Mouse to look
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        function updateStatus(msg, type = 'normal') {
+            const div = document.createElement('div');
+            if (type === 'wall') div.className = 'wall-info';
+            else if (type === 'result') div.className = 'test-result';
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            status.appendChild(div);
+            status.scrollTop = status.scrollHeight;
+            console.log(`[WALL-TEST] ${msg}`);
+        }
+        
+        // EXACT same components as working approach
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [20, 20],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    }
+                },
+                "wall": {
+                    "model": "plane",
+                    "size": [20, 8],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#ffffff",
+                        "roughness": 0.8,
+                        "metalness": 0.0
+                    }
+                }
+            }
+        };
+
+        // EXACT COPY of working factory from wall-test-fourth-wall.html
+        class TestFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.wallCount = 0;
+                this.createdMeshes = [];
+                updateStatus('Factory constructor completed');
+            }
+            
+            createMaterial(materialConfig) {
+                try {
+                    updateStatus(`Creating material: ${materialConfig.type}`);
+                    
+                    const MaterialClass = materialConfig.type === 'MeshBasicMaterial' ? 
+                        THREE.MeshBasicMaterial : THREE.MeshStandardMaterial;
+                    
+                    const params = {};
+                    Object.entries(materialConfig).forEach(([key, value]) => {
+                        if (key === 'type') return;
+                        if (key === 'color') {
+                            params[key] = new THREE.Color(value);
+                            updateStatus(`Material color: ${value} -> #${params[key].getHexString()}`);
+                        } else {
+                            params[key] = value;
+                        }
+                    });
+                    
+                    const material = new MaterialClass(params);
+                    updateStatus(`✅ Material created: ${material.constructor.name}`);
+                    return material;
+                    
+                } catch (error) {
+                    updateStatus(`❌ Material creation error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+            
+            createGeometry(type, dimensions) {
+                try {
+                    updateStatus(`Creating geometry: ${type} [${dimensions.join(',')}]`);
+                    
+                    let geometry;
+                    switch (type) {
+                        case 'cylinder': geometry = new THREE.CylinderGeometry(...dimensions); break;
+                        case 'plane': geometry = new THREE.PlaneGeometry(...dimensions); break;
+                        default: geometry = new THREE.BoxGeometry(1, 1, 1); break;
+                    }
+                    
+                    updateStatus(`✅ Geometry created: ${geometry.constructor.name}`);
+                    return geometry;
+                    
+                } catch (error) {
+                    updateStatus(`❌ Geometry creation error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                try {
+                    updateStatus(`--- CREATING ${componentType.toUpperCase()} #${this.createdMeshes.length + 1} ---`);
+                    
+                    const componentDef = this.registry.components[componentType];
+                    if (!componentDef) {
+                        throw new Error(`Unknown component: ${componentType}`);
+                    }
+                    
+                    const geometry = this.createGeometry(componentDef.model, componentDef.size);
+                    const material = this.createMaterial(componentDef.material);
+                    
+                    updateStatus(`Creating mesh...`);
+                    const mesh = new THREE.Mesh(geometry, material);
+                    
+                    if (config.position) {
+                        updateStatus(`Setting position: [${config.position.join(',')}]`);
+                        mesh.position.set(...config.position);
+                    }
+                    
+                    if (config.rotation) {
+                        updateStatus(`Setting rotation: [${config.rotation.join(',')}]`);
+                        updateStatus(`Rotation analysis: ${config.rotation[1]} radians = ${config.rotation[1] * (180/Math.PI)}°`);
+                        mesh.rotation.set(...config.rotation);
+                    }
+                    
+                    if (componentDef.rotation) {
+                        updateStatus(`Applying component rotation: [${componentDef.rotation.join(',')}]`);
+                        mesh.rotation.set(...componentDef.rotation);
+                    }
+                    
+                    // Track walls specifically
+                    if (componentType === 'wall') {
+                        this.wallCount++;
+                        const color = mesh.material.color.getHexString();
+                        updateStatus(`WALL #${this.wallCount}: color=#${color}`, 'wall');
+                    }
+                    
+                    updateStatus(`Adding to scene... (Current objects: ${this.createdMeshes.length})`);
+                    scene.add(mesh);
+                    this.createdMeshes.push(mesh);
+                    
+                    updateStatus(`✅ ${componentType} created successfully (Total: ${this.createdMeshes.length})`);
+                    return mesh;
+                    
+                } catch (error) {
+                    updateStatus(`❌ Component creation error: ${error.message}`, 'error');
+                    updateStatus(`❌ Stack: ${error.stack}`, 'error');
+                    throw error;
+                }
+            }
+        }
+        
+        // Global variables
+        let scene, camera, renderer, factory;
+        const player = { position: new THREE.Vector3(0, 2, 8) };
+        const keys = {};
+        let mouseX = 0, mouseY = 0;
+        
+        function initTest() {
+            updateStatus('Starting wall test...', 'result');
+            
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            updateStatus('✅ Scene created');
+            
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.copy(player.position);
+            updateStatus('✅ Camera created');
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+            updateStatus('✅ Renderer created');
+            
+            // Simple lighting (like working minimal)
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+            updateStatus('✅ Ambient lighting added');
+            
+            // Factory
+            factory = new TestFactory();
+            updateStatus('✅ Factory created');
+            
+            // Create objects one by one
+            updateStatus('--- CREATING REFERENCE POLE ---');
+            factory.createComponent('referencePole', { position: [0, 0.5, 0] }, scene);
+            
+            updateStatus('--- CREATING FLOOR ---');
+            factory.createComponent('floor', { position: [0, 0, 0] }, scene);
+            
+            updateStatus('--- CREATING 4 WALLS ---');
+            factory.createComponent('wall', { position: [0, 4, -10] }, scene); // Front
+            factory.createComponent('wall', { position: [0, 4, 10], rotation: [0, Math.PI, 0] }, scene); // Back
+            factory.createComponent('wall', { position: [-10, 4, 0], rotation: [0, Math.PI/2, 0] }, scene); // Left
+            factory.createComponent('wall', { position: [10, 4, 0], rotation: [0, -Math.PI/2, 0] }, scene); // Right
+            
+            updateStatus(`✅ TEST COMPLETE - Created ${factory.wallCount} walls`, 'result');
+            
+            // Render
+            renderer.render(scene, camera);
+            updateStatus('✅ Initial render complete', 'result');
+            animate();
+        }
+        
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Simple movement
+            const speed = 0.1;
+            if (keys['arrowup']) player.position.z -= speed;
+            if (keys['arrowdown']) player.position.z += speed;
+            if (keys['arrowleft']) player.position.x -= speed;
+            if (keys['arrowright']) player.position.x += speed;
+            
+            camera.position.copy(player.position);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = -mouseX;
+            camera.rotation.x = mouseY;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === renderer.domElement) {
+                mouseX += e.movementX * 0.002;
+                mouseY += e.movementY * 0.002;
+                mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+            }
+        });
+        
+        renderer.domElement.addEventListener('click', () => {
+            renderer.domElement.requestPointerLock();
+        });
+        
+        // Initialize
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`, 'result');
+                initTest();
+            } else {
+                updateStatus('❌ THREE.js failed to load', 'result');
+            }
+        }, 1000);
+        
+    </script>
+</body>
+</html>

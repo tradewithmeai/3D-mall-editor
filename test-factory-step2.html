@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Test - Step 2</title>
+    <style>
+        body { margin: 0; font-family: monospace; }
+        #canvas-container { width: 100vw; height: 60vh; }
+        #test-results { 
+            padding: 20px; 
+            background: #f0f0f0; 
+            height: 40vh; 
+            overflow-y: auto;
+            font-size: 12px;
+        }
+        .pass { color: green; }
+        .fail { color: red; }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div id="test-results">
+        <h3>🔨 Step 2: Factory Functions Test</h3>
+        <div id="test-output"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script type="module">
+        import { loadComponents, createComponent } from './componentFactory.js';
+
+        const output = document.getElementById('test-output');
+        
+        function log(message, isPass = null) {
+            const div = document.createElement('div');
+            div.textContent = message;
+            if (isPass === true) div.className = 'pass';
+            if (isPass === false) div.className = 'fail';
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        async function runTests() {
+            try {
+                // Setup basic scene
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer();
+                renderer.setSize(window.innerWidth, window.innerHeight * 0.6);
+                document.getElementById('canvas-container').appendChild(renderer.domElement);
+                
+                camera.position.set(0, 5, 10);
+                const light = new THREE.AmbientLight(0xffffff, 1);
+                scene.add(light);
+
+                // Test loadComponents
+                log('Testing loadComponents()...');
+                const registry = await loadComponents();
+                
+                // Test registry has all required keys
+                const requiredTypes = ['referencePole', 'debugBall', 'lobbyFloor', 'lobbyCeiling', 'lobbyNorthWall'];
+                let allKeysPresent = true;
+                
+                requiredTypes.forEach(type => {
+                    if (registry[type]) {
+                        log(`✓ Registry has ${type}`, true);
+                    } else {
+                        log(`✗ Missing ${type}`, false);
+                        allKeysPresent = false;
+                    }
+                });
+
+                if (allKeysPresent) {
+                    log('✓ All required component types found in registry', true);
+                } else {
+                    log('✗ Registry missing required types', false);
+                }
+
+                // Test createComponent for each type
+                log('\nTesting createComponent() for each type...');
+
+                // Test Reference Pole
+                log('Testing referencePole...');
+                const pole = createComponent('referencePole', { position: [0, 0.5, 0] }, registry, scene);
+                console.assert(pole instanceof THREE.Mesh, 'Reference pole should be a Mesh');
+                console.assert(pole.geometry.type === 'CylinderGeometry', 'Pole should use CylinderGeometry');
+                console.assert(pole.material.color.getHexString() === '000000', 'Pole should be black');
+                log(pole ? '✓ Reference pole created successfully' : '✗ Reference pole creation failed', pole !== null);
+
+                // Test Debug Ball
+                log('Testing debugBall...');
+                const ball = createComponent('debugBall', { position: [2, 1, 0] }, registry, scene);
+                console.assert(ball instanceof THREE.Mesh, 'Debug ball should be a Mesh');
+                console.assert(ball.geometry.type === 'SphereGeometry', 'Ball should use SphereGeometry');
+                console.assert(ball.material.color.getHexString() === '00ff00', 'Ball should be green');
+                console.assert(ball.userData.collider instanceof THREE.Box3, 'Ball should have collider');
+                log(ball ? '✓ Debug ball created successfully' : '✗ Debug ball creation failed', ball !== null);
+
+                // Test Floor
+                log('Testing lobbyFloor...');
+                const floor = createComponent('lobbyFloor', { position: [0, -1, 0], rotation: [-1.57, 0, 0] }, registry, scene);
+                console.assert(floor instanceof THREE.Mesh, 'Floor should be a Mesh');
+                console.assert(floor.geometry.type === 'PlaneGeometry', 'Floor should use PlaneGeometry');
+                console.assert(floor.userData.collider instanceof THREE.Box3, 'Floor should have collider');
+                log(floor ? '✓ Lobby floor created successfully' : '✗ Lobby floor creation failed', floor !== null);
+
+                // Test Wall
+                log('Testing lobbyNorthWall...');
+                const wall = createComponent('lobbyNorthWall', { position: [0, 2, -5] }, registry, scene);
+                console.assert(wall instanceof THREE.Mesh, 'Wall should be a Mesh');
+                console.assert(wall.geometry.type === 'PlaneGeometry', 'Wall should use PlaneGeometry');
+                console.assert(wall.userData.collider instanceof THREE.Box3, 'Wall should have collider');
+                log(wall ? '✓ North wall created successfully' : '✗ North wall creation failed', wall !== null);
+
+                // Render the scene
+                function animate() {
+                    requestAnimationFrame(animate);
+                    renderer.render(scene, camera);
+                }
+                animate();
+
+                log(`\n🏗️ Scene contains ${scene.children.length} objects`);
+                log('✓ Step 2 Factory Functions test completed!', true);
+
+            } catch (error) {
+                log(`✗ Test failed with error: ${error.message}`, false);
+                console.error(error);
+            }
+        }
+
+        runTests();
+    </script>
+</body>
+</html>

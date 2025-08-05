@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Minimal Test</title>
+    <style>
+        body { margin: 0; background: #222; color: #0f0; font-family: monospace; padding: 20px; }
+        .test { margin: 10px 0; padding: 5px; background: #333; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Connection Reset Debug</h1>
+    <div id="results"></div>
+
+    <script>
+        const results = document.getElementById('results');
+        
+        function test(name, fn) {
+            try {
+                const result = fn();
+                results.innerHTML += `<div class="test">✅ ${name}: ${result || 'OK'}</div>`;
+                return true;
+            } catch (error) {
+                results.innerHTML += `<div class="test">❌ ${name}: ${error.message}</div>`;
+                return false;
+            }
+        }
+
+        // Test 1: Basic JavaScript
+        test('Basic JS', () => 'Working');
+
+        // Test 2: THREE.js loading
+        test('THREE.js CDN', () => {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+            document.head.appendChild(script);
+            return 'CDN script added';
+        });
+
+        // Test 3: Wait and check THREE.js
+        setTimeout(() => {
+            test('THREE.js loaded', () => {
+                if (typeof THREE !== 'undefined') {
+                    return `THREE.js r${THREE.REVISION}`;
+                } else {
+                    throw new Error('THREE.js not loaded');
+                }
+            });
+
+            // Test 4: JSON files exist
+            fetch('components.json')
+                .then(r => {
+                    if (r.ok) {
+                        results.innerHTML += `<div class="test">✅ components.json: Found</div>`;
+                        return r.json();
+                    } else {
+                        throw new Error(`HTTP ${r.status}`);
+                    }
+                })
+                .then(data => {
+                    results.innerHTML += `<div class="test">✅ components.json: Valid (${Object.keys(data.components).length} components)</div>`;
+                })
+                .catch(error => {
+                    results.innerHTML += `<div class="test">❌ components.json: ${error.message}</div>`;
+                });
+
+            fetch('room-layout.json')
+                .then(r => {
+                    if (r.ok) {
+                        results.innerHTML += `<div class="test">✅ room-layout.json: Found</div>`;
+                        return r.json();
+                    } else {
+                        throw new Error(`HTTP ${r.status}`);
+                    }
+                })
+                .then(data => {
+                    results.innerHTML += `<div class="test">✅ room-layout.json: Valid (${data.instances.length} instances)</div>`;
+                })
+                .catch(error => {
+                    results.innerHTML += `<div class="test">❌ room-layout.json: ${error.message}</div>`;
+                });
+
+        }, 2000);
+
+    </script>
+</body>
+</html>

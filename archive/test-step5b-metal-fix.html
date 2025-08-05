@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metal Material Fix - Step 5B: Environment Reflection Fix</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 400px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 10px;
+            max-width: 340px;
+        }
+        .btn-group {
+            margin: 8px 0;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+        .btn {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 9px;
+        }
+        .btn:hover { background: #0f0; color: #000; }
+        .btn.replace { border-color: #fa0; color: #fa0; }
+        .btn.replace:hover { background: #fa0; color: #000; }
+        .btn.metal { border-color: #888; color: #888; }
+        .btn.metal:hover { background: #888; color: #000; }
+        .btn.test { border-color: #f4f; color: #f4f; }
+        .btn.test:hover { background: #f4f; color: #000; }
+        #toggle-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>🔧 Metal Environment Fix</h3>
+        
+        <div class="btn-group">
+            <strong>Test Sequence:</strong><br>
+            <button class="btn test" onclick="testMetalVariations()">🧪 Test Metal Variations</button>
+            <button class="btn test" onclick="environmentTest()">🌍 Environment Test</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Set Wall Colors:</strong><br>
+            <button class="btn replace" onclick="setWallColor('#ff0000')">RED Walls</button>
+            <button class="btn replace" onclick="setWallColor('#00ff00')">GREEN Walls</button>
+            <button class="btn replace" onclick="setWallColor('#0000ff')">BLUE Walls</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Metal Variations:</strong><br>
+            <button class="btn metal" onclick="applyMetal('bright')">Bright Metal (low metalness)</button>
+            <button class="btn metal" onclick="applyMetal('chrome')">Chrome (env + metalness)</button><br>
+            <button class="btn metal" onclick="applyMetal('brushed')">Brushed Metal (higher rough)</button>
+            <button class="btn metal" onclick="applyMetal('mirror')">Mirror (pure reflection)</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Other Materials:</strong><br>
+            <button class="btn replace" onclick="applyMaterial('glossy')">✅ Glossy (Keep Color)</button>
+            <button class="btn replace" onclick="applyMaterial('rough')">✅ Rough (Keep Color)</button><br>
+            <button class="btn replace" onclick="applyMaterial('normal')">✅ Normal (Keep Color)</button>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="resetRoom()">🔄 Reset Room</button>
+            <button class="btn" onclick="showMaterialDetails()">🔍 Material Details</button>
+            <button class="btn" onclick="toggleEnvironment()">🌍 Toggle Environment</button>
+        </div>
+    </div>
+
+    <div id="toggle-info" onclick="toggleInfo()">HIDE INFO</div>
+    <div id="info">
+        <h3>🔧 Metal Material Environment Fix</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Component definitions
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder", "size": [0.1, 0.1, 1, 8],
+                    "material": { "type": "MeshBasicMaterial", "color": "#000000" },
+                    "properties": { "castShadow": false, "receiveShadow": false }
+                },
+                "debugBall": {
+                    "model": "sphere", "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial", "color": "#44ff44", "roughness": 0.3,
+                        "metalness": 0.2, "transparent": true, "opacity": 0.8,
+                        "emissive": "#114411", "emissiveIntensity": 0.2
+                    },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "floor": {
+                    "model": "plane", "size": [10, 8], "rotation": [-1.5707963267948966, 0, 0],
+                    "material": { "type": "MeshStandardMaterial", "color": "#90EE90", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "receiveShadow": true }
+                },
+                "wall": {
+                    "model": "plane", "size": [10, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#f8f8f8", "roughness": 0.9, "metalness": 0.1 },
+                    "properties": { "castShadow": false, "receiveShadow": true }
+                }
+            }
+        };
+
+        // Factory with metal environment support
+        class MetalFixFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map();
+                this.replacementHistory = [];
+                this.environmentMap = null;
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                const params = {};
+                
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) return null;
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                
+                const materialConfig = config.material || componentDef.material;
+                const material = this.createMaterial(materialConfig);
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                const uniqueId = config.id || `${componentType}-${Date.now()}`;
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.compass || null,
+                    id: uniqueId,
+                    originalConfig: JSON.parse(JSON.stringify(config)),
+                    originalMaterial: JSON.parse(JSON.stringify(materialConfig))
+                };
+                
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                return mesh;
+            }
+            
+            // Create environment map for metal reflections
+            createEnvironmentMap() {
+                const cubeTextureLoader = new THREE.CubeTextureLoader();
+                
+                // Create a simple procedural environment map
+                const size = 512;
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const context = canvas.getContext('2d');
+                
+                // Create a bright gradient background
+                const gradient = context.createLinearGradient(0, 0, 0, size);
+                gradient.addColorStop(0, '#87CEEB'); // Sky blue
+                gradient.addColorStop(0.5, '#FFFFFF'); // White
+                gradient.addColorStop(1, '#F0F8FF'); // Alice blue
+                
+                context.fillStyle = gradient;
+                context.fillRect(0, 0, size, size);
+                
+                // Create texture from canvas
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                
+                return texture;
+            }
+            
+            // Set environment map on scene
+            setEnvironmentMap(scene) {
+                if (!this.environmentMap) {
+                    this.environmentMap = this.createEnvironmentMap();
+                }
+                scene.environment = this.environmentMap;
+                console.log('Environment map applied to scene');
+            }
+            
+            // Direct material property modification with environment support
+            modifyMaterialProperties(identifier, properties) {
+                const mesh = this.findObject(identifier);
+                if (!mesh) {
+                    console.warn(`Object not found: ${identifier}`);
+                    return false;
+                }
+                
+                console.log(`METAL-AWARE modification for ${identifier}:`, properties);
+                
+                const material = mesh.material;
+                
+                // Apply properties directly
+                Object.entries(properties).forEach(([key, value]) => {
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            material[key] = new THREE.Color(value);
+                        } else {
+                            material[key] = value;
+                        }
+                    } else {
+                        material[key] = value;
+                    }
+                });
+                
+                // Special handling for metallic materials
+                if (properties.metalness !== undefined && properties.metalness > 0.5) {
+                    console.log('High metalness detected - applying environment map');
+                    material.envMap = this.environmentMap;
+                    material.envMapIntensity = 1.0;
+                }
+                
+                material.needsUpdate = true;
+                
+                console.log(`AFTER MODIFICATION - ${identifier}:`, {
+                    color: material.color ? `#${material.color.getHexString()}` : 'none',
+                    roughness: material.roughness,
+                    metalness: material.metalness,
+                    envMap: material.envMap ? 'YES' : 'NO'
+                });
+                
+                return true;
+            }
+            
+            setColor(identifier, color) {
+                const mesh = this.findObject(identifier);
+                if (!mesh || !mesh.material) return false;
+                
+                console.log(`SETTING COLOR for ${identifier} to ${color}`);
+                
+                if (typeof color === 'string' && color.startsWith('#')) {
+                    mesh.material.color = new THREE.Color(color);
+                } else {
+                    mesh.material.color = color;
+                }
+                
+                mesh.material.needsUpdate = true;
+                return true;
+            }
+            
+            findObject(identifier) {
+                for (let [key, mesh] of this.createdObjects) {
+                    if (key === identifier || mesh.userData.id === identifier) {
+                        return mesh;
+                    }
+                }
+                
+                const semanticMap = {
+                    'floor': (obj) => obj.userData.componentType === 'floor',
+                    'north-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'north',
+                    'south-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'south',
+                    'east-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'east',
+                    'west-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'west',
+                    'referencePole': (obj) => obj.userData.componentType === 'referencePole',
+                    'debugBall': (obj) => obj.userData.componentType === 'debugBall'
+                };
+                
+                if (semanticMap[identifier]) {
+                    for (let [key, mesh] of this.createdObjects) {
+                        if (semanticMap[identifier](mesh)) {
+                            return mesh;
+                        }
+                    }
+                }
+                
+                return null;
+            }
+            
+            getAllWalls() {
+                return ['north-wall', 'south-wall', 'east-wall', 'west-wall'];
+            }
+        }
+
+        // Global variables
+        const status = document.getElementById('status');
+        let factory;
+        let scene, camera, renderer;
+        let environmentEnabled = true;
+        
+        function updateStatus(message, isError = false) {
+            console.log(message);
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML += `<br>[${timestamp}] ${isError ? '❌' : '✅'} ${message}`;
+        }
+
+        // Scene setup with environment mapping
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(6, 5, 6);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.physicallyCorrectLights = true;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            document.body.appendChild(renderer.domElement);
+            
+            // Bright lighting setup
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 1.2);
+            directionalLight1.position.set(8, 8, 5);
+            directionalLight1.castShadow = true;
+            scene.add(directionalLight1);
+            
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+            
+            const pointLight1 = new THREE.PointLight(0xffffff, 0.5, 20);
+            pointLight1.position.set(5, 6, 5);
+            scene.add(pointLight1);
+            
+            updateStatus("Scene initialized with metal-aware lighting");
+        }
+
+        // Create initial room with environment
+        function createInitialRoom() {
+            factory = new MetalFixFactory();
+            
+            // Create environment map first
+            factory.environmentMap = factory.createEnvironmentMap();
+            factory.setEnvironmentMap(scene);
+            
+            factory.createComponent('referencePole', { id: 'ref-pole', position: [0, 0.5, 0] }, scene);
+            factory.createComponent('debugBall', { id: 'debug-ball', position: [2, 0.3, 1] }, scene);
+            factory.createComponent('floor', { id: 'floor', position: [0, 0, 0] }, scene);
+            
+            factory.createComponent('wall', { 
+                id: 'north-wall', position: [0, 4, 4], rotation: [0, Math.PI, 0], compass: 'north' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'south-wall', position: [0, 4, -4], rotation: [0, 0, 0], compass: 'south' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'east-wall', position: [5, 4, 0], rotation: [0, -Math.PI/2, 0], 
+                size: [8, 8], compass: 'east' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'west-wall', position: [-5, 4, 0], rotation: [0, Math.PI/2, 0], 
+                size: [8, 8], compass: 'west' 
+            }, scene);
+            
+            updateStatus("Room created with environment mapping for metal materials");
+        }
+
+        // Functions
+        function setWallColor(color) {
+            updateStatus(`Setting ALL walls to ${color}`);
+            const walls = factory.getAllWalls();
+            
+            walls.forEach(wallId => {
+                factory.setColor(wallId, color);
+            });
+            
+            updateStatus(`All walls set to ${color}`);
+        }
+        
+        function applyMetal(variant) {
+            updateStatus(`Applying ${variant} metal variant`);
+            const walls = factory.getAllWalls();
+            
+            switch (variant) {
+                case 'bright':
+                    // Low metalness for brightness
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            color: '#FFFFFF',
+                            roughness: 0.2, 
+                            metalness: 0.3  // Lower metalness = brighter
+                        });
+                    });
+                    updateStatus(`Bright metal: white + low metalness (0.3)`);
+                    break;
+                    
+                case 'chrome':
+                    // Chrome with environment mapping
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            color: '#F8F8F8',
+                            roughness: 0.05, 
+                            metalness: 0.9  // High metalness with env map
+                        });
+                    });
+                    updateStatus(`Chrome: near-white + high metalness (0.9) + environment`);
+                    break;
+                    
+                case 'brushed':
+                    // Brushed metal with higher roughness
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            color: '#E0E0E0',
+                            roughness: 0.4, 
+                            metalness: 0.7
+                        });
+                    });
+                    updateStatus(`Brushed metal: light grey + medium roughness (0.4)`);
+                    break;
+                    
+                case 'mirror':
+                    // Pure mirror
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            color: '#FFFFFF',
+                            roughness: 0.0, 
+                            metalness: 1.0
+                        });
+                    });
+                    updateStatus(`Mirror: white + zero roughness + full metalness`);
+                    break;
+            }
+            
+            showMaterialDetails();
+        }
+        
+        function applyMaterial(preset) {
+            const walls = factory.getAllWalls();
+            
+            switch (preset) {
+                case 'glossy':
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            roughness: 0.05, 
+                            metalness: 0.1 
+                        });
+                    });
+                    updateStatus(`Glossy applied - color preserved`);
+                    break;
+                    
+                case 'rough':
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            roughness: 0.95, 
+                            metalness: 0.0 
+                        });
+                    });
+                    updateStatus(`Rough applied - color preserved`);
+                    break;
+                    
+                case 'normal':
+                    walls.forEach(wallId => {
+                        factory.modifyMaterialProperties(wallId, { 
+                            roughness: 0.9, 
+                            metalness: 0.1 
+                        });
+                    });
+                    updateStatus(`Normal applied - color preserved`);
+                    break;
+            }
+        }
+
+        // Test functions
+        function testMetalVariations() {
+            updateStatus("🧪 TESTING METAL VARIATIONS");
+            let step = 0;
+            
+            const steps = [
+                () => { updateStatus("Step 1: Set walls to RED"); setWallColor('#ff0000'); },
+                () => { updateStatus("Step 2: Bright Metal (low metalness)"); applyMetal('bright'); },
+                () => { updateStatus("Step 3: Set walls to GREEN"); setWallColor('#00ff00'); },
+                () => { updateStatus("Step 4: Chrome Metal (high metalness + env)"); applyMetal('chrome'); },
+                () => { updateStatus("Step 5: Set walls to BLUE"); setWallColor('#0000ff'); },
+                () => { updateStatus("Step 6: Brushed Metal (medium values)"); applyMetal('brushed'); },
+                () => { updateStatus("Step 7: Mirror (pure reflection)"); applyMetal('mirror'); },
+                () => { updateStatus("🎉 METAL TEST COMPLETE"); }
+            ];
+            
+            function runNextStep() {
+                if (step < steps.length) {
+                    steps[step]();
+                    step++;
+                    setTimeout(runNextStep, 2000);
+                }
+            }
+            
+            runNextStep();
+        }
+        
+        function environmentTest() {
+            updateStatus("🌍 TESTING ENVIRONMENT MAPPING");
+            setWallColor('#ffffff');
+            setTimeout(() => {
+                applyMetal('mirror');
+                updateStatus("Applied mirror material - should reflect environment");
+                updateStatus("If still black, environment mapping failed");
+            }, 1000);
+        }
+        
+        function toggleEnvironment() {
+            environmentEnabled = !environmentEnabled;
+            if (environmentEnabled) {
+                factory.setEnvironmentMap(scene);
+                updateStatus("Environment mapping ENABLED");
+            } else {
+                scene.environment = null;
+                updateStatus("Environment mapping DISABLED");
+            }
+        }
+
+        function showMaterialDetails() {
+            updateStatus("=== MATERIAL DETAILS ===");
+            const obj = factory.findObject('north-wall');
+            if (obj && obj.material) {
+                const mat = obj.material;
+                updateStatus(`Color: #${mat.color.getHexString()}`);
+                updateStatus(`Roughness: ${mat.roughness}`);
+                updateStatus(`Metalness: ${mat.metalness}`);
+                updateStatus(`Environment: ${mat.envMap ? 'YES' : 'NO'}`);
+                updateStatus(`Type: ${mat.constructor.name}`);
+            }
+        }
+
+        function resetRoom() {
+            for (let [key, mesh] of factory.createdObjects) {
+                mesh.geometry.dispose();
+                if (mesh.material.dispose) mesh.material.dispose();
+                scene.remove(mesh);
+            }
+            
+            factory = null;
+            updateStatus("Scene cleared");
+            
+            setTimeout(() => {
+                createInitialRoom();
+                updateStatus("Room reset with environment mapping");
+            }, 200);
+        }
+
+        // Initialize
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                initScene();
+                createInitialRoom();
+                updateStatus("🔧 METAL ENVIRONMENT FIX READY");
+                updateStatus("Try different metal variants - they should be visible now!");
+            } else {
+                updateStatus("❌ THREE.js failed to load", true);
+            }
+        }, 1000);
+        
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // UI functions
+        function toggleInfo() {
+            const info = document.getElementById('info');
+            const toggle = document.getElementById('toggle-info');
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                toggle.textContent = 'HIDE INFO';
+            } else {
+                info.style.display = 'none';
+                toggle.textContent = 'SHOW INFO';
+            }
+        }
+
+        // Mouse controls
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);
+        });
+    </script>
+</body>
+</html>

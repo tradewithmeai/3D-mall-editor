@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Fix Test - Step 5B: Complete Material Inheritance Fix</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 400px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 10px;
+            max-width: 300px;
+        }
+        .btn-group {
+            margin: 8px 0;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+        .btn {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 9px;
+        }
+        .btn:hover { background: #0f0; color: #000; }
+        .btn.replace { border-color: #fa0; color: #fa0; }
+        .btn.replace:hover { background: #fa0; color: #000; }
+        .btn.test { border-color: #f4f; color: #f4f; }
+        .btn.test:hover { background: #f4f; color: #000; }
+        #toggle-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .material-demo {
+            font-size: 8px;
+            color: #888;
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>🔧 Complete Material Fix Test</h3>
+        
+        <div class="btn-group">
+            <strong>Material Issue Tests:</strong><br>
+            <button class="btn test" onclick="testMarbleShine()">Test Marble → Blue Shine</button>
+            <button class="btn test" onclick="testMetalWalls()">Test Metal Walls Black</button><br>
+            <button class="btn test" onclick="testNormalWallGrey()">Test Normal Wall Grey</button>
+            <button class="btn test" onclick="testSequentialChanges()">Sequential Test</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Wall Colors:</strong><br>
+            <button class="btn replace" onclick="changeWallsColor('#ff6b6b')">Red Walls</button>
+            <button class="btn replace" onclick="changeWallsColor('#4ecdc4')">Teal Walls</button>
+            <button class="btn replace" onclick="changeWallsColor('#f8f8f8')">White Walls</button><br>
+            <button class="btn replace" onclick="changeWallsColor('#45b7d1')">Blue Walls</button>
+            <button class="btn replace" onclick="changeWallsColor('#96ceb4')">Green Walls</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Floor Options:</strong><br>
+            <button class="btn replace" onclick="replaceFloor('original')">Original Green</button>
+            <button class="btn replace" onclick="replaceFloor('wood')">Wood Floor</button><br>
+            <button class="btn replace" onclick="replaceFloor('marble')">Marble Floor</button>
+            <button class="btn replace" onclick="replaceFloor('large')">Large Red Floor</button>
+            <button class="btn replace" onclick="replaceFloor('small')">Small Blue Floor</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Debug Ball:</strong><br>
+            <button class="btn replace" onclick="replaceBall('green', 0.3)">Green Ball</button>
+            <button class="btn replace" onclick="replaceBall('red', 0.5)">Large Red Ball</button><br>
+            <button class="btn replace" onclick="replaceBall('blue', 0.2)">Small Blue Ball</button>
+            <button class="btn replace" onclick="replaceBall('gold', 0.4)">Gold Ball</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Material Properties:</strong><br>
+            <button class="btn replace" onclick="setWallMaterial('glossy')">Glossy Walls</button>
+            <button class="btn replace" onclick="setWallMaterial('rough')">Rough Walls</button><br>
+            <button class="btn replace" onclick="setWallMaterial('metal')">Metal Walls</button>
+            <button class="btn replace" onclick="setWallMaterial('normal')">Normal Walls</button>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="resetRoom()">🔄 Reset Room</button>
+            <button class="btn" onclick="showReplacements()">📋 Show History</button>
+            <button class="btn" onclick="debugMaterials()">🔍 Debug Materials</button>
+            <button class="btn" onclick="fullCleanup()">🧹 Full Cleanup</button>
+        </div>
+    </div>
+
+    <div id="toggle-info" onclick="toggleInfo()">HIDE INFO</div>
+    <div id="info">
+        <h3>🔧 Complete Material Inheritance Fix</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Component definitions
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder", "size": [0.1, 0.1, 1, 8],
+                    "material": { "type": "MeshBasicMaterial", "color": "#000000" },
+                    "properties": { "castShadow": false, "receiveShadow": false }
+                },
+                "debugBall": {
+                    "model": "sphere", "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial", "color": "#44ff44", "roughness": 0.3,
+                        "metalness": 0.2, "transparent": true, "opacity": 0.8,
+                        "emissive": "#114411", "emissiveIntensity": 0.2
+                    },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "floor": {
+                    "model": "plane", "size": [10, 8], "rotation": [-1.5707963267948966, 0, 0],
+                    "material": { "type": "MeshStandardMaterial", "color": "#90EE90", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "receiveShadow": true }
+                },
+                "wall": {
+                    "model": "plane", "size": [10, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#f8f8f8", "roughness": 0.9, "metalness": 0.1 },
+                    "properties": { "castShadow": false, "receiveShadow": true }
+                }
+            }
+        };
+
+        // COMPLETELY FIXED factory with thorough material cleanup
+        class CompletelyFixedFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map();
+                this.replacementHistory = [];
+                this.materialCache = new Map(); // Track materials for proper cleanup
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                
+                // COMPLETE property reset - start from scratch
+                const params = {};
+                
+                // Set ALL material properties explicitly
+                if (MaterialClass === THREE.MeshStandardMaterial) {
+                    // Default MeshStandardMaterial properties
+                    params.color = new THREE.Color('#ffffff');
+                    params.roughness = 0.5;
+                    params.metalness = 0.0;
+                    params.transparent = false;
+                    params.opacity = 1.0;
+                    params.emissive = new THREE.Color('#000000');
+                    params.emissiveIntensity = 0.0;
+                    params.envMapIntensity = 1.0;
+                    params.clearcoat = 0.0;
+                    params.clearcoatRoughness = 0.0;
+                }
+                
+                // Override with specific config
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                const material = new MaterialClass(params);
+                
+                // Store in cache for cleanup tracking
+                const materialId = `mat_${Date.now()}_${Math.random()}`;
+                this.materialCache.set(materialId, material);
+                material.userData.materialId = materialId;
+                
+                console.log('Created completely clean material:', material);
+                return material;
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) return null;
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                
+                // Use config material if provided, otherwise use component default
+                const materialConfig = config.material || componentDef.material;
+                const material = this.createMaterial(materialConfig);
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                const uniqueId = config.id || `${componentType}-${Date.now()}`;
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.compass || null,
+                    id: uniqueId,
+                    originalConfig: JSON.parse(JSON.stringify(config)),
+                    originalMaterial: JSON.parse(JSON.stringify(materialConfig))
+                };
+                
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                return mesh;
+            }
+            
+            // COMPLETE disposal system
+            disposeObjectCompletely(mesh) {
+                if (!mesh) return;
+                
+                // Dispose geometry
+                if (mesh.geometry && mesh.geometry.dispose) {
+                    mesh.geometry.dispose();
+                }
+                
+                // COMPLETE material disposal
+                if (mesh.material) {
+                    const material = mesh.material;
+                    
+                    // Dispose textures if any
+                    ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'envMap'].forEach(prop => {
+                        if (material[prop] && material[prop].dispose) {
+                            material[prop].dispose();
+                        }
+                    });
+                    
+                    // Remove from cache
+                    if (material.userData && material.userData.materialId) {
+                        this.materialCache.delete(material.userData.materialId);
+                    }
+                    
+                    // Dispose material
+                    if (material.dispose) {
+                        material.dispose();
+                    }
+                }
+                
+                console.log('Completely disposed object with full material cleanup');
+            }
+            
+            // ULTRA COMPLETE replacement
+            replaceComponent(identifier, newConfig, scene) {
+                const oldMesh = this.findObject(identifier);
+                if (!oldMesh) {
+                    console.warn(`Component not found for replacement: ${identifier}`);
+                    return false;
+                }
+                
+                const oldConfig = oldMesh.userData.originalConfig;
+                const mergedConfig = { ...oldConfig, ...newConfig };
+                
+                console.log('COMPLETE REPLACEMENT:', identifier, 'with config:', mergedConfig);
+                
+                // Record replacement
+                this.replacementHistory.push({
+                    timestamp: Date.now(),
+                    identifier: identifier,
+                    action: 'complete_replace',
+                    newConfig: mergedConfig
+                });
+                
+                // Store old position/rotation info
+                const componentType = oldMesh.userData.componentType;
+                const oldId = oldMesh.userData.id;
+                
+                // COMPLETE disposal of old component
+                this.disposeObjectCompletely(oldMesh);
+                scene.remove(oldMesh);
+                this.createdObjects.delete(oldId);
+                
+                // BRIEF pause to ensure cleanup completion
+                setTimeout(() => {
+                    // Force garbage collection hint
+                    if (window.gc) window.gc();
+                }, 10);
+                
+                // Create completely new component with ZERO inheritance
+                const newMesh = this.createComponent(componentType, mergedConfig, scene);
+                
+                console.log(`COMPLETELY replaced ${identifier} with zero inheritance`);
+                return newMesh;
+            }
+            
+            // Enhanced material modification with complete reset
+            modifyMaterial(identifier, properties) {
+                const mesh = this.findObject(identifier);
+                if (!mesh) {
+                    console.warn(`Object not found for material modification: ${identifier}`);
+                    return false;
+                }
+                
+                console.log(`COMPLETE MATERIAL RESET for ${identifier}:`, properties);
+                
+                // Get current material type only
+                const materialType = mesh.material.constructor.name;
+                
+                // Create COMPLETELY new material config
+                const newMaterialConfig = {
+                    type: materialType
+                };
+                
+                // Set appropriate defaults based on material type
+                if (materialType === 'MeshStandardMaterial') {
+                    newMaterialConfig.color = '#f8f8f8';
+                    newMaterialConfig.roughness = 0.9;
+                    newMaterialConfig.metalness = 0.1;
+                    newMaterialConfig.transparent = false;
+                    newMaterialConfig.opacity = 1.0;
+                    newMaterialConfig.emissive = '#000000';
+                    newMaterialConfig.emissiveIntensity = 0.0;
+                } else if (materialType === 'MeshBasicMaterial') {
+                    newMaterialConfig.color = '#ffffff';
+                }
+                
+                // Apply ONLY the new properties
+                Object.entries(properties).forEach(([key, value]) => {
+                    newMaterialConfig[key] = value;
+                });
+                
+                // COMPLETE disposal of old material
+                this.disposeObjectCompletely({ material: mesh.material });
+                
+                // Create completely fresh material
+                mesh.material = this.createMaterial(newMaterialConfig);
+                
+                // Record change
+                this.replacementHistory.push({
+                    timestamp: Date.now(),
+                    identifier: identifier,
+                    action: 'complete_material_reset',
+                    properties: properties
+                });
+                
+                console.log(`COMPLETE MATERIAL RESET for ${identifier}:`, newMaterialConfig);
+                return true;
+            }
+            
+            findObject(identifier) {
+                // Find by ID first
+                for (let [key, mesh] of this.createdObjects) {
+                    if (key === identifier || mesh.userData.id === identifier) {
+                        return mesh;
+                    }
+                }
+                
+                // Find by semantic name
+                const semanticMap = {
+                    'floor': (obj) => obj.userData.componentType === 'floor',
+                    'north-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'north',
+                    'south-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'south',
+                    'east-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'east',
+                    'west-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'west',
+                    'referencePole': (obj) => obj.userData.componentType === 'referencePole',
+                    'debugBall': (obj) => obj.userData.componentType === 'debugBall'
+                };
+                
+                if (semanticMap[identifier]) {
+                    for (let [key, mesh] of this.createdObjects) {
+                        if (semanticMap[identifier](mesh)) {
+                            return mesh;
+                        }
+                    }
+                }
+                
+                return null;
+            }
+            
+            // Complete cleanup function
+            fullCleanup(scene) {
+                console.log('PERFORMING COMPLETE CLEANUP');
+                
+                // Dispose all tracked materials
+                for (let [materialId, material] of this.materialCache) {
+                    if (material && material.dispose) {
+                        material.dispose();
+                    }
+                }
+                this.materialCache.clear();
+                
+                // Dispose all objects
+                for (let [key, mesh] of this.createdObjects) {
+                    this.disposeObjectCompletely(mesh);
+                    scene.remove(mesh);
+                }
+                this.createdObjects.clear();
+                
+                // Force garbage collection if available
+                if (window.gc) {
+                    window.gc();
+                    console.log('Forced garbage collection');
+                }
+                
+                this.replacementHistory = [];
+                console.log('COMPLETE CLEANUP FINISHED');
+            }
+            
+            getReplacementHistory() {
+                return this.replacementHistory;
+            }
+            
+            clearHistory() {
+                this.replacementHistory = [];
+            }
+        }
+
+        // Global variables
+        const status = document.getElementById('status');
+        let factory;
+        let scene, camera, renderer;
+        
+        function updateStatus(message, isError = false) {
+            console.log(message);
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML += `<br>[${timestamp}] ${isError ? '❌' : '✅'} ${message}`;
+        }
+
+        // Scene setup with enhanced lighting for material testing
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(6, 5, 6);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.physicallyCorrectLights = true; // More accurate lighting
+            document.body.appendChild(renderer.domElement);
+            
+            // Multiple light sources for better material visibility
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+            scene.add(ambientLight);
+            
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight1.position.set(8, 8, 5);
+            directionalLight1.castShadow = true;
+            scene.add(directionalLight1);
+            
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+            
+            // Point light for better material contrast
+            const pointLight = new THREE.PointLight(0xffffff, 0.3, 20);
+            pointLight.position.set(0, 6, 0);
+            scene.add(pointLight);
+            
+            updateStatus("Enhanced scene initialized for material testing");
+        }
+
+        // Create initial room
+        function createInitialRoom() {
+            factory = new CompletelyFixedFactory();
+            
+            factory.createComponent('referencePole', { id: 'ref-pole', position: [0, 0.5, 0] }, scene);
+            factory.createComponent('debugBall', { id: 'debug-ball', position: [2, 0.3, 1] }, scene);
+            factory.createComponent('floor', { id: 'floor', position: [0, 0, 0] }, scene);
+            
+            factory.createComponent('wall', { 
+                id: 'north-wall', position: [0, 4, 4], rotation: [0, Math.PI, 0], compass: 'north' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'south-wall', position: [0, 4, -4], rotation: [0, 0, 0], compass: 'south' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'east-wall', position: [5, 4, 0], rotation: [0, -Math.PI/2, 0], 
+                size: [8, 8], compass: 'east' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'west-wall', position: [-5, 4, 0], rotation: [0, Math.PI/2, 0], 
+                size: [8, 8], compass: 'west' 
+            }, scene);
+            
+            updateStatus("Initial room created with enhanced material system");
+            factory.clearHistory();
+        }
+
+        // SPECIFIC ISSUE TESTS
+        function testMarbleShine() {
+            updateStatus("🧪 TESTING: Marble → Blue floor shine persistence");
+            
+            // Step 1: Apply marble floor
+            replaceFloor('marble');
+            setTimeout(() => {
+                updateStatus("Applied marble floor (should be shiny white)");
+                
+                // Step 2: Switch to small blue floor
+                setTimeout(() => {
+                    replaceFloor('small');
+                    updateStatus("Applied small blue floor (should NOT have marble shine)");
+                    updateStatus("Check: Does blue floor still have marble shine?");
+                }, 1000);
+            }, 500);
+        }
+        
+        function testMetalWalls() {
+            updateStatus("🧪 TESTING: Metal walls appearing black");
+            
+            // Apply metal material to walls
+            setWallMaterial('metal');
+            updateStatus("Applied metal material (should be silver/grey, not black)");
+            
+            // Debug the actual material values
+            setTimeout(() => {
+                debugMaterials();
+            }, 500);
+        }
+        
+        function testNormalWallGrey() {
+            updateStatus("🧪 TESTING: Normal walls reverting to grey");
+            
+            // Change walls to red first
+            changeWallsColor('#ff6b6b');
+            setTimeout(() => {
+                updateStatus("Applied red color to walls");
+                
+                // Apply normal material
+                setTimeout(() => {
+                    setWallMaterial('normal');
+                    updateStatus("Applied normal material (should keep red color, not revert to grey)");
+                    
+                    setTimeout(() => {
+                        debugMaterials();
+                    }, 500);
+                }, 1000);
+            }, 500);
+        }
+        
+        function testSequentialChanges() {
+            updateStatus("🧪 TESTING: Sequential material changes");
+            let step = 0;
+            
+            const steps = [
+                () => { replaceFloor('marble'); updateStatus("Step 1: Marble floor"); },
+                () => { setWallMaterial('metal'); updateStatus("Step 2: Metal walls"); },
+                () => { changeWallsColor('#ff0000'); updateStatus("Step 3: Red walls"); },
+                () => { replaceFloor('small'); updateStatus("Step 4: Small blue floor"); },
+                () => { setWallMaterial('normal'); updateStatus("Step 5: Normal walls"); },
+                () => { debugMaterials(); updateStatus("Final: Material debug"); }
+            ];
+            
+            function runNextStep() {
+                if (step < steps.length) {
+                    steps[step]();
+                    step++;
+                    setTimeout(runNextStep, 800);
+                }
+            }
+            
+            runNextStep();
+        }
+
+        // ENHANCED replacement functions
+        function changeWallsColor(color) {
+            ['north-wall', 'south-wall', 'east-wall', 'west-wall'].forEach(wallId => {
+                factory.modifyMaterial(wallId, { color: color });
+            });
+            updateStatus(`All walls changed to ${color} with complete material reset`);
+        }
+
+        function replaceFloor(preset) {
+            const presets = {
+                'original': {
+                    material: { type: "MeshStandardMaterial", color: "#90EE90", roughness: 0.6, metalness: 0.1 },
+                    size: [10, 8]
+                },
+                'wood': {
+                    material: { type: "MeshStandardMaterial", color: "#8B4513", roughness: 0.8, metalness: 0.0 },
+                    size: [10, 8]
+                },
+                'marble': {
+                    material: { type: "MeshStandardMaterial", color: "#F8F8FF", roughness: 0.05, metalness: 0.4 },
+                    size: [10, 8]
+                },
+                'large': {
+                    material: { type: "MeshStandardMaterial", color: "#FF6B6B", roughness: 0.6, metalness: 0.1 },
+                    size: [15, 12]
+                },
+                'small': {
+                    material: { type: "MeshStandardMaterial", color: "#87CEEB", roughness: 0.6, metalness: 0.1 },
+                    size: [6, 6]
+                }
+            };
+            
+            const config = presets[preset];
+            if (config) {
+                factory.replaceComponent('floor', {
+                    position: [0, 0, 0],
+                    ...config
+                }, scene);
+                updateStatus(`Floor COMPLETELY replaced with ${preset} preset (zero inheritance)`);
+            }
+        }
+
+        function replaceBall(colorPreset, radius) {
+            const colorConfigs = {
+                'green': { color: '#44ff44', emissive: '#114411' },
+                'red': { color: '#ff4444', emissive: '#441111' },
+                'blue': { color: '#4444ff', emissive: '#111144' },
+                'gold': { color: '#FFD700', emissive: '#443300' }
+            };
+            
+            const colorConfig = colorConfigs[colorPreset] || colorConfigs['green'];
+            
+            factory.replaceComponent('debugBall', {
+                position: [2, radius, 1],
+                size: [radius, 16, 16],
+                material: {
+                    type: "MeshStandardMaterial",
+                    color: colorConfig.color,
+                    roughness: 0.3,
+                    metalness: 0.2,
+                    transparent: true,
+                    opacity: 0.8,
+                    emissive: colorConfig.emissive,
+                    emissiveIntensity: 0.2
+                }
+            }, scene);
+            updateStatus(`Ball COMPLETELY replaced: ${colorPreset} color, radius ${radius}`);
+        }
+
+        function setWallMaterial(preset) {
+            const presets = {
+                'glossy': { roughness: 0.05, metalness: 0.1 },
+                'rough': { roughness: 0.95, metalness: 0.0 },
+                'metal': { roughness: 0.2, metalness: 0.9, color: '#C0C0C0' }, // Explicit silver color
+                'normal': { roughness: 0.9, metalness: 0.1 } // No color override - should preserve existing
+            };
+            
+            const config = presets[preset];
+            if (config) {
+                ['north-wall', 'south-wall', 'east-wall', 'west-wall'].forEach(wallId => {
+                    factory.modifyMaterial(wallId, config);
+                });
+                updateStatus(`Walls set to ${preset} material with COMPLETE reset (r:${config.roughness}, m:${config.metalness})`);
+            }
+        }
+
+        // Enhanced debug function
+        function debugMaterials() {
+            updateStatus("=== COMPLETE MATERIAL DEBUG INFO ===");
+            ['north-wall', 'floor', 'debugBall'].forEach(id => {
+                const obj = factory.findObject(id);
+                if (obj && obj.material) {
+                    const mat = obj.material;
+                    updateStatus(`${id}: color=#${mat.color.getHexString()}, rough=${mat.roughness}, metal=${mat.metalness}`);
+                    if (mat.emissive) {
+                        updateStatus(`  emissive=#${mat.emissive.getHexString()}, intensity=${mat.emissiveIntensity}`);
+                    }
+                    updateStatus(`  material type: ${mat.constructor.name}, opacity=${mat.opacity}`);
+                }
+            });
+        }
+
+        function resetRoom() {
+            factory.fullCleanup(scene);
+            updateStatus("COMPLETE room cleanup performed");
+            
+            setTimeout(() => {
+                createInitialRoom();
+                updateStatus("Room recreated with zero inheritance");
+            }, 200);
+        }
+
+        function fullCleanup() {
+            factory.fullCleanup(scene);
+            updateStatus("FULL CLEANUP: All materials and objects disposed");
+        }
+
+        function showReplacements() {
+            const history = factory.getReplacementHistory();
+            updateStatus(`=== REPLACEMENT HISTORY (${history.length} changes) ===`);
+            history.slice(-5).forEach((change, i) => {
+                updateStatus(`${i+1}. ${change.action}: ${change.identifier}`);
+            });
+        }
+
+        // Initialize
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                initScene();
+                createInitialRoom();
+                updateStatus("🔧 COMPLETE MATERIAL INHERITANCE FIX READY");
+                updateStatus("Use test buttons to reproduce specific material issues!");
+            } else {
+                updateStatus("❌ THREE.js failed to load", true);
+            }
+        }, 1000);
+        
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // UI functions
+        function toggleInfo() {
+            const info = document.getElementById('info');
+            const toggle = document.getElementById('toggle-info');
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                toggle.textContent = 'HIDE INFO';
+            } else {
+                info.style.display = 'none';
+                toggle.textContent = 'SHOW INFO';
+            }
+        }
+
+        // Mouse controls
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);
+        });
+    </script>
+</body>
+</html>

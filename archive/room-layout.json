@@ -1,0 +1,133 @@
+{
+  "roomId": "lobby-foundation",
+  "name": "3D Mall Lobby",
+  "description": "Corner-based coordinate system lobby with modular JSON-driven components",
+  
+  "dimensions": {
+    "width": 40,
+    "depth": 30, 
+    "height": 8
+  },
+  
+  "instances": [
+    {
+      "componentType": "floor",
+      "position": [20, 0, 15],
+      "properties": {
+        "name": "lobby-floor"
+      }
+    },
+    
+    {
+      "componentType": "ceiling", 
+      "position": [20, 8, 15],
+      "properties": {
+        "name": "lobby-ceiling"
+      }
+    },
+    
+    {
+      "componentType": "wall",
+      "position": [20, 4, 30],
+      "rotation": [0, 3.141592653589793, 0],
+      "properties": {
+        "name": "north-wall",
+        "compass": "north"
+      }
+    },
+    
+    {
+      "componentType": "wall",
+      "position": [20, 4, 0], 
+      "rotation": [0, 0, 0],
+      "properties": {
+        "name": "south-wall",
+        "compass": "south"
+      }
+    },
+    
+    {
+      "componentType": "wall",
+      "position": [40, 4, 15],
+      "rotation": [0, -1.5707963267948966, 0],
+      "dimensions": [30, 8],
+      "properties": {
+        "name": "east-wall", 
+        "compass": "east"
+      }
+    },
+    
+    {
+      "componentType": "wall",
+      "position": [0, 4, 15],
+      "rotation": [0, 1.5707963267948966, 0],
+      "dimensions": [30, 8],
+      "properties": {
+        "name": "west-wall",
+        "compass": "west"
+      }
+    },
+    
+    {
+      "componentType": "referencePole",
+      "position": [0, 0.5, 0],
+      "properties": {
+        "name": "origin-marker",
+        "description": "Southwest corner origin marker"
+      }
+    },
+    
+    {
+      "componentType": "debugBall",
+      "position": [35, 1.5, 15],
+      "properties": {
+        "name": "debug-ball",
+        "physics": {
+          "velocity": [0.05, 0, 0.02],
+          "gravity": -0.012,
+          "bounce": 0.75,
+          "friction": 0.98,
+          "radius": 0.2
+        }
+      }
+    }
+  ],
+  
+  "player": {
+    "startPosition": [20, 1.6, 15],
+    "movement": {
+      "baseSpeed": 0.05,
+      "maxSpeed": 0.2,
+      "accelerationTime": 2.0,
+      "boundaries": {
+        "x": {"min": 0.5, "max": 39.5},
+        "z": {"min": 0.5, "max": 29.5}
+      }
+    }
+  },
+  
+  "lighting": {
+    "ambient": {
+      "color": "#f0f8ff",
+      "intensity": 0.4
+    },
+    "directional": {
+      "color": "#ffffff", 
+      "intensity": 0.6,
+      "position": [10, 15, 10],
+      "shadows": true
+    },
+    "accent": [
+      {"color": "#00ff88", "intensity": 0.6, "distance": 15, "position": [-15, 8, -15]},
+      {"color": "#ff4488", "intensity": 0.6, "distance": 15, "position": [15, 8, -15]},
+      {"color": "#4488ff", "intensity": 0.6, "distance": 15, "position": [0, 8, 15]}
+    ],
+    "mood": {
+      "color": "#6366f1",
+      "intensity": 0.3,
+      "distance": 25,
+      "position": [0, 12, 0],
+      "animated": true
+    }
+  }
+}

@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Office Simulator - Interactive Virtual Workspace with AI Characters</title>
+    <meta name="description" content="Experience an immersive 3D office environment featuring AI-powered characters, art gallery, and interactive workspace. Built with Three.js for modern browsers.">
+    <meta name="keywords" content="3D office, virtual workspace, Three.js, interactive simulation, AI characters, art gallery, web application">
+    <meta name="author" content="3D Office Simulator">
+    <meta property="og:title" content="3D Office Simulator - Interactive Virtual Workspace">
+    <meta property="og:description" content="Explore a fully interactive 3D office with AI characters, art gallery, and immersive workspace features.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        
+        #dialogue-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 400px;
+            display: none;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        #character-name {
+            font-weight: bold;
+            color: #2196F3;
+            margin-bottom: 10px;
+        }
+        
+        #character-message {
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        #question-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .dialogue-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .dialogue-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .dialogue-btn.primary {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .dialogue-btn.primary:hover {
+            background: #1976D2;
+        }
+        
+        .dialogue-btn.secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+        
+        .dialogue-btn.secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        /* Diana Control Panel - Styled like the main UI */
+        #diana-panel {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 320px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 12px;
+            display: none;
+        }
+        
+        #diana-panel h3 {
+            margin: 0 0 15px 0;
+            color: #4CAF50;
+            font-size: 16px;
+        }
+        
+        #diana-input {
+            width: 100%;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            color: white;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+        
+        #diana-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+        
+        .diana-btn {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4CAF50;
+            border: 1px solid #4CAF50;
+            padding: 6px 12px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        
+        .diana-btn:hover {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        #diana-log {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 10px;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 2px 4px;
+            border-left: 2px solid #4CAF50;
+            background: rgba(76, 175, 80, 0.1);
+        }
+        
+        .log-error {
+            border-left-color: #f44;
+            background: rgba(255, 68, 68, 0.1);
+        }
+        
+        /* Instructions and debug info */
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .key-binding {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <!-- Main UI Overlay -->
+        <div id="ui-overlay">
+            <h2>🏢 3D Office Simulator</h2>
+            <p><span class="key-binding">WASD</span> Move • <span class="key-binding">Mouse</span> Look Around • <span class="key-binding">E</span> Interact</p>
+            <p><span class="key-binding">Space</span> Dance • <span class="key-binding">ESC</span> Close Dialogue • <span class="key-binding">D</span> Diana AI</p>
+            <p><span class="key-binding">Green Ball</span> Kick to toggle debug grid</p>
+        </div>
+        
+        <!-- Diana AI Control Panel -->
+        <div id="diana-panel">
+            <h3>🤖 Diana - AI Decorator</h3>
+            <input type="text" id="diana-input" placeholder="e.g., 'make walls red' or 'add a desk'" onkeypress="handleDianaEnter(event)">
+            <div>
+                <button class="diana-btn" onclick="processDianaCommand()">Execute</button>
+                <button class="diana-btn" onclick="testDianaCommand('make walls blue')">Blue Walls</button>
+                <button class="diana-btn" onclick="testDianaCommand('add desk')">Add Desk</button>
+                <button class="diana-btn" onclick="describeDianaScene()">Describe Scene</button>
+                <button class="diana-btn" onclick="resetDianaScene()">Reset</button>
+            </div>
+            <div id="diana-log"></div>
+        </div>
+        
+        <!-- Character Dialogue Box -->
+        <div id="dialogue-box">
+            <div id="character-name"></div>
+            <div id="character-message"></div>
+            <input type="text" id="question-input" placeholder="Ask a question..." style="display: none;">
+            <div class="dialogue-buttons">
+                <button class="dialogue-btn secondary" onclick="closeDialogue()">Close</button>
+                <button class="dialogue-btn primary" id="ask-btn" onclick="askQuestion()" style="display: none;">Ask</button>
+            </div>
+        </div>
+        
+        <!-- Instructions -->
+        <div class="instructions">
+            <strong>Latest Features:</strong><br>
+            • <span class="key-binding">D</span> - Toggle Diana AI decorator<br>
+            • Kick the green debug ball to show precision grid<br>
+            • Modular JSON-driven architecture<br>
+            • Real-time scene modification
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================================================
+        // EMBEDDED JSON CONFIGURATIONS (No CORS issues)
+        // ============================================================================
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    },
+                    "collision": false,
+                    "agentEditable": {
+                        "color": true
+                    }
+                },
+                "debugBall": {
+                    "model": "sphere",
+                    "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#44ff44",
+                        "roughness": 0.3,
+                        "metalness": 0.2,
+                        "transparent": true,
+                        "opacity": 0.8,
+                        "emissive": "#114411",
+                        "emissiveIntensity": 0.2
+                    },
+                    "collision": true,
+                    "agentEditable": {
+                        "color": true,
+                        "emissive": true
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [40, 30],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    },
+                    "collision": false,
+                    "agentEditable": {
+                        "color": true,
+                        "roughness": true,
+                        "metalness": true
+                    }
+                },
+                "wall": {
+                    "model": "plane",
+                    "size": [40, 8],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#f8f8f8",
+                        "roughness": 0.9,
+                        "metalness": 0.1
+                    },
+                    "collision": true,
+                    "agentEditable": {
+                        "color": true,
+                        "roughness": true,
+                        "metalness": true
+                    }
+                },
+                "desk": {
+                    "model": "box",
+                    "size": [3, 1.5, 1.5],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#8B4513",
+                        "roughness": 0.7,
+                        "metalness": 0.1
+                    },
+                    "collision": true,
+                    "agentEditable": {
+                        "color": true,
+                        "roughness": true
+                    }
+                }
+            }
+        };
+
+        const EMBEDDED_LAYOUT = {
+            "metadata": {
+                "version": "1.0",
+                "coordinateSystem": "corner-based",
+                "origin": "Southwest corner (0,0,0)",
+                "dimensions": {
+                    "width": 40,
+                    "depth": 30,
+                    "height": 8
+                }
+            },
+            "player": {
+                "startPosition": [20, 1.6, 15],
+                "movement": {
+                    "baseSpeed": 0.15,
+                    "maxSpeed": 0.6
+                }
+            },
+            "objects": [
+                {
+                    "type": "referencePole",
+                    "id": "origin-pole",
+                    "position": [0, 0.5, 0],
+                    "properties": {
+                        "compass": "origin"
+                    }
+                },
+                {
+                    "type": "debugBall",
+                    "id": "debug-ball",
+                    "position": [37, 0.3, 27],
+                    "properties": {
+                        "compass": "northeast"
+                    }
+                },
+                {
+                    "type": "floor",
+                    "id": "main-floor",
+                    "position": [20, 0, 15],
+                    "properties": {
+                        "compass": "center"
+                    }
+                },
+                {
+                    "type": "wall",
+                    "id": "north-wall",
+                    "position": [20, 4, 30],
+                    "rotation": [0, 0, 0],
+                    "properties": {
+                        "compass": "north"
+                    }
+                },
+                {
+                    "type": "wall",
+                    "id": "south-wall",
+                    "position": [20, 4, 0],
+                    "rotation": [0, Math.PI, 0],
+                    "properties": {
+                        "compass": "south"
+                    }
+                },
+                {
+                    "type": "wall",
+                    "id": "east-wall",
+                    "position": [40, 4, 15],
+                    "rotation": [0, -Math.PI/2, 0],
+                    "size": [30, 8],
+                    "properties": {
+                        "compass": "east"
+                    }
+                },
+                {
+                    "type": "wall",
+                    "id": "west-wall",
+                    "position": [0, 4, 15],
+                    "rotation": [0, Math.PI/2, 0],
+                    "size": [30, 8],
+                    "properties": {
+                        "compass": "west"
+                    }
+                }
+            ]
+        };
+
+        // ============================================================================
+        // COMPONENT FACTORY SYSTEM
+        // ============================================================================
+        class ComponentFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map();
+                this.objectCounter = 0;
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                const params = {};
+                
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'box': return new THREE.BoxGeometry(...dimensions);
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) {
+                    console.warn(`Unknown component type: ${componentType}`);
+                    return null;
+                }
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                
+                const materialConfig = config.material || componentDef.material;
+                const material = this.createMaterial(materialConfig);
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                // Apply positioning
+                if (config.position) mesh.position.set(...config.position);
+                
+                // Apply rotations
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                // Apply properties
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                // Generate unique ID
+                const uniqueId = config.id || `${componentType}-${++this.objectCounter}`;
+                
+                // Set userData for identification
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.properties?.compass || null,
+                    id: uniqueId,
+                    agentEditable: componentDef.agentEditable || {},
+                    originalConfig: JSON.parse(JSON.stringify(config)),
+                    isFactoryCreated: true
+                };
+                
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                
+                // Register with Diana system if available
+                if (window.sceneRegistry) {
+                    window.sceneRegistry.register(mesh, {
+                        id: uniqueId,
+                        type: componentType,
+                        semantic: mesh.userData.compass || componentType,
+                        compass: mesh.userData.compass,
+                        isAdded: config.isAdded || false
+                    });
+                }
+                
+                return mesh;
+            }
+            
+            buildRoomFromLayout(layout, scene) {
+                console.log('🏗️ Building room from layout...');
+                
+                // Set global room dimensions
+                window.LOBBY_WIDTH = layout.metadata.dimensions.width;
+                window.LOBBY_DEPTH = layout.metadata.dimensions.depth;
+                window.LOBBY_HEIGHT = layout.metadata.dimensions.height;
+                
+                // Create all objects
+                layout.objects.forEach(obj => {
+                    const mesh = this.createComponent(obj.type, obj, scene);
+                    if (mesh) {
+                        console.log(`✅ Created ${obj.type} (${obj.id}) at [${obj.position.join(', ')}]`);
+                    }
+                });
+                
+                console.log(`🎯 Room complete: ${layout.objects.length} objects created`);
+                return true;
+            }
+            
+            // Diana integration methods
+            addComponent(componentType, options = {}) {
+                const config = {
+                    id: options.id || `${componentType}-${++this.objectCounter}`,
+                    position: options.position || this.generateSafePosition(componentType),
+                    material: options.material,
+                    size: options.size,
+                    isAdded: true
+                };
+                
+                return this.createComponent(componentType, config, scene);
+            }
+            
+            removeComponent(identifier) {
+                const mesh = this.findObject(identifier);
+                if (!mesh) return false;
+                
+                // Clean up Three.js resources
+                if (mesh.geometry) mesh.geometry.dispose();
+                if (mesh.material && mesh.material.dispose) mesh.material.dispose();
+                scene.remove(mesh);
+                
+                // Remove from registry
+                this.createdObjects.delete(mesh.userData.id);
+                if (window.sceneRegistry) {
+                    window.sceneRegistry.unregister(mesh.userData.id);
+                }
+                
+                return true;
+            }
+            
+            modifyComponent(identifier, properties) {
+                const mesh = this.findObject(identifier);
+                if (!mesh || !mesh.material) return false;
+                
+                Object.entries(properties).forEach(([key, value]) => {
+                    if (key === 'color' || key === 'emissive') {
+                        mesh.material[key] = new THREE.Color(value);
+                    } else {
+                        mesh.material[key] = value;
+                    }
+                });
+                
+                mesh.material.needsUpdate = true;
+                return true;
+            }
+            
+            findObject(identifier) {
+                // Direct ID lookup
+                if (this.createdObjects.has(identifier)) {
+                    return this.createdObjects.get(identifier);
+                }
+                
+                // Search by compass/semantic name
+                for (const [id, mesh] of this.createdObjects) {
+                    if (mesh.userData.compass === identifier || mesh.userData.id === identifier) {
+                        return mesh;
+                    }
+                }
+                
+                return null;
+            }
+            
+            generateSafePosition(componentType) {
+                // Generate random position within room bounds
+                const x = Math.random() * (window.LOBBY_WIDTH - 4) + 2;
+                const z = Math.random() * (window.LOBBY_DEPTH - 4) + 2;
+                const y = componentType === 'desk' ? 0.75 : 1;
+                return [x, y, z];
+            }
+        }
+
+        // ============================================================================
+        // DIANA AI SYSTEM - Simplified but powerful
+        // ============================================================================
+        class SceneRegistry {
+            constructor() {
+                this.objects = new Map();
+                this.lastTransform = null;
+            }
+            
+            register(object, metadata) {
+                const id = metadata.id || object.userData.id;
+                const entry = {
+                    object: object,
+                    id: id,
+                    type: metadata.type || object.userData.componentType,
+                    semantic: metadata.semantic,
+                    compass: metadata.compass,
+                    isAdded: metadata.isAdded || false,
+                    createdAt: Date.now()
+                };
+                
+                this.objects.set(id, entry);
+                return entry;
+            }
+            
+            unregister(id) {
+                return this.objects.delete(id);
+            }
+            
+            find(identifier) {
+                if (this.objects.has(identifier)) {
+                    return this.objects.get(identifier);
+                }
+                
+                for (const entry of this.objects.values()) {
+                    if (entry.semantic === identifier || entry.compass === identifier) {
+                        return entry;
+                    }
+                }
+                return null;
+            }
+            
+            getAllObjects() {
+                return Array.from(this.objects.values());
+            }
+        }
+
+        class CommandParser {
+            parse(input) {
+                const lower = input.toLowerCase().trim();
+                
+                // Add patterns
+                if (lower.includes('add') || lower.includes('create')) {
+                    const objectType = this.extractObjectType(lower);
+                    return { type: 'add', objectType: objectType || 'desk' };
+                }
+                
+                // Remove patterns
+                if (lower.includes('remove') || lower.includes('delete')) {
+                    const target = lower.includes('all') ? 'all' : this.extractTarget(lower);
+                    return { type: 'remove', target: target };
+                }
+                
+                // Color change patterns
+                if (lower.includes('color') || lower.includes('make') || lower.includes('change')) {
+                    const color = this.extractColor(lower);
+                    const target = this.extractTarget(lower) || 'walls';
+                    return { type: 'modify', target: target, properties: { color: color } };
+                }
+                
+                return { type: 'unknown', originalInput: input };
+            }
+            
+            extractObjectType(input) {
+                const types = ['desk', 'wall', 'chair', 'table', 'lamp'];
+                return types.find(type => input.includes(type)) || 'desk';
+            }
+            
+            extractTarget(input) {
+                const targets = ['wall', 'walls', 'floor', 'desk', 'furniture', 'referencePole'];
+                return targets.find(target => input.includes(target)) || 'walls';
+            }
+            
+            extractColor(input) {
+                const colors = {
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'purple': '#800080', 'orange': '#ffa500',
+                    'white': '#ffffff', 'black': '#000000', 'grey': '#808080', 'gray': '#808080'
+                };
+                
+                for (const [name, hex] of Object.entries(colors)) {
+                    if (input.includes(name)) return hex;
+                }
+                return '#ff0000'; // Default to red
+            }
+        }
+
+        class DianaAgent {
+            constructor(factory, registry) {
+                this.factory = factory;
+                this.registry = registry;
+                this.parser = new CommandParser();
+                this.personality = "I'm Diana, your AI decorator! I can modify your 3D space with style.";
+            }
+            
+            processCommand(input) {
+                const command = this.parser.parse(input);
+                dianaLog(`🔍 Parsed: ${JSON.stringify(command)}`, 'parse');
+                
+                let result = { success: false, message: "Unknown command" };
+                
+                switch (command.type) {
+                    case 'add':
+                        result = this.executeAdd(command);
+                        break;
+                    case 'remove':
+                        result = this.executeRemove(command);
+                        break;
+                    case 'modify':
+                        result = this.executeModify(command);
+                        break;
+                    default:
+                        result = { success: false, message: `I didn't understand: "${input}"` };
+                }
+                
+                dianaLog(`✨ Diana: ${result.message}`, result.success ? 'result' : 'error');
+                return result;
+            }
+            
+            executeAdd(command) {
+                try {
+                    const mesh = this.factory.addComponent(command.objectType);
+                    if (mesh) {
+                        return { success: true, message: `Added ${command.objectType} at [${mesh.position.x.toFixed(1)}, ${mesh.position.z.toFixed(1)}]` };
+                    }
+                    return { success: false, message: `Failed to add ${command.objectType}` };
+                } catch (error) {
+                    return { success: false, message: `Error adding ${command.objectType}: ${error.message}` };
+                }
+            }
+            
+            executeRemove(command) {
+                if (command.target === 'all') {
+                    let removed = 0;
+                    const objects = this.registry.getAllObjects().filter(obj => obj.isAdded);
+                    objects.forEach(obj => {
+                        if (this.factory.removeComponent(obj.id)) removed++;
+                    });
+                    return { success: true, message: `Removed ${removed} added objects` };
+                } else {
+                    if (this.factory.removeComponent(command.target)) {
+                        return { success: true, message: `Removed ${command.target}` };
+                    }
+                    return { success: false, message: `Could not find ${command.target}` };
+                }
+            }
+            
+            executeModify(command) {
+                let modified = 0;
+                
+                if (command.target === 'walls') {
+                    ['north-wall', 'south-wall', 'east-wall', 'west-wall'].forEach(wallId => {
+                        if (this.factory.modifyComponent(wallId, command.properties)) {
+                            modified++;
+                        }
+                    });
+                } else {
+                    if (this.factory.modifyComponent(command.target, command.properties)) {
+                        modified = 1;
+                    }
+                }
+                
+                if (modified > 0) {
+                    const colorName = Object.entries({
+                        '#ff0000': 'red', '#0000ff': 'blue', '#00ff00': 'green',
+                        '#ffff00': 'yellow', '#800080': 'purple', '#ffa500': 'orange'
+                    }).find(([hex]) => hex === command.properties.color)?.[1] || 'new color';
+                    
+                    return { success: true, message: `Changed ${modified} ${command.target} to ${colorName}` };
+                }
+                
+                return { success: false, message: `Could not modify ${command.target}` };
+            }
+            
+            describeScene() {
+                const stats = this.registry.getAllObjects();
+                const byType = {};
+                stats.forEach(obj => {
+                    byType[obj.type] = (byType[obj.type] || 0) + 1;
+                });
+                
+                const description = Object.entries(byType)
+                    .map(([type, count]) => `${count} ${type}${count > 1 ? 's' : ''}`)
+                    .join(', ');
+                
+                return `Scene contains: ${description}. Total objects: ${stats.length}`;
+            }
+        }
+
+        // ============================================================================
+        // SCENE SETUP AND GAME LOGIC
+        // ============================================================================
+        let scene, camera, renderer;
+        let componentFactory;
+        let sceneRegistry, diana;
+        let animationId;
+        
+        // Player and controls
+        const player = {
+            position: new THREE.Vector3(20, 1.6, 15),
+            velocity: new THREE.Vector3(0, 0, 0),
+            baseSpeed: 0.15,
+            maxSpeed: 0.6,
+            currentSpeed: 0.15,
+            isDancing: false,
+            movementTimer: 0,
+            isMoving: false
+        };
+        
+        const keys = {};
+        let mouseX = 0, mouseY = 0;
+        let isPointerLocked = false;
+        
+        // UI Elements
+        const dialogueBox = document.getElementById('dialogue-box');
+        const characterName = document.getElementById('character-name');
+        const characterMessage = document.getElementById('character-message');
+        const questionInput = document.getElementById('question-input');
+        const askBtn = document.getElementById('ask-btn');
+        const dianaPanel = document.getElementById('diana-panel');
+        const dianaInput = document.getElementById('diana-input');
+        const dianaLog = document.getElementById('diana-log');
+        
+        // Debug system
+        let isDebugMode = false;
+        let debugGridGroup = null;
+        
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.copy(player.position);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.physicallyCorrectLights = true;
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // Setup lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.0);
+            directionalLight.position.set(20, 20, 10);
+            directionalLight.castShadow = true;
+            directionalLight.shadow.mapSize.width = 2048;
+            directionalLight.shadow.mapSize.height = 2048;
+            scene.add(directionalLight);
+            
+            // Initialize systems
+            componentFactory = new ComponentFactory();
+            sceneRegistry = new SceneRegistry();
+            diana = new DianaAgent(componentFactory, sceneRegistry);
+            
+            // Make global for debug access
+            window.componentFactory = componentFactory;
+            window.sceneRegistry = sceneRegistry;
+            window.diana = diana;
+            
+            // Build room from layout
+            componentFactory.buildRoomFromLayout(EMBEDDED_LAYOUT, scene);
+            
+            // Set player position from layout
+            if (EMBEDDED_LAYOUT.player && EMBEDDED_LAYOUT.player.startPosition) {
+                player.position.set(...EMBEDDED_LAYOUT.player.startPosition);
+                camera.position.copy(player.position);
+            }
+            
+            // Set player movement settings
+            if (EMBEDDED_LAYOUT.player && EMBEDDED_LAYOUT.player.movement) {
+                player.baseSpeed = EMBEDDED_LAYOUT.player.movement.baseSpeed;
+                player.maxSpeed = EMBEDDED_LAYOUT.player.movement.maxSpeed;
+                player.currentSpeed = player.baseSpeed;
+            }
+            
+            console.log('🚀 Scene initialized with factory system');
+        }
+        
+        function createDebugGrid() {
+            if (debugGridGroup) {
+                scene.remove(debugGridGroup);
+                debugGridGroup = null;
+            }
+            
+            debugGridGroup = new THREE.Group();
+            
+            const width = window.LOBBY_WIDTH;
+            const depth = window.LOBBY_DEPTH;
+            const height = window.LOBBY_HEIGHT;
+            
+            // Floor grid
+            for (let x = 0; x <= width; x++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, 0.01, 0),
+                    new THREE.Vector3(x, 0.01, depth)
+                ]);
+                const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x00ff00, opacity: 0.3, transparent: true }));
+                debugGridGroup.add(line);
+            }
+            
+            for (let z = 0; z <= depth; z++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, 0.01, z),
+                    new THREE.Vector3(width, 0.01, z)
+                ]);
+                const line = new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: 0x00ff00, opacity: 0.3, transparent: true }));
+                debugGridGroup.add(line);
+            }
+            
+            scene.add(debugGridGroup);
+            console.log('✅ Debug grid created');
+        }
+        
+        function toggleDebugMode() {
+            isDebugMode = !isDebugMode;
+            
+            if (isDebugMode) {
+                createDebugGrid();
+                console.log('🟢 Debug mode ON - Grid visible');
+            } else {
+                if (debugGridGroup) {
+                    scene.remove(debugGridGroup);
+                    debugGridGroup = null;
+                }
+                console.log('🔴 Debug mode OFF - Grid hidden');
+            }
+        }
+        
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            const deltaTime = 0.016; // Approximately 60fps
+            
+            // Progressive speed player movement
+            player.velocity.set(0, 0, 0);
+            
+            const movementKeys = ['w', 's', 'a', 'd'];
+            const currentlyMoving = movementKeys.some(key => keys[key]);
+            
+            if (currentlyMoving && !player.isDancing && dialogueBox.style.display !== 'block') {
+                const currentTime = Date.now();
+                
+                if (!player.isMoving) {
+                    player.isMoving = true;
+                    player.movementTimer = currentTime;
+                    player.currentSpeed = player.baseSpeed;
+                } else {
+                    const moveDuration = (currentTime - player.movementTimer) / 1000;
+                    if (moveDuration >= 2.0) {
+                        player.currentSpeed = player.maxSpeed;
+                    } else {
+                        const progress = moveDuration / 2.0;
+                        player.currentSpeed = player.baseSpeed + (player.maxSpeed - player.baseSpeed) * progress;
+                    }
+                }
+                
+                if (keys['w']) player.velocity.z = player.currentSpeed;
+                if (keys['s']) player.velocity.z = -player.currentSpeed;
+                if (keys['a']) player.velocity.x = -player.currentSpeed;
+                if (keys['d']) player.velocity.x = player.currentSpeed;
+            } else {
+                player.isMoving = false;
+                player.currentSpeed = player.baseSpeed;
+            }
+            
+            // Apply movement in camera direction
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            player.position.add(forward.multiplyScalar(player.velocity.z));
+            player.position.add(right.multiplyScalar(player.velocity.x));
+            
+            // Keep player within bounds
+            const wallBuffer = 0.5;
+            if (window.LOBBY_WIDTH && window.LOBBY_DEPTH) {
+                player.position.x = Math.max(wallBuffer, Math.min(window.LOBBY_WIDTH - wallBuffer, player.position.x));
+                player.position.z = Math.max(wallBuffer, Math.min(window.LOBBY_DEPTH - wallBuffer, player.position.z));
+            }
+            
+            // Update camera
+            camera.position.copy(player.position);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = -mouseX;
+            camera.rotation.x = mouseY;
+            
+            // Dancing animation
+            if (player.isDancing) {
+                camera.position.y = player.position.y + Math.sin(Date.now() * 0.01) * 0.2;
+                camera.rotation.z = Math.sin(Date.now() * 0.01) * 0.1;
+            } else {
+                camera.rotation.z = 0;
+            }
+            
+            // Debug ball interaction
+            const debugBall = componentFactory.findObject('debug-ball');
+            if (debugBall) {
+                const playerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+                const ballPos2D = new THREE.Vector2(debugBall.position.x, debugBall.position.z);
+                const distance = playerPos2D.distanceTo(ballPos2D);
+                
+                if (distance <= 1.0) {
+                    const kickDirection = new THREE.Vector3()
+                        .subVectors(debugBall.position, player.position);
+                    
+                    if (kickDirection.length() > 0.1) {
+                        kickDirection.normalize();
+                        kickDirection.multiplyScalar(0.3);
+                        
+                        debugBall.position.add(kickDirection);
+                        
+                        // Toggle debug mode
+                        toggleDebugMode();
+                        
+                        console.log('🦶 Debug ball kicked! Debug mode:', isDebugMode ? 'ON' : 'OFF');
+                    }
+                }
+                
+                // Keep debug ball in bounds
+                debugBall.position.x = Math.max(1, Math.min(window.LOBBY_WIDTH - 1, debugBall.position.x));
+                debugBall.position.z = Math.max(1, Math.min(window.LOBBY_DEPTH - 1, debugBall.position.z));
+                debugBall.position.y = Math.max(0.3, debugBall.position.y);
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ============================================================================
+        // EVENT HANDLERS
+        // ============================================================================
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                if (dialogueBox.style.display !== 'block') {
+                    player.isDancing = true;
+                }
+            }
+            
+            if (e.key.toLowerCase() === 'd') {
+                toggleDianaPanel();
+            }
+            
+            if (e.key === 'Escape') {
+                closeDialogue();
+                if (dianaPanel.style.display === 'block') {
+                    toggleDianaPanel();
+                }
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            
+            if (e.key === ' ') {
+                player.isDancing = false;
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === renderer.domElement && dialogueBox.style.display !== 'block') {
+                mouseX += e.movementX * 0.002;
+                mouseY += e.movementY * 0.002;
+                mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+            }
+        });
+        
+        renderer.domElement.addEventListener('click', () => {
+            if (!isPointerLocked) {
+                renderer.domElement.requestPointerLock();
+            }
+        });
+        
+        document.addEventListener('pointerlockchange', () => {
+            isPointerLocked = !!document.pointerLockElement;
+        });
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // ============================================================================
+        // DIANA AI INTERFACE
+        // ============================================================================
+        function toggleDianaPanel() {
+            dianaPanel.style.display = dianaPanel.style.display === 'none' ? 'block' : 'none';
+            if (dianaPanel.style.display === 'block') {
+                dianaInput.focus();
+            }
+        }
+        
+        function dianaLog(message, type = 'result') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type === 'error' ? 'log-error' : ''}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            dianaLog.appendChild(logEntry);
+            dianaLog.scrollTop = dianaLog.scrollHeight;
+        }
+        
+        function processDianaCommand() {
+            const command = dianaInput.value.trim();
+            if (!command) return;
+            
+            dianaLog(`🗣️ User: ${command}`, 'intent');
+            diana.processCommand(command);
+            dianaInput.value = '';
+        }
+        
+        function testDianaCommand(command) {
+            dianaInput.value = command;
+            processDianaCommand();
+        }
+        
+        function handleDianaEnter(event) {
+            if (event.key === 'Enter') {
+                processDianaCommand();
+            }
+        }
+        
+        function describeDianaScene() {
+            const description = diana.describeScene();
+            dianaLog(`📊 ${description}`, 'result');
+        }
+        
+        function resetDianaScene() {
+            // Remove all added objects
+            const objects = sceneRegistry.getAllObjects().filter(obj => obj.isAdded);
+            objects.forEach(obj => {
+                componentFactory.removeComponent(obj.id);
+            });
+            dianaLog(`🔄 Reset complete: removed ${objects.length} added objects`, 'result');
+        }
+        
+        // Character dialogue system (simplified)
+        function closeDialogue() {
+            dialogueBox.style.display = 'none';
+            questionInput.style.display = 'none';
+            askBtn.style.display = 'none';
+        }
+        
+        // Initialize everything
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                console.log(`🎮 THREE.js loaded (r${THREE.REVISION})`);
+                initScene();
+                animate();
+                console.log('🚀 3D Office Simulator with Factory System loaded successfully!');
+                console.log('WASD to move, Mouse to look, E to interact, SPACE to dance, D for Diana AI');
+                console.log('Kick the green debug ball to toggle coordinate grid!');
+            } else {
+                console.error('❌ THREE.js failed to load');
+            }
+        }, 100);
+    </script>
+</body>
+</html>

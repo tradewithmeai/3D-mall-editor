@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Factory Test</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; font-family: monospace; }
+        #status {
+            position: absolute; top: 10px; left: 10px; color: #0f0;
+            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🔍 Testing minimal factory system...</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        function updateStatus(msg) {
+            status.innerHTML += '<br>' + msg;
+            console.log(msg);
+        }
+        
+        // Copy the exact components from the main file
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [40, 30],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    }
+                }
+            }
+        };
+
+        // Minimal factory class
+        class MinimalFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+            }
+            
+            createMaterial(materialConfig) {
+                const MaterialClass = materialConfig.type === 'MeshBasicMaterial' ? 
+                    THREE.MeshBasicMaterial : THREE.MeshStandardMaterial;
+                
+                const params = {};
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color') {
+                        params[key] = new THREE.Color(value);
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) return null;
+                
+                const geometry = this.createGeometry(componentDef.model, componentDef.size);
+                const material = this.createMaterial(componentDef.material);
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                
+                scene.add(mesh);
+                return mesh;
+            }
+        }
+        
+        // Test after THREE.js loads
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`✅ THREE.js loaded (r${THREE.REVISION})`);
+                
+                try {
+                    // Create scene
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0xf5f5f5);
+                    updateStatus('✅ Scene created');
+                    
+                    // Create camera
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    camera.position.set(0, 2, 5);
+                    updateStatus('✅ Camera created');
+                    
+                    // Create renderer
+                    const renderer = new THREE.WebGLRenderer();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.body.appendChild(renderer.domElement);
+                    updateStatus('✅ Renderer created and appended');
+                    
+                    // Add lighting
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                    scene.add(ambientLight);
+                    updateStatus('✅ Lighting added');
+                    
+                    // Test factory
+                    const factory = new MinimalFactory();
+                    updateStatus('✅ Factory created');
+                    
+                    // Create objects
+                    const pole = factory.createComponent('referencePole', { position: [0, 0.5, 0] }, scene);
+                    const floor = factory.createComponent('floor', { position: [0, 0, 0] }, scene);
+                    
+                    if (pole && floor) {
+                        updateStatus('✅ Factory objects created successfully');
+                    } else {
+                        updateStatus('❌ Factory object creation failed');
+                    }
+                    
+                    // Render
+                    renderer.render(scene, camera);
+                    updateStatus('✅ Initial render complete');
+                    
+                    // Animation loop
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    updateStatus('✅ Animation loop started - should see green floor and black pole');
+                    
+                } catch (error) {
+                    updateStatus(`❌ Error: ${error.message}`);
+                    updateStatus(`❌ Stack: ${error.stack}`);
+                }
+                
+            } else {
+                updateStatus('❌ THREE.js failed to load');
+            }
+        }, 1000);
+        
+    </script>
+</body>
+</html>

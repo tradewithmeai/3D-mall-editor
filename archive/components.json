@@ -1,0 +1,152 @@
+{
+  "components": {
+    "wall": {
+      "model": "plane",
+      "size": [40, 8],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#f8f8f8",
+        "roughness": 0.9,
+        "metalness": 0.1
+      },
+      "properties": {
+        "castShadow": false,
+        "receiveShadow": true
+      },
+      "collision": true,
+      "agentEditable": {
+        "color": true,
+        "roughness": true,
+        "metalness": true
+      }
+    },
+    
+    "floor": {
+      "model": "plane", 
+      "size": [40, 30],
+      "rotation": [-1.5707963267948966, 0, 0],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#90EE90",
+        "roughness": 0.6,
+        "metalness": 0.1
+      },
+      "properties": {
+        "receiveShadow": true
+      },
+      "collision": true,
+      "agentEditable": {
+        "color": true,
+        "roughness": true
+      }
+    },
+    
+    "ceiling": {
+      "model": "plane",
+      "size": [40, 30], 
+      "rotation": [1.5707963267948966, 0, 0],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#d3d3d3",
+        "roughness": 0.8,
+        "metalness": 0.1
+      },
+      "properties": {
+        "receiveShadow": true
+      },
+      "collision": false,
+      "agentEditable": {
+        "color": true,
+        "roughness": true
+      }
+    },
+    
+    "referencePole": {
+      "model": "cylinder",
+      "size": [0.1, 0.1, 1, 8],
+      "material": {
+        "type": "MeshBasicMaterial",
+        "color": "#000000"
+      },
+      "properties": {
+        "castShadow": false,
+        "receiveShadow": false
+      },
+      "collision": false,
+      "agentEditable": {
+        "color": true
+      }
+    },
+    
+    "debugBall": {
+      "model": "sphere",
+      "size": [0.2, 12, 12],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#44ff44",
+        "roughness": 0.3,
+        "metalness": 0.2,
+        "transparent": true,
+        "opacity": 0.8,
+        "emissive": "#114411",
+        "emissiveIntensity": 0.2
+      },
+      "properties": {
+        "castShadow": true,
+        "receiveShadow": true
+      },
+      "collision": true,
+      "agentEditable": {
+        "color": true,
+        "emissive": true,
+        "emissiveIntensity": true
+      }
+    },
+    
+    "window": {
+      "model": "plane",
+      "size": [4, 3],
+      "material": {
+        "type": "MeshStandardMaterial",
+        "color": "#87CEEB",
+        "transparent": true,
+        "opacity": 0.3,
+        "roughness": 0.1,
+        "metalness": 0.9
+      },
+      "properties": {
+        "castShadow": false,
+        "receiveShadow": true
+      },
+      "collision": false,
+      "agentEditable": {
+        "color": true,
+        "opacity": true,
+        "roughness": true
+      }
+    }
+  },
+  
+  "colorPalettes": {
+    "neutrals": ["#ffffff", "#f8f8f8", "#e8e8e8", "#d3d3d3", "#c0c0c0", "#808080"],
+    "pastels": ["#90EE90", "#FFB6C1", "#87CEEB", "#DDA0DD", "#F0E68C", "#FFEFD5"],
+    "bold": ["#FF6B6B", "#4ECDC4", "#45B7D1", "#96CEB4", "#FFEAA7", "#DDA0DD"],
+    "earthy": ["#8D6E63", "#A1887F", "#BCAAA4", "#D7CCC8", "#EFEBE9", "#F5F5F5"]
+  },
+  
+  "agents": {
+    "diana": {
+      "name": "Diana the Decorator",
+      "role": "Color and material specialist",
+      "permissions": ["color", "roughness", "metalness", "emissive"],
+      "capabilities": [
+        "changeColor",
+        "applyColorPalette", 
+        "adjustMaterialProperties",
+        "previewChanges",
+        "resetToDefault"
+      ],
+      "targets": ["wall", "floor", "ceiling", "referencePole", "debugBall"]
+    }
+  }
+}

@@ -209,6 +209,9 @@
     <div id="interaction-prompt"></div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="component-factory.js"></script>
+    <script src="diana-decorator.js"></script>
+    <script src="agent-integration.js"></script>
     <script>
         console.log('🏢 3D Virtual Mall Simulator - Multi-Office Environment');
         console.log('Central Lobby connecting 3 office spaces!');
@@ -241,21 +244,8 @@
         document.getElementById('canvas-container').appendChild(renderer.domElement);
         
         // ========================================================================
-        // BASIC VISIBILITY TEST - Simple objects to verify rendering works
+        // OLD HARDCODED GEOMETRY REMOVED - Now using JSON-driven factory system
         // ========================================================================
-        console.log('🔍 Adding basic test objects...');
-        
-        // COORDINATE REFERENCE POLE
-        // Simple black pole marking Southwest corner origin (0,0,0)
-        const referencePole = new THREE.Mesh(
-            new THREE.CylinderGeometry(0.1, 0.1, 1, 8), // radius 0.1, height 1
-            new THREE.MeshBasicMaterial({ color: 0x000000 }) // Black
-        );
-        referencePole.position.set(0, 0.5, 0); // Southwest corner origin - bottom at floor (0,0,0), top at (0,1,0)
-        scene.add(referencePole);
-        console.log('⚫ Reference pole: 1 unit high at Southwest corner origin (0,0,0)');
-        
-        // Floor rendering removed - will be replaced with proper pastel green floor
         
         // Floating text effect
         function createFloatingText(text, worldPos) {
@@ -319,69 +309,147 @@
         }
         
         // ========================================================================
-        // FORMAL 3D COORDINATE SYSTEM - LOBBY FOUNDATION
-        // Establishing precise spatial language and coordinate standards
+        // JSON-DRIVEN COMPONENT FACTORY SYSTEM
         // ========================================================================
-        console.log('🎯 Establishing formal coordinate system with lobby-only foundation...');
+        console.log('🏗️ Initializing JSON-driven component factory system...');
         
-        // FORMAL COORDINATE SYSTEM DEFINITION
-        // Origin (0,0,0) = Center of lobby floor
-        // North = +Z direction, South = -Z direction  
-        // East = +X direction, West = -X direction
-        // Up = +Y direction, Down = -Y direction
+        // Initialize component factory
+        const componentFactory = new ComponentFactory();
+        let roomLayout = null;
         
-        const LOBBY_WIDTH = 40;   // X-axis: -20 to +20
-        const LOBBY_DEPTH = 30;   // Z-axis: -15 to +15  
-        const LOBBY_HEIGHT = 8;   // Y-axis: 0 to 8
+        // Load configurations and build room
+        async function initializeRoom() {
+            try {
+                // Load JSON configurations
+                const loaded = await componentFactory.loadConfigurations();
+                if (!loaded) {
+                    throw new Error('Failed to load JSON configurations');
+                }
+                
+                // Build room from layout
+                roomLayout = componentFactory.buildRoomFromLayout(scene);
+                console.log('🏗️ Room built successfully from JSON configuration');
+                
+                // Set up global references for existing systems
+                const layout = componentFactory.getRoomLayout();
+                window.LOBBY_WIDTH = layout.dimensions.width;
+                window.LOBBY_DEPTH = layout.dimensions.depth; 
+                window.LOBBY_HEIGHT = layout.dimensions.height;
+                
+                console.log(`📐 Room dimensions: ${window.LOBBY_WIDTH}×${window.LOBBY_DEPTH}×${window.LOBBY_HEIGHT}`);
+                
+                // Update player position from JSON configuration
+                if (layout.player && layout.player.startPosition) {
+                    player.position.set(...layout.player.startPosition);
+                    console.log('👤 Player start position set from JSON:', layout.player.startPosition);
+                }
+                
+                // Update player movement settings from JSON
+                if (layout.player && layout.player.movement) {
+                    const movement = layout.player.movement;
+                    player.baseSpeed = movement.baseSpeed || player.baseSpeed;
+                    player.maxSpeed = movement.maxSpeed || player.maxSpeed;
+                    player.currentSpeed = player.baseSpeed;
+                    console.log('🏃 Player movement settings updated from JSON');
+                }
+                
+                // Find debug ball for physics system
+                scene.traverse((object) => {
+                    if (object.userData && object.userData.componentType === 'debugBall') {
+                        window.debugBall = object;
+                        window.debugBallMaterial = object.material;
+                        
+                        // Set up physics userData if it exists in JSON
+                        if (object.userData.physics) {
+                            const physics = object.userData.physics;
+                            object.userData.velocity = new THREE.Vector3(...physics.velocity);
+                            object.userData.gravity = physics.gravity;
+                            object.userData.bounce = physics.bounce;
+                            object.userData.friction = physics.friction;
+                            object.userData.radius = physics.radius;
+                            object.userData.isGrounded = false;
+                            object.userData.kickCooldown = 0;
+                            object.userData.isDebugBall = true;
+                        }
+                        
+                        console.log('🟢 Debug ball found and linked to physics system');
+                    }
+                });
+                
+                // Initialize agent system
+                await window.agentSystem.initialize(scene);
+                
+                console.log('✅ JSON-driven room initialization complete');
+                
+            } catch (error) {
+                console.error('❌ Room initialization failed:', error);
+                // Fallback to hardcoded approach if JSON fails
+                console.log('⚠️ Falling back to hardcoded geometry...');
+                createFallbackRoom();
+            }
+        }
         
-        console.log(`📐 Coordinate System: Lobby bounds X(${-LOBBY_WIDTH/2} to ${LOBBY_WIDTH/2}), Z(${-LOBBY_DEPTH/2} to ${LOBBY_DEPTH/2}), Y(0 to ${LOBBY_HEIGHT})`);
-        
-        // Materials
-        const wallMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0xf8f8f8,
-            roughness: 0.9
-        });
-        
-        const glassMaterial = new THREE.MeshStandardMaterial({
-            color: 0x87ceeb,
-            transparent: true,
-            opacity: 0.3,
-            roughness: 0.1,
-            metalness: 0.5
-        });
-        
-        // ========================================================================
-        // CENTRAL LOBBY GEOMETRY - PRECISE COORDINATE POSITIONING
-        // ========================================================================
-        
-        // PASTEL GREEN LOBBY FLOOR - Full room coverage with corner-based positioning
-        const lobbyFloor = new THREE.Mesh(
-            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),  // 40×30 to match lobby dimensions
-            new THREE.MeshStandardMaterial({ 
-                color: 0x90EE90,  // Light pastel green
-                roughness: 0.6,
-                metalness: 0.1
-            })
-        );
-        lobbyFloor.rotation.x = -Math.PI / 2;  // Horizontal orientation
-        lobbyFloor.position.set(LOBBY_WIDTH/2, 0, LOBBY_DEPTH/2);  // Center floor over corner-based coords (20, 0, 15)
-        lobbyFloor.receiveShadow = true;
-        scene.add(lobbyFloor);
-        console.log(`🟢 Pastel green lobby floor: ${LOBBY_WIDTH}×${LOBBY_DEPTH} units, positioned from SW corner origin`);
-        
-        // GRAY LOBBY CEILING - Full room coverage with corner-based positioning
-        const lobbyCeiling = new THREE.Mesh(
-            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),  // 40×30 to match lobby dimensions
-            new THREE.MeshStandardMaterial({ 
-                color: 0xd3d3d3,  // Light gray
-                roughness: 0.8,
-                metalness: 0.1
-            })
-        );
-        lobbyCeiling.rotation.x = Math.PI / 2;     // Horizontal, facing down
-        lobbyCeiling.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT, LOBBY_DEPTH/2);  // Center ceiling over corner-based coords (20, 8, 15)
-        scene.add(lobbyCeiling);
-        console.log(`⬜ Gray lobby ceiling: ${LOBBY_WIDTH}×${LOBBY_DEPTH} units at height Y=${LOBBY_HEIGHT}, positioned from SW corner origin`);
+        // Fallback room creation (minimal hardcoded version)
+        function createFallbackRoom() {
+            console.log('⚠️ Creating fallback room...');
+            const LOBBY_WIDTH = 40;
+            const LOBBY_DEPTH = 30;
+            const LOBBY_HEIGHT = 8;
+            
+            // Create basic green floor
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),
+                new THREE.MeshStandardMaterial({ color: 0x90EE90, roughness: 0.6 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(LOBBY_WIDTH/2, 0, LOBBY_DEPTH/2);
+            floor.receiveShadow = true;
+            scene.add(floor);
+            console.log('✅ Fallback floor created at position:', floor.position);
+            
+            // Create basic gray ceiling
+            const ceiling = new THREE.Mesh(
+                new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),
+                new THREE.MeshStandardMaterial({ color: 0xd3d3d3, roughness: 0.8 })
+            );
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT, LOBBY_DEPTH/2);
+            scene.add(ceiling);
+            console.log('✅ Fallback ceiling created at position:', ceiling.position);
+            
+            // Create walls
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xf8f8f8, roughness: 0.9 });
+            
+            // North wall
+            const northWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT), wallMaterial);
+            northWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, LOBBY_DEPTH);
+            northWall.rotation.y = Math.PI;
+            scene.add(northWall);
+            
+            // South wall  
+            const southWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT), wallMaterial);
+            southWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, 0);
+            scene.add(southWall);
+            
+            // East wall
+            const eastWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT), wallMaterial);
+            eastWall.position.set(LOBBY_WIDTH, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);
+            eastWall.rotation.y = -Math.PI/2;
+            scene.add(eastWall);
+            
+            // West wall
+            const westWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT), wallMaterial);
+            westWall.position.set(0, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);
+            westWall.rotation.y = Math.PI/2;
+            scene.add(westWall);
+            
+            // Set global variables for other systems
+            window.LOBBY_WIDTH = LOBBY_WIDTH;
+            window.LOBBY_DEPTH = LOBBY_DEPTH;
+            window.LOBBY_HEIGHT = LOBBY_HEIGHT;
+            
+            console.log('⚠️ Complete fallback room created - should show green floor, gray ceiling, white walls');
+        }
         
         // ========================================================================
         // DEBUG SYSTEM VARIABLES - Global debug state management
@@ -390,44 +458,6 @@
         const debugGrids = new THREE.Group();
         scene.add(debugGrids);
         console.log('🔧 Debug system initialized - debugMode: OFF');
-        
-        // LOBBY WALLS - Four compass-oriented walls to enclose the room
-        // 🧭 NORTH WALL (Back wall, +Z direction)
-        const northWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT),
-            wallMaterial
-        );
-        northWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, LOBBY_DEPTH);  // At North edge (Z=30)
-        northWall.rotation.y = Math.PI; // Face inward (south)
-        scene.add(northWall);
-        
-        // 🧭 SOUTH WALL (Front wall, Z=0)  
-        const southWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT),
-            wallMaterial
-        );
-        southWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, 0);  // At South edge (Z=0)
-        scene.add(southWall);
-        
-        // 🧭 EAST WALL (Right wall, X=40)
-        const eastWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT),
-            wallMaterial
-        );
-        eastWall.position.set(LOBBY_WIDTH, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);  // At East edge (X=40)
-        eastWall.rotation.y = -Math.PI/2; // Face inward (west)
-        scene.add(eastWall);
-        
-        // 🧭 WEST WALL (Left wall, X=0)
-        const westWall = new THREE.Mesh(
-            new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT),
-            wallMaterial
-        );
-        westWall.position.set(0, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);  // At West edge (X=0)
-        westWall.rotation.y = Math.PI/2; // Face inward (east)  
-        scene.add(westWall);
-        
-        console.log('🧭 Four compass walls: NORTH(Z=30), SOUTH(Z=0), EAST(X=40), WEST(X=0)');
         
         // ========================================================================
         // STORE CREATION SYSTEM - TEMPORARILY DISABLED
@@ -597,44 +627,11 @@
         const debugGrids = new THREE.Group();
         scene.add(debugGrids);
         
-        // Create interactive debug ball (green) - positioned in lobby
-        const debugBallGeometry = new THREE.SphereGeometry(0.3, 16, 16);
-        window.debugBallMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x44ff44,
-            roughness: 0.4,
-            metalness: 0.1,
-            transparent: true,
-            opacity: 0.9,
-            emissive: 0x113311,
-            emissiveIntensity: 0.2
+        // Initialize room from JSON configurations
+        console.log('🚀 Starting room initialization...');
+        initializeRoom().catch(error => {
+            console.error('🚨 Room initialization failed:', error);
         });
-        window.debugBall = new THREE.Mesh(debugBallGeometry, window.debugBallMaterial);
-        window.debugBall.position.set(-15, 2, 5); // In lobby area
-        window.debugBall.castShadow = true;
-        window.debugBall.receiveShadow = true;
-        window.debugBall.userData.isDebugBall = true;
-        
-        // Add green glow effect
-        const debugBallGlow = new THREE.PointLight(0x44ff44, 0.5, 5);
-        window.debugBall.add(debugBallGlow);
-        
-        // Physics properties for debug ball
-        window.debugBall.userData = {
-            velocity: new THREE.Vector3(0, 0, 0),
-            gravity: -0.015,
-            bounce: 0.8,
-            friction: 0.98,
-            radius: 0.3,
-            isGrounded: false,
-            kickCooldown: 0,
-            isDebugBall: true
-        };
-        scene.add(window.debugBall);
-        
-        console.log('🟢 Debug ball created at position:', window.debugBall.position);
-        
-        // Add label for the debug ball
-        scene.add(createWallLabel('DEBUG BALL - KICK TO TOGGLE', -15, 3.5, 5, Math.PI/2));
         
         // Function to create laser grid on a surface
         function createLaserGrid(width, height, position, rotation, gridSpacing = 1) {
@@ -681,33 +678,69 @@
             debugMode = !debugMode;
             
             if (debugMode) {
-                console.log('🔧 DEBUG MODE ON - Laser grid activated for new mall layout');
+                console.log('🔧 DEBUG MODE ON - Laser grid activated for lobby');
                 
-                // CENTRAL LOBBY GRIDS
-                debugGrids.add(createLaserGrid(lobbyWidth, lobbyDepth, new THREE.Vector3(0, 0.02, 0), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(lobbyWidth, lobbyDepth, new THREE.Vector3(0, wallHeight-0.02, 0), new THREE.Euler(Math.PI/2, 0, 0)));
+                if (!window.LOBBY_WIDTH || !window.LOBBY_DEPTH || !window.LOBBY_HEIGHT) {
+                    console.warn('⚠️ Room dimensions not available yet, using fallback values');
+                    return;
+                }
                 
-                // TOP STORES GRIDS (A, B, D)
-                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(-lobbyWidth/2 + topStoreWidth/2, 0.02, -lobbyDepth/2 - storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(0, 0.02, -lobbyDepth/2 - storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(lobbyWidth/2 - topStoreWidth/2, 0.02, -lobbyDepth/2 - storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                // LOBBY FLOOR GRID (corner-based coordinates)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_DEPTH, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, 0.02, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(-Math.PI/2, 0, 0)
+                ));
                 
-                // BOTTOM STORES GRIDS (C, K, L)
-                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(-lobbyWidth/2 + topStoreWidth/2, 0.02, lobbyDepth/2 + storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(0, 0.02, lobbyDepth/2 + storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(lobbyWidth/2 - topStoreWidth/2, 0.02, lobbyDepth/2 + storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                // LOBBY CEILING GRID
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_DEPTH, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, window.LOBBY_HEIGHT-0.02, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(Math.PI/2, 0, 0)
+                ));
                 
-                // LEFT STORES GRIDS (E, H)
-                debugGrids.add(createLaserGrid(storeDepth, smallStoreDepth, new THREE.Vector3(-lobbyWidth/2 - storeDepth/2, 0.02, -lobbyDepth/2 + smallStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(storeDepth, largeStoreDepth, new THREE.Vector3(-lobbyWidth/2 - storeDepth/2, 0.02, lobbyDepth/2 - largeStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                // WALL GRIDS - All four compass walls
+                // North wall (Z=depth)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, window.LOBBY_HEIGHT/2, window.LOBBY_DEPTH+0.02), 
+                    new THREE.Euler(0, Math.PI, 0)
+                ));
                 
-                // RIGHT STORES GRIDS (F, J)
-                debugGrids.add(createLaserGrid(storeDepth, largeStoreDepth, new THREE.Vector3(lobbyWidth/2 + storeDepth/2, 0.02, -lobbyDepth/2 + largeStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
-                debugGrids.add(createLaserGrid(storeDepth, smallStoreDepth, new THREE.Vector3(lobbyWidth/2 + storeDepth/2, 0.02, lobbyDepth/2 - smallStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                // South wall (Z=0)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, window.LOBBY_HEIGHT/2, -0.02), 
+                    new THREE.Euler(0, 0, 0)
+                ));
+                
+                // East wall (X=width)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_DEPTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(window.LOBBY_WIDTH+0.02, window.LOBBY_HEIGHT/2, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(0, -Math.PI/2, 0)
+                ));
+                
+                // West wall (X=0)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_DEPTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(-0.02, window.LOBBY_HEIGHT/2, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(0, Math.PI/2, 0)
+                ));
                 
                 // Change debug ball color to indicate debug mode
-                window.debugBallMaterial.color.setHex(0x00ff00); // Brighter green
-                window.debugBallMaterial.emissiveIntensity = 0.4; // More glow
+                if (window.debugBallMaterial) {
+                    window.debugBallMaterial.color.setHex(0x00ff00); // Brighter green
+                    window.debugBallMaterial.emissiveIntensity = 0.4; // More glow
+                }
+                
+                createFloatingText('DEBUG MODE ON', new THREE.Vector3(20, 5, 15));
                 
             } else {
                 console.log('🔧 DEBUG MODE OFF - Laser grid deactivated');
@@ -716,8 +749,12 @@
                 debugGrids.clear();
                 
                 // Reset debug ball color
-                window.debugBallMaterial.color.setHex(0x44ff44); // Original green
-                window.debugBallMaterial.emissiveIntensity = 0.2; // Original glow
+                if (window.debugBallMaterial) {
+                    window.debugBallMaterial.color.setHex(0x44ff44); // Original green
+                    window.debugBallMaterial.emissiveIntensity = 0.2; // Original glow
+                }
+                
+                createFloatingText('DEBUG MODE OFF', new THREE.Vector3(20, 5, 15));
             }
         }
         
@@ -729,12 +766,9 @@
         console.log('🏬 Mall construction complete! 9 storefronts ready for business.');
         */ // END STORE SYSTEM DISABLE
         
-        console.log('🚧 Store creation system temporarily disabled - focusing on lobby foundation');
-        
         // ========================================================================
-        // CLEAN SLATE - Gallery and furniture removed for modular rebuild
+        // OLD HARDCODED SYSTEMS REMOVED - Now using JSON-driven factory
         // ========================================================================
-        console.log('🧹 Basic test mode - complex systems temporarily disabled');
         
         // Furniture materials and functions removed for clean slate
         
@@ -870,52 +904,12 @@
         // Neon signs removed for clean slate
         
         // ========================================================================
-        // DEBUG BALL - Kick to toggle laser grid coordinate system
+        // OLD HARDCODED DEBUG BALL REMOVED - Now created via JSON factory
         // ========================================================================
         
-        // GREEN DEBUG BALL - Debug mode toggle ball  
-        const debugBallGeometry = new THREE.SphereGeometry(0.2, 12, 12);
-        window.debugBallMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x44ff44,
-            roughness: 0.3,
-            metalness: 0.2,
-            transparent: true,
-            opacity: 0.8,
-            emissive: 0x114411,
-            emissiveIntensity: 0.2
-        });
-        window.debugBall = new THREE.Mesh(debugBallGeometry, window.debugBallMaterial);
-        window.debugBall.position.set(35, 1.5, 15); // Position in lobby area (east side, center Z)
-        window.debugBall.castShadow = true;
-        window.debugBall.receiveShadow = true;
-        
-        // Add green glow effect
-        const debugBallGlow = new THREE.PointLight(0x44ff44, 0.4, 4);
-        window.debugBall.add(debugBallGlow);
-        
-        // Debug ball physics properties
-        window.debugBall.userData = {
-            velocity: new THREE.Vector3(0.05, 0, 0.02),
-            gravity: -0.012,
-            bounce: 0.75,
-            friction: 0.98,
-            radius: 0.2,
-            isGrounded: false,
-            kickCooldown: 0
-        };
-        scene.add(window.debugBall);
-        
-        console.log('🟢 Debug ball added to lobby - Kick to toggle coordinate laser grid!');
-        
         // ========================================================================
-        // LASER GRID COORDINATE SYSTEM - Precise spatial visualization
-        // ========================================================================
-        
-        function createLaserGrid(width, depth, position, rotation) {
-            const gridGroup = new THREE.Group();
-            
-            // Laser line material - bright red with emissive glow
-            const laserMaterial = new THREE.MeshBasicMaterial({ 
+        // OLD LASER GRID SYSTEM REMOVED - Using new JSON-driven version below
+        // ======================================================================== 
                 color: 0xff0000,
                 transparent: true, 
                 opacity: 0.6,
@@ -1617,8 +1611,10 @@
             
             // Keep player within lobby walls (corner-based coordinates)
             const wallBuffer = 0.5; // Keep player away from walls
-            player.position.x = Math.max(wallBuffer, Math.min(LOBBY_WIDTH - wallBuffer, player.position.x));  // X: 0.5 to 39.5
-            player.position.z = Math.max(wallBuffer, Math.min(LOBBY_DEPTH - wallBuffer, player.position.z));  // Z: 0.5 to 29.5
+            if (window.LOBBY_WIDTH && window.LOBBY_DEPTH) {
+                player.position.x = Math.max(wallBuffer, Math.min(window.LOBBY_WIDTH - wallBuffer, player.position.x));
+                player.position.z = Math.max(wallBuffer, Math.min(window.LOBBY_DEPTH - wallBuffer, player.position.z));
+            }
             
             // Update camera position and rotation
             camera.position.copy(player.position);
@@ -1630,97 +1626,101 @@
             // DEBUG BALL PHYSICS & KICK-TO-TOGGLE SYSTEM
             // ========================================================================
             
-            // Update Debug Ball Physics
-            const debugBallData = window.debugBall.userData;
-            
-            // Apply gravity
-            debugBallData.velocity.y += debugBallData.gravity;
-            
-            // Apply friction
-            debugBallData.velocity.multiplyScalar(debugBallData.friction);
-            
-            // Update position
-            window.debugBall.position.add(debugBallData.velocity);
-            
-            // Ground collision
-            if (window.debugBall.position.y <= debugBallData.radius) {
-                window.debugBall.position.y = debugBallData.radius;
-                if (debugBallData.velocity.y < 0) {
-                    debugBallData.velocity.y = -debugBallData.velocity.y * debugBallData.bounce;
-                    debugBallData.isGrounded = true;
-                } else {
-                    debugBallData.isGrounded = true;
-                }
-            } else {
-                debugBallData.isGrounded = false;
-            }
-            
-            // Wall collisions for debug ball - corner-based lobby bounds
-            // X bounds: 0 to LOBBY_WIDTH (40)
-            if (window.debugBall.position.x <= debugBallData.radius) {
-                window.debugBall.position.x = debugBallData.radius;
-                debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
-            }
-            if (window.debugBall.position.x >= LOBBY_WIDTH - debugBallData.radius) {
-                window.debugBall.position.x = LOBBY_WIDTH - debugBallData.radius;
-                debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
-            }
-            // Z bounds: 0 to LOBBY_DEPTH (30)
-            if (window.debugBall.position.z <= debugBallData.radius) {
-                window.debugBall.position.z = debugBallData.radius;
-                debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
-            }
-            if (window.debugBall.position.z >= LOBBY_DEPTH - debugBallData.radius) {
-                window.debugBall.position.z = LOBBY_DEPTH - debugBallData.radius;
-                debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
-            }
-            
-            // Update kick cooldown
-            if (debugBallData.kickCooldown > 0) {
-                debugBallData.kickCooldown -= 0.016; // Approximate 60fps delta
-            }
-            
-            // Debug ball player interaction - kicks toggle debug mode!
-            const debugPlayerPos2D = new THREE.Vector2(player.position.x, player.position.z);
-            const debugBallPos2D = new THREE.Vector2(window.debugBall.position.x, window.debugBall.position.z);
-            const debugPlayerBallDistance2D = debugPlayerPos2D.distanceTo(debugBallPos2D);
-            
-            // Check for collision with debug ball
-            const debugIsColliding = debugPlayerBallDistance2D <= (0.5 + debugBallData.radius);
-            
-            if (debugIsColliding && debugBallData.kickCooldown <= 0) {
-                // Calculate kick direction
-                const debugKickDirection = new THREE.Vector3()
-                    .subVectors(window.debugBall.position, player.position);
+            // Update Debug Ball Physics (only if debug ball exists)
+            if (window.debugBall && window.debugBall.userData) {
+                const debugBallData = window.debugBall.userData;
                 
-                if (debugKickDirection.length() > 0.1) {
-                    debugKickDirection.normalize();
-                    
-                    // Apply kick force
-                    const debugKickStrength = 0.5;
-                    debugBallData.velocity.add(debugKickDirection.multiplyScalar(debugKickStrength));
-                    debugBallData.velocity.y += 0.15;
-                    
-                    // Set cooldown
-                    debugBallData.kickCooldown = 0.5; // 500ms cooldown for debug actions
-                    
-                    // TOGGLE DEBUG MODE ON KICK!
-                    toggleDebugMode();
-                    
-                    console.log(`🟢 DEBUG BALL KICKED! Debug mode: ${debugMode ? 'ON' : 'OFF'}`);
+                // Apply gravity
+                debugBallData.velocity.y += debugBallData.gravity;
+                
+                // Apply friction
+                debugBallData.velocity.multiplyScalar(debugBallData.friction);
+                
+                // Update position
+                window.debugBall.position.add(debugBallData.velocity);
+                
+                // Ground collision
+                if (window.debugBall.position.y <= debugBallData.radius) {
+                    window.debugBall.position.y = debugBallData.radius;
+                    if (debugBallData.velocity.y < 0) {
+                        debugBallData.velocity.y = -debugBallData.velocity.y * debugBallData.bounce;
+                        debugBallData.isGrounded = true;
+                    } else {
+                        debugBallData.isGrounded = true;
+                    }
+                } else {
+                    debugBallData.isGrounded = false;
                 }
-            }
-            
-            // Debug ball rotation
-            window.debugBall.rotation.x += debugBallData.velocity.z * 0.1;
-            window.debugBall.rotation.z -= debugBallData.velocity.x * 0.1;
-            
-            // Debug ball glow effects
-            const debugSpeed = debugBallData.velocity.length();
-            const debugGlowLight = window.debugBall.children[0];
-            if (debugGlowLight) {
-                debugGlowLight.intensity = 0.3 + debugSpeed * 2;
-                debugGlowLight.distance = 3 + debugSpeed * 5;
+                
+                // Wall collisions for debug ball - corner-based lobby bounds
+                if (window.LOBBY_WIDTH && window.LOBBY_DEPTH) {
+                    // X bounds: 0 to LOBBY_WIDTH
+                    if (window.debugBall.position.x <= debugBallData.radius) {
+                        window.debugBall.position.x = debugBallData.radius;
+                        debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+                    }
+                    if (window.debugBall.position.x >= window.LOBBY_WIDTH - debugBallData.radius) {
+                        window.debugBall.position.x = window.LOBBY_WIDTH - debugBallData.radius;
+                        debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+                    }
+                    // Z bounds: 0 to LOBBY_DEPTH
+                    if (window.debugBall.position.z <= debugBallData.radius) {
+                        window.debugBall.position.z = debugBallData.radius;
+                        debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+                    }
+                    if (window.debugBall.position.z >= window.LOBBY_DEPTH - debugBallData.radius) {
+                        window.debugBall.position.z = window.LOBBY_DEPTH - debugBallData.radius;
+                        debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+                    }
+                }
+                
+                // Update kick cooldown
+                if (debugBallData.kickCooldown > 0) {
+                    debugBallData.kickCooldown -= 0.016; // Approximate 60fps delta
+                }
+                
+                // Debug ball player interaction - kicks toggle debug mode!
+                const debugPlayerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+                const debugBallPos2D = new THREE.Vector2(window.debugBall.position.x, window.debugBall.position.z);
+                const debugPlayerBallDistance2D = debugPlayerPos2D.distanceTo(debugBallPos2D);
+                
+                // Check for collision with debug ball
+                const debugIsColliding = debugPlayerBallDistance2D <= (0.5 + debugBallData.radius);
+                
+                if (debugIsColliding && debugBallData.kickCooldown <= 0) {
+                    // Calculate kick direction
+                    const debugKickDirection = new THREE.Vector3()
+                        .subVectors(window.debugBall.position, player.position);
+                    
+                    if (debugKickDirection.length() > 0.1) {
+                        debugKickDirection.normalize();
+                        
+                        // Apply kick force
+                        const debugKickStrength = 0.5;
+                        debugBallData.velocity.add(debugKickDirection.multiplyScalar(debugKickStrength));
+                        debugBallData.velocity.y += 0.15;
+                        
+                        // Set cooldown
+                        debugBallData.kickCooldown = 0.5; // 500ms cooldown for debug actions
+                        
+                        // TOGGLE DEBUG MODE ON KICK!
+                        toggleDebugMode();
+                        
+                        console.log(`🟢 DEBUG BALL KICKED! Debug mode: ${debugMode ? 'ON' : 'OFF'}`);
+                    }
+                }
+                
+                // Debug ball rotation
+                window.debugBall.rotation.x += debugBallData.velocity.z * 0.1;
+                window.debugBall.rotation.z -= debugBallData.velocity.x * 0.1;
+                
+                // Debug ball glow effects
+                const debugSpeed = debugBallData.velocity.length();
+                const debugGlowLight = window.debugBall.children[0];
+                if (debugGlowLight) {
+                    debugGlowLight.intensity = 0.3 + debugSpeed * 2;
+                    debugGlowLight.distance = 3 + debugSpeed * 5;
+                }
             }
             
             // Update lighting animations  

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Diagnostic - Black Screen Debug</title>
+    <style>
+        body { margin: 0; padding: 20px; background: #222; color: #0f0; font-family: monospace; }
+        #log { white-space: pre-line; }
+        .error { color: #f44; }
+        .success { color: #4f4; }
+        .info { color: #44f; }
+    </style>
+</head>
+<body>
+    <h1>🚨 Emergency Diagnostic</h1>
+    <div id="log"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const log = document.getElementById('log');
+        
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${timestamp}] ${message}`;
+            log.appendChild(div);
+            console.log(message);
+        }
+        
+        logMessage('🔍 Starting emergency diagnostic...', 'info');
+        
+        // Test 1: Basic page load
+        logMessage('✅ HTML loaded successfully', 'success');
+        
+        // Test 2: THREE.js CDN
+        logMessage('⏳ Waiting for THREE.js to load...', 'info');
+        
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                logMessage(`✅ THREE.js loaded successfully (r${THREE.REVISION})`, 'success');
+                
+                // Test 3: Basic scene creation
+                try {
+                    const scene = new THREE.Scene();
+                    logMessage('✅ Scene created successfully', 'success');
+                    
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    logMessage('✅ Camera created successfully', 'success');
+                    
+                    const renderer = new THREE.WebGLRenderer();
+                    logMessage('✅ Renderer created successfully', 'success');
+                    
+                    renderer.setSize(400, 300); // Small size for testing
+                    document.body.appendChild(renderer.domElement);
+                    logMessage('✅ Renderer appended to DOM', 'success');
+                    
+                    // Test 4: Basic geometry
+                    const geometry = new THREE.BoxGeometry(1, 1, 1);
+                    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                    const cube = new THREE.Mesh(geometry, material);
+                    scene.add(cube);
+                    
+                    camera.position.z = 5;
+                    
+                    // Test 5: Render
+                    renderer.render(scene, camera);
+                    logMessage('✅ Basic render successful - you should see a small green cube', 'success');
+                    
+                    // Test 6: Animation
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        cube.rotation.x += 0.01;
+                        cube.rotation.y += 0.01;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    logMessage('✅ Animation loop started', 'success');
+                    
+                } catch (error) {
+                    logMessage(`❌ Three.js error: ${error.message}`, 'error');
+                    logMessage(`❌ Stack: ${error.stack}`, 'error');
+                }
+                
+            } else {
+                logMessage('❌ THREE.js failed to load from CDN', 'error');
+                logMessage('❌ Check internet connection or CDN availability', 'error');
+                
+                // Test alternative CDN
+                logMessage('🔄 Trying alternative THREE.js CDN...', 'info');
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/three@0.128.0/build/three.min.js';
+                script.onload = () => {
+                    logMessage('✅ Alternative CDN loaded!', 'success');
+                    location.reload();
+                };
+                script.onerror = () => {
+                    logMessage('❌ Alternative CDN also failed', 'error');
+                };
+                document.head.appendChild(script);
+            }
+        }, 2000); // Extra time for slow connections
+        
+        // Test 7: Error handling
+        window.addEventListener('error', (e) => {
+            logMessage(`❌ JavaScript Error: ${e.message}`, 'error');
+            logMessage(`❌ File: ${e.filename}:${e.lineno}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            logMessage(`❌ Unhandled Promise Rejection: ${e.reason}`, 'error');
+        });
+        
+    </script>
+</body>
+</html>

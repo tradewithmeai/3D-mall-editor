@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factory Test - Step 4: Complete Room</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            font-family: monospace;
+            font-size: 9px;
+            border-radius: 5px;
+            max-width: 420px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        #toggle-info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="toggle-info" onclick="toggleInfo()">HIDE INFO</div>
+    <div id="info">
+        <h3>🧪 Step 4: Complete Room (Pole + Ball + Floor + 4 Walls)</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Complete component set with walls
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    },
+                    "properties": {
+                        "castShadow": false,
+                        "receiveShadow": false
+                    },
+                    "collision": false,
+                    "agentEditable": {
+                        "color": true
+                    }
+                },
+                "debugBall": {
+                    "model": "sphere",
+                    "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#44ff44",
+                        "roughness": 0.3,
+                        "metalness": 0.2,
+                        "transparent": true,
+                        "opacity": 0.8,
+                        "emissive": "#114411",
+                        "emissiveIntensity": 0.2
+                    },
+                    "properties": {
+                        "castShadow": true,
+                        "receiveShadow": true
+                    },
+                    "collision": true,
+                    "agentEditable": {
+                        "color": true,
+                        "emissive": true,
+                        "emissiveIntensity": true
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [10, 8],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    },
+                    "properties": {
+                        "receiveShadow": true
+                    },
+                    "collision": true,
+                    "agentEditable": {
+                        "color": true,
+                        "roughness": true
+                    }
+                },
+                "wall": {
+                    "model": "plane",
+                    "size": [10, 8],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#f8f8f8",
+                        "roughness": 0.9,
+                        "metalness": 0.1
+                    },
+                    "properties": {
+                        "castShadow": false,
+                        "receiveShadow": true
+                    },
+                    "collision": true,
+                    "agentEditable": {
+                        "color": true,
+                        "roughness": true
+                    }
+                }
+            }
+        };
+
+        // Component Factory with all geometry types
+        class TestComponentFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                const params = {};
+                
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder':
+                        return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere':
+                        return new THREE.SphereGeometry(...dimensions);
+                    case 'plane':
+                        return new THREE.PlaneGeometry(...dimensions);
+                    default:
+                        return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) {
+                    console.error(`Component type '${componentType}' not found`);
+                    return null;
+                }
+                
+                // Use custom size or default size
+                const size = config.size || componentDef.size;
+                
+                // Create geometry
+                const geometry = this.createGeometry(componentDef.model, size);
+                
+                // Create material
+                const material = this.createMaterial(componentDef.material);
+                
+                // Create mesh
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                // Apply position
+                if (config.position) {
+                    mesh.position.set(...config.position);
+                }
+                
+                // Apply rotation from component definition
+                if (componentDef.rotation) {
+                    mesh.rotation.set(...componentDef.rotation);
+                }
+                
+                // Apply rotation from instance config (overrides component default)
+                if (config.rotation) {
+                    mesh.rotation.set(...config.rotation);
+                }
+                
+                // Apply properties
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                // Add metadata including compass direction
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.compass || null,
+                    agentEditable: componentDef.agentEditable || {},
+                    createdBy: 'TestComponentFactory'
+                };
+                
+                // Add to scene
+                scene.add(mesh);
+                
+                return mesh;
+            }
+        }
+
+        // Test status tracking
+        const status = document.getElementById('status');
+        let testsPassed = 0;
+        
+        function updateStatus(message, isError = false) {
+            console.log(message);
+            status.innerHTML += `<br>${isError ? '❌' : '✅'} ${message}`;
+        }
+
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f5);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(6, 5, 6);
+        camera.lookAt(0, 2, 0);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(8, 8, 5);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.near = 0.1;
+        directionalLight.shadow.camera.far = 50;
+        directionalLight.shadow.camera.left = -10;
+        directionalLight.shadow.camera.right = 10;
+        directionalLight.shadow.camera.top = 10;
+        directionalLight.shadow.camera.bottom = -10;
+        scene.add(directionalLight);
+
+        updateStatus("Scene setup complete with enhanced lighting & shadows");
+
+        // TEST: Complete room assembly
+        function testCompleteRoom() {
+            try {
+                updateStatus("Creating complete room factory...");
+                
+                const factory = new TestComponentFactory();
+                updateStatus("Factory ready for complete room creation");
+                
+                // TEST 1: Reference pole
+                updateStatus("Creating reference pole...");
+                const referencePole = factory.createComponent('referencePole', {
+                    position: [0, 0.5, 0]
+                }, scene);
+                
+                if (referencePole) {
+                    updateStatus("✨ Reference pole: CREATED");
+                    testsPassed++;
+                }
+                
+                // TEST 2: Debug ball  
+                updateStatus("Creating debug ball...");
+                const debugBall = factory.createComponent('debugBall', {
+                    position: [2, 0.3, 1]  // Moved to better position
+                }, scene);
+                
+                if (debugBall) {
+                    updateStatus("✨ Debug ball: CREATED");
+                    testsPassed++;
+                }
+                
+                // TEST 3: Floor plane
+                updateStatus("Creating floor plane...");
+                const floor = factory.createComponent('floor', {
+                    position: [0, 0, 0]
+                }, scene);
+                
+                if (floor) {
+                    updateStatus("✨ Floor (10×8): CREATED");
+                    testsPassed++;
+                }
+                
+                // TEST 4: North Wall (back wall)
+                updateStatus("Creating NORTH wall...");
+                const northWall = factory.createComponent('wall', {
+                    position: [0, 4, 4],  // At back edge of floor
+                    rotation: [0, Math.PI, 0],  // Face inward
+                    compass: 'north'
+                }, scene);
+                
+                if (northWall) {
+                    updateStatus("✨ North wall (back): CREATED");
+                    testsPassed++;
+                }
+                
+                // TEST 5: South Wall (front wall)  
+                updateStatus("Creating SOUTH wall...");
+                const southWall = factory.createComponent('wall', {
+                    position: [0, 4, -4],  // At front edge of floor
+                    rotation: [0, 0, 0],  // Face inward
+                    compass: 'south'
+                }, scene);
+                
+                if (southWall) {
+                    updateStatus("✨ South wall (front): CREATED");
+                    testsPassed++;
+                }
+                
+                // TEST 6: East Wall (right wall)
+                updateStatus("Creating EAST wall...");
+                const eastWall = factory.createComponent('wall', {
+                    position: [5, 4, 0],  // At right edge of floor
+                    rotation: [0, -Math.PI/2, 0],  // Face inward (west)
+                    size: [8, 8],  // 8 units wide (floor depth)
+                    compass: 'east'
+                }, scene);
+                
+                if (eastWall) {
+                    updateStatus("✨ East wall (right): CREATED");
+                    testsPassed++;
+                }
+                
+                // TEST 7: West Wall (left wall)
+                updateStatus("Creating WEST wall...");
+                const westWall = factory.createComponent('wall', {
+                    position: [-5, 4, 0],  // At left edge of floor
+                    rotation: [0, Math.PI/2, 0],  // Face inward (east)
+                    size: [8, 8],  // 8 units wide (floor depth)
+                    compass: 'west'
+                }, scene);
+                
+                if (westWall) {
+                    updateStatus("✨ West wall (left): CREATED");
+                    testsPassed++;
+                }
+                
+                updateStatus(`\n🎉 STEP 4 COMPLETE: ${testsPassed}/7 components created`);
+                updateStatus("🏠 COMPLETE ROOM ASSEMBLED!");
+                updateStatus("Expected to see:");
+                updateStatus("• Enclosed room with 4 white walls");
+                updateStatus("• Green floor with pole and ball inside");
+                updateStatus("• Proper wall rotations facing inward");
+                updateStatus("• Shadows on floor and walls");
+                updateStatus("• Corner-based coordinate system working");
+                
+            } catch (error) {
+                updateStatus(`❌ ERROR: ${error.message}`, true);
+                console.error(error);
+            }
+        }
+
+        // Initialize test
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                testCompleteRoom();
+            } else {
+                updateStatus("❌ THREE.js failed to load", true);
+            }
+        }, 1000);
+        
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // Toggle info panel
+        function toggleInfo() {
+            const info = document.getElementById('info');
+            const toggle = document.getElementById('toggle-info');
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                toggle.textContent = 'HIDE INFO';
+            } else {
+                info.style.display = 'none';
+                toggle.textContent = 'SHOW INFO';
+            }
+        }
+
+        // Enhanced mouse controls for room inspection
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            // Wider orbit to see complete room
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);  // Look at room center
+        });
+    </script>
+</body>
+</html>

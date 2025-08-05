@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Office Simulator - Interactive Virtual Workspace with AI Characters</title>
+    <meta name="description" content="Experience an immersive 3D office environment featuring AI-powered characters, art gallery, and interactive workspace. Built with Three.js for modern browsers.">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        .floating-text {
+            position: absolute;
+            color: #ff0;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 2s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        #dev-notice {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="dev-notice">
+        JSON-DRIVEN VERSION<br>
+        Clean & Modular!
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="component-factory.js"></script>
+    <script src="diana-decorator.js"></script>
+    <script src="agent-integration.js"></script>
+    <script>
+        console.log('🏢 3D Virtual Mall Simulator - JSON-Driven Clean Version');
+        
+        // Check if THREE.js loaded
+        if (typeof THREE === 'undefined') {
+            console.error('❌ THREE.js failed to load!');
+            document.body.innerHTML = '<h1 style="color: red; text-align: center; margin-top: 50px;">THREE.js failed to load. Check internet connection.</h1>';
+            throw new Error('THREE.js not loaded');
+        }
+        
+        console.log('✅ THREE.js version:', THREE.REVISION);
+        console.log('WebGL supported:', WebGLRenderingContext ? 'Yes' : 'No');
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f5);
+        scene.fog = new THREE.Fog(0xf5f5f5, 10, 50);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(20, 8, 35);
+        camera.lookAt(20, 0, 15);
+        console.log('📷 Camera positioned at:', camera.position);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        // Floating text effect
+        function createFloatingText(text, worldPos) {
+            const screenPos = worldPos.clone();
+            screenPos.project(camera);
+            
+            const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+            
+            const div = document.createElement('div');
+            div.className = 'floating-text';
+            div.textContent = text;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            document.body.appendChild(div);
+            
+            setTimeout(() => div.remove(), 2000);
+        }
+        
+        // Enhanced Lighting System
+        const ambientLight = new THREE.AmbientLight(0xf0f8ff, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(10, 15, 10);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.near = 0.1;
+        directionalLight.shadow.camera.far = 50;
+        directionalLight.shadow.camera.left = -30;
+        directionalLight.shadow.camera.right = 30;
+        directionalLight.shadow.camera.top = 30;
+        directionalLight.shadow.camera.bottom = -30;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+        
+        // Accent lighting
+        const accentLight1 = new THREE.PointLight(0x00ff88, 0.6, 15);
+        accentLight1.position.set(-15, 8, -15);
+        scene.add(accentLight1);
+        
+        const accentLight2 = new THREE.PointLight(0xff4488, 0.6, 15);
+        accentLight2.position.set(15, 8, -15);
+        scene.add(accentLight2);
+        
+        const accentLight3 = new THREE.PointLight(0x4488ff, 0.6, 15);
+        accentLight3.position.set(0, 8, 15);
+        scene.add(accentLight3);
+        
+        // Ceiling mood lighting (subtle color changing)
+        const moodLight = new THREE.PointLight(0x6366f1, 0.3, 25);
+        moodLight.position.set(0, 12, 0);
+        scene.add(moodLight);
+        
+        // Animate mood lighting
+        let lightTime = 0;
+        function animateLighting() {
+            lightTime += 0.01;
+            const hue = (Math.sin(lightTime) + 1) * 0.5;
+            moodLight.color.setHSL(hue * 0.6 + 0.6, 0.5, 0.3);
+        }
+        
+        // ========================================================================
+        // JSON-DRIVEN COMPONENT FACTORY SYSTEM
+        // ========================================================================
+        console.log('🏗️ Initializing JSON-driven component factory system...');
+        
+        // Initialize component factory
+        const componentFactory = new ComponentFactory();
+        let roomLayout = null;
+        
+        // Load configurations and build room
+        async function initializeRoom() {
+            try {
+                // Load JSON configurations
+                const loaded = await componentFactory.loadConfigurations();
+                if (!loaded) {
+                    throw new Error('Failed to load JSON configurations');
+                }
+                
+                // Build room from layout
+                roomLayout = componentFactory.buildRoomFromLayout(scene);
+                console.log('🏗️ Room built successfully from JSON configuration');
+                
+                // Set up global references for existing systems
+                const layout = componentFactory.getRoomLayout();
+                window.LOBBY_WIDTH = layout.dimensions.width;
+                window.LOBBY_DEPTH = layout.dimensions.depth; 
+                window.LOBBY_HEIGHT = layout.dimensions.height;
+                
+                console.log(`📐 Room dimensions: ${window.LOBBY_WIDTH}×${window.LOBBY_DEPTH}×${window.LOBBY_HEIGHT}`);
+                
+                // Update player position from JSON configuration
+                if (layout.player && layout.player.startPosition) {
+                    player.position.set(...layout.player.startPosition);
+                    console.log('👤 Player start position set from JSON:', layout.player.startPosition);
+                }
+                
+                // Update player movement settings from JSON
+                if (layout.player && layout.player.movement) {
+                    const movement = layout.player.movement;
+                    player.baseSpeed = movement.baseSpeed || player.baseSpeed;
+                    player.maxSpeed = movement.maxSpeed || player.maxSpeed;
+                    player.currentSpeed = player.baseSpeed;
+                    console.log('🏃 Player movement settings updated from JSON');
+                }
+                
+                // Find debug ball for physics system
+                scene.traverse((object) => {
+                    if (object.userData && object.userData.componentType === 'debugBall') {
+                        window.debugBall = object;
+                        window.debugBallMaterial = object.material;
+                        
+                        // Set up physics userData if it exists in JSON
+                        if (object.userData.physics) {
+                            const physics = object.userData.physics;
+                            object.userData.velocity = new THREE.Vector3(...physics.velocity);
+                            object.userData.gravity = physics.gravity;
+                            object.userData.bounce = physics.bounce;
+                            object.userData.friction = physics.friction;
+                            object.userData.radius = physics.radius;
+                            object.userData.isGrounded = false;
+                            object.userData.kickCooldown = 0;
+                            object.userData.isDebugBall = true;
+                        }
+                        
+                        console.log('🟢 Debug ball found and linked to physics system');
+                    }
+                });
+                
+                // Initialize agent system
+                await window.agentSystem.initialize(scene);
+                
+                console.log('✅ JSON-driven room initialization complete');
+                
+            } catch (error) {
+                console.error('❌ Room initialization failed:', error);
+                // Fallback to hardcoded approach if JSON fails
+                console.log('⚠️ Falling back to hardcoded geometry...');
+                createFallbackRoom();
+            }
+        }
+        
+        // Fallback room creation (minimal hardcoded version)
+        function createFallbackRoom() {
+            console.log('⚠️ Creating fallback room...');
+            const LOBBY_WIDTH = 40;
+            const LOBBY_DEPTH = 30;
+            const LOBBY_HEIGHT = 8;
+            
+            // Create basic green floor
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),
+                new THREE.MeshStandardMaterial({ color: 0x90EE90, roughness: 0.6 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(LOBBY_WIDTH/2, 0, LOBBY_DEPTH/2);
+            floor.receiveShadow = true;
+            scene.add(floor);
+            console.log('✅ Fallback floor created at position:', floor.position);
+            
+            // Create basic gray ceiling
+            const ceiling = new THREE.Mesh(
+                new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),
+                new THREE.MeshStandardMaterial({ color: 0xd3d3d3, roughness: 0.8 })
+            );
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT, LOBBY_DEPTH/2);
+            scene.add(ceiling);
+            console.log('✅ Fallback ceiling created at position:', ceiling.position);
+            
+            // Create walls
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xf8f8f8, roughness: 0.9 });
+            
+            // North wall
+            const northWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT), wallMaterial);
+            northWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, LOBBY_DEPTH);
+            northWall.rotation.y = Math.PI;
+            scene.add(northWall);
+            
+            // South wall  
+            const southWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT), wallMaterial);
+            southWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, 0);
+            scene.add(southWall);
+            
+            // East wall
+            const eastWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT), wallMaterial);
+            eastWall.position.set(LOBBY_WIDTH, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);
+            eastWall.rotation.y = -Math.PI/2;
+            scene.add(eastWall);
+            
+            // West wall
+            const westWall = new THREE.Mesh(new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT), wallMaterial);
+            westWall.position.set(0, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);
+            westWall.rotation.y = Math.PI/2;
+            scene.add(westWall);
+            
+            // Set global variables for other systems
+            window.LOBBY_WIDTH = LOBBY_WIDTH;
+            window.LOBBY_DEPTH = LOBBY_DEPTH;
+            window.LOBBY_HEIGHT = LOBBY_HEIGHT;
+            
+            console.log('⚠️ Complete fallback room created - should show green floor, gray ceiling, white walls');
+        }
+        
+        // ========================================================================
+        // DEBUG SYSTEM VARIABLES - Global debug state management
+        // ========================================================================
+        let debugMode = false;
+        const debugGrids = new THREE.Group();
+        scene.add(debugGrids);
+        console.log('🔧 Debug system initialized - debugMode: OFF');
+        
+        // Initialize room from JSON configurations
+        console.log('🚀 Starting room initialization...');
+        initializeRoom().catch(error => {
+            console.error('🚨 Room initialization failed:', error);
+        });
+        
+        // Function to create laser grid on a surface
+        function createLaserGrid(width, height, position, rotation, gridSpacing = 1) {
+            const gridGroup = new THREE.Group();
+            
+            // Create grid lines
+            const gridMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x00ff00, 
+                transparent: true, 
+                opacity: 0.6 
+            });
+            
+            // Vertical lines
+            for (let x = -width/2; x <= width/2; x += gridSpacing) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, -height/2, 0),
+                    new THREE.Vector3(x, height/2, 0)
+                ]);
+                const line = new THREE.Line(geometry, gridMaterial);
+                gridGroup.add(line);
+            }
+            
+            // Horizontal lines
+            for (let y = -height/2; y <= height/2; y += gridSpacing) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(-width/2, y, 0),
+                    new THREE.Vector3(width/2, y, 0)
+                ]);
+                const line = new THREE.Line(geometry, gridMaterial);
+                gridGroup.add(line);
+            }
+            
+            // Position and rotate the grid
+            gridGroup.position.copy(position);
+            if (rotation) {
+                gridGroup.rotation.copy(rotation);
+            }
+            
+            return gridGroup;
+        }
+        
+        // Function to toggle debug mode
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            
+            if (debugMode) {
+                console.log('🔧 DEBUG MODE ON - Laser grid activated for lobby');
+                
+                if (!window.LOBBY_WIDTH || !window.LOBBY_DEPTH || !window.LOBBY_HEIGHT) {
+                    console.warn('⚠️ Room dimensions not available yet, using fallback values');
+                    return;
+                }
+                
+                // LOBBY FLOOR GRID (corner-based coordinates)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_DEPTH, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, 0.02, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(-Math.PI/2, 0, 0)
+                ));
+                
+                // LOBBY CEILING GRID
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_DEPTH, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, window.LOBBY_HEIGHT-0.02, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(Math.PI/2, 0, 0)
+                ));
+                
+                // WALL GRIDS - All four compass walls
+                // North wall (Z=depth)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, window.LOBBY_HEIGHT/2, window.LOBBY_DEPTH+0.02), 
+                    new THREE.Euler(0, Math.PI, 0)
+                ));
+                
+                // South wall (Z=0)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_WIDTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(window.LOBBY_WIDTH/2, window.LOBBY_HEIGHT/2, -0.02), 
+                    new THREE.Euler(0, 0, 0)
+                ));
+                
+                // East wall (X=width)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_DEPTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(window.LOBBY_WIDTH+0.02, window.LOBBY_HEIGHT/2, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(0, -Math.PI/2, 0)
+                ));
+                
+                // West wall (X=0)
+                debugGrids.add(createLaserGrid(
+                    window.LOBBY_DEPTH, 
+                    window.LOBBY_HEIGHT, 
+                    new THREE.Vector3(-0.02, window.LOBBY_HEIGHT/2, window.LOBBY_DEPTH/2), 
+                    new THREE.Euler(0, Math.PI/2, 0)
+                ));
+                
+                // Change debug ball color to indicate debug mode
+                if (window.debugBallMaterial) {
+                    window.debugBallMaterial.color.setHex(0x00ff00); // Brighter green
+                    window.debugBallMaterial.emissiveIntensity = 0.4; // More glow
+                }
+                
+                createFloatingText('DEBUG MODE ON', new THREE.Vector3(20, 5, 15));
+                
+            } else {
+                console.log('🔧 DEBUG MODE OFF - Laser grid deactivated');
+                
+                // Remove all debug grids
+                debugGrids.clear();
+                
+                // Reset debug ball color
+                if (window.debugBallMaterial) {
+                    window.debugBallMaterial.color.setHex(0x44ff44); // Original green
+                    window.debugBallMaterial.emissiveIntensity = 0.2; // Original glow
+                }
+                
+                createFloatingText('DEBUG MODE OFF', new THREE.Vector3(20, 5, 15));
+            }
+        }
+        
+        console.log('Debug system initialized - Kick the green debug ball to toggle grid!');
+        
+        // Player controls with progressive speed system
+        const player = {
+            position: new THREE.Vector3(20, 1.6, 15),  // Will be updated from JSON
+            velocity: new THREE.Vector3(0, 0, 0),
+            baseSpeed: 0.05,  // Will be updated from JSON
+            maxSpeed: 0.2,    // Will be updated from JSON
+            currentSpeed: 0.05,
+            isDancing: false,
+            // Progressive speed tracking
+            movementTimer: 0,
+            isMoving: false,
+            lastMoveTime: 0
+        };
+        
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        // Mouse controls
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === renderer.domElement) {
+                mouseX += e.movementX * 0.002;
+                mouseY -= e.movementY * 0.002;
+                mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+            }
+        });
+        
+        renderer.domElement.addEventListener('click', () => {
+            renderer.domElement.requestPointerLock();
+        });
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Progressive speed player movement system
+            player.velocity.set(0, 0, 0);
+            
+            // Check if any movement keys are pressed
+            const movementKeys = ['w', 's', 'a', 'd'];
+            const currentlyMoving = movementKeys.some(key => keys[key]);
+            
+            if (currentlyMoving) {
+                const currentTime = Date.now();
+                
+                if (!player.isMoving) {
+                    // Just started moving - reset timer
+                    player.isMoving = true;
+                    player.movementTimer = currentTime;
+                    player.currentSpeed = player.baseSpeed;
+                } else {
+                    // Calculate how long we've been moving continuously
+                    const moveDuration = (currentTime - player.movementTimer) / 1000; // Convert to seconds
+                    
+                    if (moveDuration >= 2.0) {
+                        // After 2 seconds, accelerate to 4x speed
+                        player.currentSpeed = player.maxSpeed;
+                    } else {
+                        // Gradual acceleration from base to max over 2 seconds
+                        const progress = moveDuration / 2.0;
+                        player.currentSpeed = player.baseSpeed + (player.maxSpeed - player.baseSpeed) * progress;
+                    }
+                }
+                
+                // Apply movement with current speed
+                if (keys['w']) player.velocity.z = player.currentSpeed;
+                if (keys['s']) player.velocity.z = -player.currentSpeed;
+                if (keys['a']) player.velocity.x = -player.currentSpeed;
+                if (keys['d']) player.velocity.x = player.currentSpeed;
+                
+            } else {
+                // No movement keys pressed - reset movement state
+                player.isMoving = false;
+                player.currentSpeed = player.baseSpeed;
+            }
+            
+            // Apply movement in camera direction
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            player.position.add(forward.multiplyScalar(player.velocity.z));
+            player.position.add(right.multiplyScalar(player.velocity.x));
+            
+            // Keep player within lobby walls (corner-based coordinates)
+            const wallBuffer = 0.5; // Keep player away from walls
+            if (window.LOBBY_WIDTH && window.LOBBY_DEPTH) {
+                player.position.x = Math.max(wallBuffer, Math.min(window.LOBBY_WIDTH - wallBuffer, player.position.x));
+                player.position.z = Math.max(wallBuffer, Math.min(window.LOBBY_DEPTH - wallBuffer, player.position.z));
+            }
+            
+            // Update camera position and rotation
+            camera.position.copy(player.position);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = -mouseX; // Invert X for correct left/right movement
+            camera.rotation.x = mouseY;
+            
+            // ========================================================================
+            // DEBUG BALL PHYSICS & KICK-TO-TOGGLE SYSTEM
+            // ========================================================================
+            
+            // Update Debug Ball Physics (only if debug ball exists)
+            if (window.debugBall && window.debugBall.userData) {
+                const debugBallData = window.debugBall.userData;
+                
+                // Apply gravity
+                debugBallData.velocity.y += debugBallData.gravity;
+                
+                // Apply friction
+                debugBallData.velocity.multiplyScalar(debugBallData.friction);
+                
+                // Update position
+                window.debugBall.position.add(debugBallData.velocity);
+                
+                // Ground collision
+                if (window.debugBall.position.y <= debugBallData.radius) {
+                    window.debugBall.position.y = debugBallData.radius;
+                    if (debugBallData.velocity.y < 0) {
+                        debugBallData.velocity.y = -debugBallData.velocity.y * debugBallData.bounce;
+                        debugBallData.isGrounded = true;
+                    } else {
+                        debugBallData.isGrounded = true;
+                    }
+                } else {
+                    debugBallData.isGrounded = false;
+                }
+                
+                // Wall collisions for debug ball - corner-based lobby bounds
+                if (window.LOBBY_WIDTH && window.LOBBY_DEPTH) {
+                    // X bounds: 0 to LOBBY_WIDTH
+                    if (window.debugBall.position.x <= debugBallData.radius) {
+                        window.debugBall.position.x = debugBallData.radius;
+                        debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+                    }
+                    if (window.debugBall.position.x >= window.LOBBY_WIDTH - debugBallData.radius) {
+                        window.debugBall.position.x = window.LOBBY_WIDTH - debugBallData.radius;
+                        debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+                    }
+                    // Z bounds: 0 to LOBBY_DEPTH
+                    if (window.debugBall.position.z <= debugBallData.radius) {
+                        window.debugBall.position.z = debugBallData.radius;
+                        debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+                    }
+                    if (window.debugBall.position.z >= window.LOBBY_DEPTH - debugBallData.radius) {
+                        window.debugBall.position.z = window.LOBBY_DEPTH - debugBallData.radius;
+                        debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+                    }
+                }
+                
+                // Update kick cooldown
+                if (debugBallData.kickCooldown > 0) {
+                    debugBallData.kickCooldown -= 0.016; // Approximate 60fps delta
+                }
+                
+                // Debug ball player interaction - kicks toggle debug mode!
+                const debugPlayerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+                const debugBallPos2D = new THREE.Vector2(window.debugBall.position.x, window.debugBall.position.z);
+                const debugPlayerBallDistance2D = debugPlayerPos2D.distanceTo(debugBallPos2D);
+                
+                // Check for collision with debug ball
+                const debugIsColliding = debugPlayerBallDistance2D <= (0.5 + debugBallData.radius);
+                
+                if (debugIsColliding && debugBallData.kickCooldown <= 0) {
+                    // Calculate kick direction
+                    const debugKickDirection = new THREE.Vector3()
+                        .subVectors(window.debugBall.position, player.position);
+                    
+                    if (debugKickDirection.length() > 0.1) {
+                        debugKickDirection.normalize();
+                        
+                        // Apply kick force
+                        const debugKickStrength = 0.5;
+                        debugBallData.velocity.add(debugKickDirection.multiplyScalar(debugKickStrength));
+                        debugBallData.velocity.y += 0.15;
+                        
+                        // Set cooldown
+                        debugBallData.kickCooldown = 0.5; // 500ms cooldown for debug actions
+                        
+                        // TOGGLE DEBUG MODE ON KICK!
+                        toggleDebugMode();
+                        
+                        console.log(`🟢 DEBUG BALL KICKED! Debug mode: ${debugMode ? 'ON' : 'OFF'}`);
+                    }
+                }
+                
+                // Debug ball rotation
+                window.debugBall.rotation.x += debugBallData.velocity.z * 0.1;
+                window.debugBall.rotation.z -= debugBallData.velocity.x * 0.1;
+                
+                // Debug ball glow effects
+                const debugSpeed = debugBallData.velocity.length();
+                const debugGlowLight = window.debugBall.children[0];
+                if (debugGlowLight) {
+                    debugGlowLight.intensity = 0.3 + debugSpeed * 2;
+                    debugGlowLight.distance = 3 + debugSpeed * 5;
+                }
+            }
+            
+            // Update lighting animations  
+            animateLighting();
+            
+            // Render the scene
+            renderer.render(scene, camera);
+        }
+        
+        // Start animation loop
+        animate();
+        
+        console.log('🚀 JSON-Driven 3D Office Simulator loaded successfully!');
+        console.log('WASD to move, Mouse to look, Kick green ball to toggle debug grid!');
+        console.log('Try: diana.changeColor("floor", "#FF6B6B") in console');
+        
+    </script>
+</body>
+</html>
