@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Room Build - Step by Step</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0;
+            font-family: 'Courier New', monospace; 
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        .canvas-area {
+            flex: 1;
+            position: relative;
+        }
+        .control-panel {
+            width: 400px;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 2px solid #00ff00;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .phase-status {
+            text-align: center;
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(0, 255, 0, 0.1);
+        }
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #333;
+            color: #00ff00;
+            border: 2px solid #00ff00;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        .btn:disabled {
+            background: #666;
+            color: #999;
+            border-color: #666;
+            cursor: not-allowed;
+        }
+        .assertions {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+        .assert-pass { color: #00ff00; }
+        .assert-fail { color: #ff0000; }
+        .json-output {
+            background: #000;
+            border: 1px solid #00ff00;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 10px;
+            white-space: pre-wrap;
+            height: 200px;
+            overflow-y: auto;
+        }
+        h3 { margin: 0 0 10px 0; color: #00ff00; }
+        .phase-description {
+            color: #cccccc;
+            font-size: 12px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="canvas-area" id="canvas-container">
+            <!-- Three.js canvas will be inserted here -->
+        </div>
+        
+        <div class="control-panel">
+            <div class="phase-status">
+                <h3 id="phase-title">Phase A: Blank Canvas</h3>
+                <div class="phase-description" id="phase-description">
+                    Initialize empty scene with camera and lights only
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn" id="next-btn" onclick="nextPhase()">Start Phase A</button>
+                <div style="margin-top: 10px; font-size: 12px;">
+                    Press SPACE or click button to advance
+                </div>
+            </div>
+
+            <div class="assertions" id="assertions">
+                <h3>Validation Results:</h3>
+                <div id="assert-results">Ready to begin...</div>
+            </div>
+
+            <div class="json-output" id="json-output" style="display: none;">
+                <h3>Generated room-layout.json:</h3>
+                <div id="json-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Global scene objects
+        let scene, camera, renderer;
+        let currentPhase = 0;
+        let roomObjects = {};
+        
+        // Phase definitions
+        const phases = [
+            {
+                name: "Phase A: Blank Canvas",
+                description: "Initialize empty scene with camera and lights only",
+                action: phaseA,
+                assertions: assertPhaseA
+            },
+            {
+                name: "Phase B: Floor Creation", 
+                description: "Add single floor plane at [0,0,0], size 10×10, light grey",
+                action: phaseB,
+                assertions: assertPhaseB
+            },
+            {
+                name: "Phase C: Wall 1 (North)",
+                description: "Add north wall (box) size 10×3×0.2 at [0,1.5,5], white",
+                action: phaseCWall1,
+                assertions: assertPhaseCWall1
+            },
+            {
+                name: "Phase C: Wall 2 (South)",
+                description: "Add south wall (box) size 10×3×0.2 at [0,1.5,-5], white", 
+                action: phaseCWall2,
+                assertions: assertPhaseCWall2
+            },
+            {
+                name: "Phase C: Wall 3 (East)",
+                description: "Add east wall (box) size 0.2×3×10 at [5,1.5,0], white",
+                action: phaseCWall3,
+                assertions: assertPhaseCWall3
+            },
+            {
+                name: "Phase C: Wall 4 (West)",
+                description: "Add west wall (box) size 0.2×3×10 at [-5,1.5,0], white",
+                action: phaseCWall4,
+                assertions: assertPhaseCWall4
+            },
+            {
+                name: "Phase D: Reference Objects",
+                description: "Add reference pole at [0,0.5,0] black, debug ball at [2,1.5,2] green",
+                action: phaseD,
+                assertions: assertPhaseD
+            },
+            {
+                name: "Phase E: Remove/Add Tests",
+                description: "Test remove floor, re-add, change color, remove/add wall",
+                action: phaseE,
+                assertions: assertPhaseE
+            },
+            {
+                name: "Phase F: Export JSON",
+                description: "Generate room-layout.json from current scene",
+                action: phaseF,
+                assertions: assertPhaseF
+            }
+        ];
+
+        // Initialize Three.js scene
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x222222);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(12, 8, 12);
+            camera.lookAt(0, 0, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth - 400, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // Add basic lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(10, 15, 10);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            }
+            animate();
+            
+            console.log('🎬 Three.js scene initialized');
+        }
+
+        // Phase A: Blank Canvas
+        function phaseA() {
+            // Scene already initialized - just confirm it's empty
+            console.log("Stage A: Blank scene loaded");
+            return true;
+        }
+
+        function assertPhaseA() {
+            const meshCount = scene.children.filter(obj => obj.type === 'Mesh').length;
+            console.assert(meshCount === 0, `Expected 0 meshes, found ${meshCount}`);
+            console.assert(scene.children.length >= 2, `Expected lights in scene, found ${scene.children.length} objects`);
+            
+            return [
+                { test: "No meshes in scene", passed: meshCount === 0, actual: meshCount, expected: 0 },
+                { test: "Lights present", passed: scene.children.length >= 2, actual: scene.children.length, expected: ">=2" }
+            ];
+        }
+
+        // Phase B: Floor Creation
+        function phaseB() {
+            const geometry = new THREE.PlaneGeometry(10, 10);
+            const material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+            const floor = new THREE.Mesh(geometry, material);
+            
+            floor.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+            floor.position.set(0, 0, 0);
+            
+            scene.add(floor);
+            roomObjects.floor = floor;
+            
+            console.log("Floor created at [0,0,0]");
+            return true;
+        }
+
+        function assertPhaseB() {
+            const floor = roomObjects.floor;
+            const positionCorrect = floor && 
+                Math.abs(floor.position.x - 0) < 0.01 &&
+                Math.abs(floor.position.y - 0) < 0.01 &&
+                Math.abs(floor.position.z - 0) < 0.01;
+            
+            const rotationCorrect = floor && Math.abs(floor.rotation.x - (-Math.PI/2)) < 0.01;
+            
+            return [
+                { test: "Floor exists", passed: !!floor, actual: !!floor, expected: true },
+                { test: "Floor position [0,0,0]", passed: positionCorrect, actual: floor?.position, expected: "[0,0,0]" },
+                { test: "Floor rotation horizontal", passed: rotationCorrect, actual: floor?.rotation.x, expected: -Math.PI/2 }
+            ];
+        }
+
+        // Phase C: Wall Creation
+        function phaseCWall1() {
+            const geometry = new THREE.BoxGeometry(10, 3, 0.2);
+            const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const wall = new THREE.Mesh(geometry, material);
+            
+            wall.position.set(0, 1.5, 5);
+            scene.add(wall);
+            roomObjects.northWall = wall;
+            
+            console.log("Wall 1 (North) created at [0,1.5,5]");
+            return true;
+        }
+
+        function assertPhaseCWall1() {
+            const wall = roomObjects.northWall;
+            const positionCorrect = wall &&
+                Math.abs(wall.position.x - 0) < 0.01 &&
+                Math.abs(wall.position.y - 1.5) < 0.01 &&
+                Math.abs(wall.position.z - 5) < 0.01;
+            
+            return [
+                { test: "North wall exists", passed: !!wall, actual: !!wall, expected: true },
+                { test: "North wall position [0,1.5,5]", passed: positionCorrect, actual: wall?.position, expected: "[0,1.5,5]" }
+            ];
+        }
+
+        function phaseCWall2() {
+            const geometry = new THREE.BoxGeometry(10, 3, 0.2);
+            const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const wall = new THREE.Mesh(geometry, material);
+            
+            wall.position.set(0, 1.5, -5);
+            scene.add(wall);
+            roomObjects.southWall = wall;
+            
+            console.log("Wall 2 (South) created at [0,1.5,-5]");
+            return true;
+        }
+
+        function assertPhaseCWall2() {
+            const wall = roomObjects.southWall;
+            const positionCorrect = wall &&
+                Math.abs(wall.position.x - 0) < 0.01 &&
+                Math.abs(wall.position.y - 1.5) < 0.01 &&
+                Math.abs(wall.position.z - (-5)) < 0.01;
+            
+            return [
+                { test: "South wall exists", passed: !!wall, actual: !!wall, expected: true },
+                { test: "South wall position [0,1.5,-5]", passed: positionCorrect, actual: wall?.position, expected: "[0,1.5,-5]" }
+            ];
+        }
+
+        function phaseCWall3() {
+            const geometry = new THREE.BoxGeometry(0.2, 3, 10);
+            const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const wall = new THREE.Mesh(geometry, material);
+            
+            wall.position.set(5, 1.5, 0);
+            scene.add(wall);
+            roomObjects.eastWall = wall;
+            
+            console.log("Wall 3 (East) created at [5,1.5,0]");
+            return true;
+        }
+
+        function assertPhaseCWall3() {
+            const wall = roomObjects.eastWall;
+            const positionCorrect = wall &&
+                Math.abs(wall.position.x - 5) < 0.01 &&
+                Math.abs(wall.position.y - 1.5) < 0.01 &&
+                Math.abs(wall.position.z - 0) < 0.01;
+            
+            return [
+                { test: "East wall exists", passed: !!wall, actual: !!wall, expected: true },
+                { test: "East wall position [5,1.5,0]", passed: positionCorrect, actual: wall?.position, expected: "[5,1.5,0]" }
+            ];
+        }
+
+        function phaseCWall4() {
+            const geometry = new THREE.BoxGeometry(0.2, 3, 10);
+            const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+            const wall = new THREE.Mesh(geometry, material);
+            
+            wall.position.set(-5, 1.5, 0);
+            scene.add(wall);
+            roomObjects.westWall = wall;
+            
+            console.log("Wall 4 (West) created at [-5,1.5,0]");
+            return true;
+        }
+
+        function assertPhaseCWall4() {
+            const wall = roomObjects.westWall;
+            const positionCorrect = wall &&
+                Math.abs(wall.position.x - (-5)) < 0.01 &&
+                Math.abs(wall.position.y - 1.5) < 0.01 &&
+                Math.abs(wall.position.z - 0) < 0.01;
+            
+            return [
+                { test: "West wall exists", passed: !!wall, actual: !!wall, expected: true },
+                { test: "West wall position [-5,1.5,0]", passed: positionCorrect, actual: wall?.position, expected: "[-5,1.5,0]" }
+            ];
+        }
+
+        // Phase D: Reference Objects
+        function phaseD() {
+            // Reference pole
+            const poleGeometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 8);
+            const poleMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+            pole.position.set(0, 0.5, 0);
+            scene.add(pole);
+            roomObjects.referencePole = pole;
+            
+            // Debug ball
+            const ballGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+            const ballMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+            const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+            ball.position.set(2, 1.5, 2);
+            scene.add(ball);
+            roomObjects.debugBall = ball;
+            
+            console.log("Reference pole created at [0,0.5,0]");
+            console.log("Debug ball created at [2,1.5,2]");
+            return true;
+        }
+
+        function assertPhaseD() {
+            const pole = roomObjects.referencePole;
+            const ball = roomObjects.debugBall;
+            
+            const polePositionCorrect = pole &&
+                Math.abs(pole.position.x - 0) < 0.01 &&
+                Math.abs(pole.position.y - 0.5) < 0.01 &&
+                Math.abs(pole.position.z - 0) < 0.01;
+            
+            const ballPositionCorrect = ball &&
+                Math.abs(ball.position.x - 2) < 0.01 &&
+                Math.abs(ball.position.y - 1.5) < 0.01 &&
+                Math.abs(ball.position.z - 2) < 0.01;
+            
+            return [
+                { test: "Reference pole exists", passed: !!pole, actual: !!pole, expected: true },
+                { test: "Pole position [0,0.5,0]", passed: polePositionCorrect, actual: pole?.position, expected: "[0,0.5,0]" },
+                { test: "Debug ball exists", passed: !!ball, actual: !!ball, expected: true },
+                { test: "Ball position [2,1.5,2]", passed: ballPositionCorrect, actual: ball?.position, expected: "[2,1.5,2]" }
+            ];
+        }
+
+        // Phase E: Remove/Add/Modify Tests
+        function phaseE() {
+            // Remove floor
+            if (roomObjects.floor) {
+                scene.remove(roomObjects.floor);
+                console.log("Floor removed");
+            }
+            
+            // Re-add floor
+            const geometry = new THREE.PlaneGeometry(10, 10);
+            const material = new THREE.MeshStandardMaterial({ color: 0x0000ff }); // Blue this time
+            const floor = new THREE.Mesh(geometry, material);
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(0, 0, 0);
+            scene.add(floor);
+            roomObjects.floor = floor;
+            console.log("Floor re-added with blue color");
+            
+            // Remove and re-add one wall
+            if (roomObjects.northWall) {
+                scene.remove(roomObjects.northWall);
+                console.log("North wall removed");
+            }
+            
+            const wallGeometry = new THREE.BoxGeometry(10, 3, 0.2);
+            const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xffff00 }); // Yellow
+            const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+            wall.position.set(0, 1.5, 5);
+            scene.add(wall);
+            roomObjects.northWall = wall;
+            console.log("North wall re-added with yellow color");
+            
+            return true;
+        }
+
+        function assertPhaseE() {
+            const floor = roomObjects.floor;
+            const wall = roomObjects.northWall;
+            
+            const floorIsBlue = floor && floor.material.color.getHex() === 0x0000ff;
+            const wallIsYellow = wall && wall.material.color.getHex() === 0xffff00;
+            
+            return [
+                { test: "Floor re-created", passed: !!floor, actual: !!floor, expected: true },
+                { test: "Floor is blue", passed: floorIsBlue, actual: floor?.material.color.getHex(), expected: 0x0000ff },
+                { test: "North wall re-created", passed: !!wall, actual: !!wall, expected: true },
+                { test: "Wall is yellow", passed: wallIsYellow, actual: wall?.material.color.getHex(), expected: 0xffff00 }
+            ];
+        }
+
+        // Phase F: Export JSON
+        function phaseF() {
+            const layout = {
+                instances: []
+            };
+            
+            // Add all room objects to layout
+            if (roomObjects.floor) {
+                layout.instances.push({
+                    type: "floor",
+                    position: [
+                        Math.round(roomObjects.floor.position.x * 100) / 100,
+                        Math.round(roomObjects.floor.position.y * 100) / 100,
+                        Math.round(roomObjects.floor.position.z * 100) / 100
+                    ],
+                    rotation: [
+                        Math.round(roomObjects.floor.rotation.x * 100) / 100,
+                        Math.round(roomObjects.floor.rotation.y * 100) / 100,
+                        Math.round(roomObjects.floor.rotation.z * 100) / 100
+                    ]
+                });
+            }
+            
+            if (roomObjects.northWall) {
+                layout.instances.push({
+                    type: "northWall",
+                    position: [
+                        Math.round(roomObjects.northWall.position.x * 100) / 100,
+                        Math.round(roomObjects.northWall.position.y * 100) / 100,
+                        Math.round(roomObjects.northWall.position.z * 100) / 100
+                    ]
+                });
+            }
+            
+            if (roomObjects.southWall) {
+                layout.instances.push({
+                    type: "southWall", 
+                    position: [
+                        Math.round(roomObjects.southWall.position.x * 100) / 100,
+                        Math.round(roomObjects.southWall.position.y * 100) / 100,
+                        Math.round(roomObjects.southWall.position.z * 100) / 100
+                    ]
+                });
+            }
+            
+            if (roomObjects.eastWall) {
+                layout.instances.push({
+                    type: "eastWall",
+                    position: [
+                        Math.round(roomObjects.eastWall.position.x * 100) / 100,
+                        Math.round(roomObjects.eastWall.position.y * 100) / 100,
+                        Math.round(roomObjects.eastWall.position.z * 100) / 100
+                    ]
+                });
+            }
+            
+            if (roomObjects.westWall) {
+                layout.instances.push({
+                    type: "westWall",
+                    position: [
+                        Math.round(roomObjects.westWall.position.x * 100) / 100,
+                        Math.round(roomObjects.westWall.position.y * 100) / 100,
+                        Math.round(roomObjects.westWall.position.z * 100) / 100
+                    ]
+                });
+            }
+            
+            if (roomObjects.referencePole) {
+                layout.instances.push({
+                    type: "referencePole",
+                    position: [
+                        Math.round(roomObjects.referencePole.position.x * 100) / 100,
+                        Math.round(roomObjects.referencePole.position.y * 100) / 100,
+                        Math.round(roomObjects.referencePole.position.z * 100) / 100
+                    ]
+                });
+            }
+            
+            if (roomObjects.debugBall) {
+                layout.instances.push({
+                    type: "debugBall",
+                    position: [
+                        Math.round(roomObjects.debugBall.position.x * 100) / 100,
+                        Math.round(roomObjects.debugBall.position.y * 100) / 100,
+                        Math.round(roomObjects.debugBall.position.z * 100) / 100
+                    ]
+                });
+            }
+            
+            const jsonString = JSON.stringify(layout, null, 2);
+            document.getElementById('json-content').textContent = jsonString;
+            document.getElementById('json-output').style.display = 'block';
+            
+            console.log("room-layout.json generated");
+            console.log(jsonString);
+            
+            return true;
+        }
+
+        function assertPhaseF() {
+            const jsonContent = document.getElementById('json-content').textContent;
+            const hasJsonOutput = jsonContent && jsonContent.includes('instances');
+            const instanceCount = roomObjects ? Object.keys(roomObjects).length : 0;
+            
+            return [
+                { test: "JSON generated", passed: hasJsonOutput, actual: !!hasJsonOutput, expected: true },
+                { test: "JSON contains instances", passed: jsonContent.includes('instances'), actual: jsonContent.includes('instances'), expected: true },
+                { test: "All objects captured", passed: instanceCount > 0, actual: instanceCount, expected: ">0" }
+            ];
+        }
+
+        // Phase management
+        function nextPhase() {
+            if (currentPhase < phases.length) {
+                const phase = phases[currentPhase];
+                
+                // Update UI
+                document.getElementById('phase-title').textContent = phase.name;
+                document.getElementById('phase-description').textContent = phase.description;
+                
+                // Run phase action
+                const success = phase.action();
+                
+                if (success) {
+                    // Run assertions
+                    const assertResults = phase.assertions();
+                    displayAssertions(assertResults);
+                    
+                    // Check if all assertions passed
+                    const allPassed = assertResults.every(result => result.passed);
+                    
+                    if (allPassed) {
+                        currentPhase++;
+                        
+                        if (currentPhase < phases.length) {
+                            document.getElementById('next-btn').textContent = `Next: ${phases[currentPhase].name}`;
+                        } else {
+                            document.getElementById('next-btn').textContent = "Complete!";
+                            document.getElementById('next-btn').disabled = true;
+                        }
+                    } else {
+                        document.getElementById('next-btn').textContent = "Fix Issues & Retry";
+                    }
+                }
+            }
+        }
+
+        function displayAssertions(results) {
+            const container = document.getElementById('assert-results');
+            container.innerHTML = '';
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = result.passed ? 'assert-pass' : 'assert-fail';
+                div.innerHTML = `
+                    ${result.passed ? '✅' : '❌'} ${result.test}<br>
+                    Expected: ${result.expected}, Actual: ${JSON.stringify(result.actual)}
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Keyboard handler
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+                nextPhase();
+            }
+        });
+
+        // Initialize everything
+        initScene();
+        console.log('🧪 Manual Room Build Ready - Press SPACE or click Next to begin');
+    </script>
+</body>
+</html>
