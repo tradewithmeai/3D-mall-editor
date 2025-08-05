@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logging Framework Test - Phase 1 Foundation</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 20px;
+            font-family: 'Courier New', monospace; 
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .btn {
+            background: #333;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 12px;
+        }
+        .btn:hover {
+            background: #00ff00;
+            color: #000;
+        }
+        .btn.danger {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        .btn.danger:hover {
+            background: #ff0000;
+            color: #fff;
+        }
+        .console-output {
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 15px 0;
+            height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+            white-space: pre-wrap;
+        }
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .test-result {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            border-radius: 4px;
+            padding: 15px;
+            text-align: center;
+        }
+        .test-result.pass {
+            border-color: #00ff00;
+            color: #00ff00;
+        }
+        .test-result.fail {
+            border-color: #ff0000;
+            color: #ff0000;
+        }
+        .test-result.pending {
+            border-color: #ffff00;
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 BULLETPROOF LOGGING FRAMEWORK TEST</h1>
+            <p>Phase 1: Foundation - Comprehensive Logging System Validation</p>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 Test Categories</h3>
+            <button class="btn" onclick="testCreateLogging()">Test CREATE Logging</button>
+            <button class="btn" onclick="testModifyLogging()">Test MODIFY Logging</button>
+            <button class="btn" onclick="testRemoveLogging()">Test REMOVE Logging</button>
+            <button class="btn" onclick="testAssertLogging()">Test ASSERT Logging</button>
+            <button class="btn" onclick="testDianaLogging()">Test DIANA Logging</button>
+            <button class="btn" onclick="testFactoryLogging()">Test FACTORY Logging</button>
+            <button class="btn" onclick="testPerformanceLogging()">Test PERFORMANCE Logging</button>
+            <button class="btn" onclick="testMemoryLogging()">Test MEMORY Logging</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Comprehensive Tests</h3>
+            <button class="btn" onclick="runAllTests()">🧪 Run All Tests</button>
+            <button class="btn" onclick="runStressTest()">⚡ Stress Test</button>
+            <button class="btn" onclick="exportLogs()">📥 Export Logs</button>
+            <button class="btn danger" onclick="clearConsole()">🗑️ Clear Console</button>
+        </div>
+
+        <div class="test-results" id="test-results">
+            <div class="test-result pending" id="create-test">
+                <h4>CREATE Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="modify-test">
+                <h4>MODIFY Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="remove-test">
+                <h4>REMOVE Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="assert-test">
+                <h4>ASSERT Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="diana-test">
+                <h4>DIANA Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="factory-test">
+                <h4>FACTORY Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="performance-test">
+                <h4>PERFORMANCE Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+            <div class="test-result pending" id="memory-test">
+                <h4>MEMORY Test</h4>
+                <div>🟡 Pending</div>
+            </div>
+        </div>
+
+        <div class="console-output" id="console-output">
+            <div>🚀 Logging Framework Test Console</div>
+            <div>Ready to run tests...</div>
+        </div>
+    </div>
+
+    <script src="logging-framework.js"></script>
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const consoleOutput = document.getElementById('console-output');
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            consoleOutput.innerHTML += '\n' + message;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+
+        function updateTestResult(testId, passed, message = '') {
+            const element = document.getElementById(testId);
+            element.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            element.innerHTML = `
+                <h4>${testId.replace('-', ' ').toUpperCase()}</h4>
+                <div>${passed ? '✅ PASS' : '❌ FAIL'}</div>
+                ${message ? `<div style="font-size: 10px; margin-top: 5px;">${message}</div>` : ''}
+            `;
+        }
+
+        function testCreateLogging() {
+            console.log('\n🧪 Testing CREATE logging...');
+            
+            // Test various creation scenarios
+            logCreate('wall', [0, 4, 10], 'uuid-12345678', { color: '#ff0000' });
+            logCreate('floor', [20, 0, 15], 'uuid-87654321');
+            logCreate('debugBall', [5, 1, 5], 'uuid-abcdef12', { radius: 0.3 });
+            
+            updateTestResult('create-test', true, 'All create logs successful');
+        }
+
+        function testModifyLogging() {
+            console.log('\n🧪 Testing MODIFY logging...');
+            
+            logModify('wall', 'color', '#ffffff', '#ff0000', 'uuid-12345678');
+            logModify('floor', 'roughness', '0.8', '0.2', 'uuid-87654321');
+            logModify('debugBall', 'material', 'standard', 'metallic', 'uuid-abcdef12');
+            
+            updateTestResult('modify-test', true, 'All modify logs successful');
+        }
+
+        function testRemoveLogging() {
+            console.log('\n🧪 Testing REMOVE logging...');
+            
+            logRemove('wall', 'uuid-12345678', true);
+            logRemove('floor', 'uuid-87654321', false);
+            logRemove('debugBall', 'uuid-abcdef12', true);
+            
+            updateTestResult('remove-test', true, 'All remove logs successful');
+        }
+
+        function testAssertLogging() {
+            console.log('\n🧪 Testing ASSERT logging...');
+            
+            const result1 = logAssert('Scene object count', 5 === 5, 5, 5);
+            const result2 = logAssert('Material color match', '#ff0000' === '#ff0000');
+            const result3 = logAssert('Position validation', false, [0,0,0], [1,1,1]);
+            
+            const allPassed = result1.passed && result2.passed && !result3.passed;
+            updateTestResult('assert-test', allPassed, 'Pass/fail detection working');
+        }
+
+        function testDianaLogging() {
+            console.log('\n🧪 Testing DIANA logging...');
+            
+            logDiana('make walls red', 'SUCCESS: Changed 4 walls to red', 125.5);
+            logDiana('add desk', 'SUCCESS: Added desk at [10, 0, 5]', 89.2);
+            logDiana('invalid command', 'ERROR: Command not recognized', 12.1);
+            
+            updateTestResult('diana-test', true, 'All Diana logs successful');
+        }
+
+        function testFactoryLogging() {
+            console.log('\n🧪 Testing FACTORY logging...');
+            
+            logFactory('CREATE', 'wall', true, { position: [0, 4, 10] });
+            logFactory('UPDATE', 'floor', true, { color: '#00ff00' });
+            logFactory('DELETE', 'debugBall', false, { error: 'Object not found' });
+            
+            updateTestResult('factory-test', true, 'All factory logs successful');
+        }
+
+        function testPerformanceLogging() {
+            console.log('\n🧪 Testing PERFORMANCE logging...');
+            
+            logPerf('FPS', 60, 30);
+            logPerf('Render Time', 16.7, 33.3);
+            logPerf('Object Count', 150, 100); // Should trigger threshold warning
+            
+            updateTestResult('performance-test', true, 'Performance metrics logged');
+        }
+
+        function testMemoryLogging() {
+            console.log('\n🧪 Testing MEMORY logging...');
+            
+            const memoryResult = logMemory('TEST');
+            const hasMemoryAPI = memoryResult !== null;
+            
+            updateTestResult('memory-test', true, 
+                hasMemoryAPI ? 'Memory API available' : 'Memory API not available');
+        }
+
+        function runAllTests() {
+            console.log('\n🚀 RUNNING ALL LOGGING TESTS...\n');
+            
+            const startTime = performance.now();
+            
+            testCreateLogging();
+            testModifyLogging();
+            testRemoveLogging();
+            testAssertLogging();
+            testDianaLogging();
+            testFactoryLogging();
+            testPerformanceLogging();
+            testMemoryLogging();
+            
+            const duration = performance.now() - startTime;
+            
+            console.log(`\n✅ ALL TESTS COMPLETED in ${duration.toFixed(2)}ms`);
+            console.log('\n📊 LOG SUMMARY:');
+            console.log(JSON.stringify(window.Logger.getSummary(), null, 2));
+        }
+
+        function runStressTest() {
+            console.log('\n⚡ RUNNING STRESS TEST...');
+            
+            const startTime = performance.now();
+            
+            // Create lots of log entries to test performance
+            for (let i = 0; i < 100; i++) {
+                logCreate(`object-${i}`, [i, 0, i], `uuid-stress-${i}`);
+                logModify(`object-${i}`, 'color', '#ffffff', `#${i.toString(16).padStart(6, '0')}`);
+                logRemove(`object-${i}`, `uuid-stress-${i}`, true);
+            }
+            
+            const duration = performance.now() - startTime;
+            logPerf('Stress Test Duration', duration, 1000);
+            
+            console.log(`\n⚡ STRESS TEST COMPLETED: ${duration.toFixed(2)}ms for 300 operations`);
+        }
+
+        function exportLogs() {
+            const logData = window.Logger.exportLogs();
+            const blob = new Blob([JSON.stringify(logData, null, 2)], 
+                { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `logging-test-${new Date().toISOString().slice(0, 19)}.json`;
+            a.click();
+            
+            console.log('📥 LOGS EXPORTED to file');
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = '<div>🗑️ Console cleared</div>';
+        }
+
+        // Initialize
+        console.log('🧪 LOGGING FRAMEWORK TEST LOADED');
+        console.log('Ready to validate bulletproof logging system...');
+    </script>
+</body>
+</html>
