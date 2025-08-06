@@ -210,6 +210,16 @@
                 </div>
             </div>
 
+            <!-- View Controls -->
+            <div class="section">
+                <h3>👁️ View Controls</h3>
+                <button class="btn" onclick="Beth.toggleWireframe()" id="wireframe-btn">🔍 Toggle Wireframe View</button>
+                <div style="font-size: 11px; color: #cccccc; margin-top: 8px;">
+                    Shows wireframe structure with 30% opacity.<br>
+                    Useful for validating component positioning.
+                </div>
+            </div>
+
             <!-- Movement Controls -->
             <div class="section">
                 <h3>🎮 Movement Testing</h3>
@@ -486,6 +496,8 @@
                 this.mallUnit = null;
                 this.rooms = [];
                 this.roomCounter = 0;
+                this.wireframeMode = false;
+                this.originalMaterials = new Map(); // Store original materials for toggle
             }
 
             async init() {
@@ -764,6 +776,69 @@
                         </div>
                     `;
                 }).join('');
+            }
+
+            toggleWireframe() {
+                this.wireframeMode = !this.wireframeMode;
+                
+                this.log(`🔍 ${this.wireframeMode ? 'Enabling' : 'Disabling'} wireframe view...`);
+                
+                // Get all meshes in the scene (rooms + boundary)
+                const allMeshes = [];
+                
+                // Add boundary mesh
+                if (boundaryMesh) {
+                    allMeshes.push(boundaryMesh);
+                }
+                
+                // Add all room meshes
+                this.rooms.forEach(room => {
+                    room.meshes.forEach(mesh => {
+                        allMeshes.push(mesh);
+                    });
+                });
+
+                // Toggle wireframe for all meshes
+                allMeshes.forEach(mesh => {
+                    if (this.wireframeMode) {
+                        // Store original material if not already stored
+                        if (!this.originalMaterials.has(mesh.uuid)) {
+                            this.originalMaterials.set(mesh.uuid, {
+                                wireframe: mesh.material.wireframe,
+                                transparent: mesh.material.transparent,
+                                opacity: mesh.material.opacity
+                            });
+                        }
+                        
+                        // Apply wireframe with 30% opacity
+                        mesh.material.wireframe = true;
+                        mesh.material.transparent = true;
+                        mesh.material.opacity = 0.3;
+                        
+                    } else {
+                        // Restore original material properties
+                        const original = this.originalMaterials.get(mesh.uuid);
+                        if (original) {
+                            mesh.material.wireframe = original.wireframe;
+                            mesh.material.transparent = original.transparent;
+                            mesh.material.opacity = original.opacity;
+                        }
+                    }
+                });
+
+                // Update button text
+                const btn = document.getElementById('wireframe-btn');
+                if (this.wireframeMode) {
+                    btn.textContent = '🔍 Disable Wireframe View';
+                    btn.style.borderColor = '#ff4444';
+                    btn.style.color = '#ff4444';
+                } else {
+                    btn.textContent = '🔍 Toggle Wireframe View';
+                    btn.style.borderColor = '#00ff00';
+                    btn.style.color = '#00ff00';
+                }
+
+                this.log(`🔍 Wireframe view ${this.wireframeMode ? 'enabled' : 'disabled'} (${allMeshes.length} meshes affected)`);
             }
 
             log(message) {
