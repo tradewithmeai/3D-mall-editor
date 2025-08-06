@@ -4,10 +4,8 @@
     "type": "mall-unit",
     "description": "Mall unit with corner-based coordinate system - SW corner origin",
     "created": "2025-08-05",
-    "completed": "2025-08-06",
     "coordinateSystem": "corner-based",
-    "originDescription": "Southwest corner at [0,0,0] - user-friendly positioning",
-    "compatibleWith": "Beth the Builder v1.0"
+    "originDescription": "Southwest corner at [0,0,0] - user-friendly positioning"
   },
   "origin": [0, 0, 0],
   "dimensions": {
@@ -41,7 +39,7 @@
     "boundary": {
       "color": "#ffff00",
       "opacity": 0.3,
-      "wireframe": false
+      "wireframe": true
     },
     "floor": {
       "color": "#cccccc"

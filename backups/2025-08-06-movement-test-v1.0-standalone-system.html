@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<!--
+Movement Test System v1.0
+Standalone User-Character Movement Testbed
+Created: 2025-08-06
+Features: First-person controls, acceleration, Xbox controller, spin/stun, debug view, collision detection
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movement Test v1.0 - User Character System</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #container {
+            display: flex;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: #000;
+        }
+
+        #controls {
+            width: 350px;
+            background: #2a2a2a;
+            padding: 20px;
+            overflow-y: auto;
+            border-left: 2px solid #444;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding: 15px;
+            background: #333;
+            border-radius: 8px;
+            border: 1px solid #555;
+        }
+
+        .section h3 {
+            margin: 0 0 15px 0;
+            color: #00ff00;
+            border-bottom: 1px solid #555;
+            padding-bottom: 8px;
+        }
+
+        .btn {
+            background: #444;
+            color: #ffffff;
+            border: 2px solid #00ff00;
+            padding: 10px 15px;
+            margin: 5px 0;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 14px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #555;
+            border-color: #00ff88;
+        }
+
+        .status {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 10px;
+            height: 120px;
+            overflow-y: auto;
+            font-size: 12px;
+            color: #cccccc;
+            border-radius: 5px;
+        }
+
+        .help-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 1000;
+            border: 2px solid #00ff00;
+            display: none;
+        }
+
+        .help-overlay.active {
+            display: block;
+        }
+
+        .debug-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 999;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        .stat-item {
+            background: #444;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <!-- Help Overlay -->
+            <div id="help-overlay" class="help-overlay">
+                <h3>🎮 Movement Controls</h3>
+                <div><strong>Keyboard:</strong></div>
+                <div>• W/A/S/D – Move</div>
+                <div>• Mouse – Look around</div>
+                <div>• Space – Spin & Stun</div>
+                <div>• H – Toggle this help</div>
+                <br>
+                <div><strong>Xbox Controller:</strong></div>
+                <div>• Left stick – Move</div>
+                <div>• Right stick – Look</div>
+                <div>• A button – Spin & Stun</div>
+                <br>
+                <div><strong>Debug:</strong></div>
+                <div>• Toggle Debug View – Top-down cross marker</div>
+                <div>• Toggle Wireframe – Structure view</div>
+            </div>
+
+            <!-- Debug Info -->
+            <div id="debug-info" class="debug-info">
+                <div><strong>Movement Test v1.0</strong></div>
+                <div id="position-info">Position: [0, 0, 0]</div>
+                <div id="speed-info">Speed: 2.0 units/s</div>
+                <div id="camera-info">Camera: Y=0°</div>
+                <div id="gamepad-info">Gamepad: Not connected</div>
+                <div id="state-info">State: Normal</div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <!-- Movement Controls -->
+            <div class="section">
+                <h3>🎮 Movement System</h3>
+                <button class="btn" onclick="MovementSystem.togglePointerLock()" id="movement-btn">🎯 Enable Movement</button>
+                <button class="btn" onclick="MovementSystem.toggleHelp()" id="help-btn">❓ Toggle Help (H)</button>
+                <div style="font-size: 11px; color: #cccccc; margin-top: 8px;">
+                    Click Enable Movement for pointer-lock controls.<br>
+                    Press H to toggle help overlay.<br>
+                    ESC to exit movement mode.
+                </div>
+            </div>
+
+            <!-- View Controls -->
+            <div class="section">
+                <h3>👁️ View Controls</h3>
+                <button class="btn" onclick="MovementSystem.toggleDebugView()" id="debug-btn">🔍 Enable Debug View</button>
+                <button class="btn" onclick="MovementSystem.toggleWireframe()" id="wireframe-btn">📐 Toggle Wireframe</button>
+                <div style="font-size: 11px; color: #cccccc; margin-top: 8px;">
+                    Debug view shows top-down orthographic camera.<br>
+                    Yellow cross marker represents player position.
+                </div>
+            </div>
+
+            <!-- Movement Stats -->
+            <div class="section">
+                <h3>📊 Movement Stats</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>Base Speed</div>
+                        <div id="base-speed">2.0 u/s</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Max Speed</div>
+                        <div id="max-speed">8.0 u/s</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Acceleration</div>
+                        <div id="acceleration">6.0 u/s²</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Spin Speed</div>
+                        <div id="spin-speed">0.0 rad/s</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Test Environment -->
+            <div class="section">
+                <h3>🏗️ Test Environment</h3>
+                <button class="btn" onclick="MovementSystem.loadTestEnvironment()" id="load-env-btn">🏢 Load Test Room</button>
+                <button class="btn" onclick="MovementSystem.resetPlayer()" id="reset-btn">🔄 Reset Position</button>
+                <div style="font-size: 11px; color: #cccccc; margin-top: 8px;">
+                    Creates a test room with collision walls.<br>
+                    Reset returns player to center.
+                </div>
+            </div>
+
+            <!-- Status Log -->
+            <div class="section">
+                <h3>📋 Status Log</h3>
+                <div class="status" id="status-log">
+                    Movement Test System v1.0 initializing...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Global scene objects
+        let scene, mainCamera, debugCamera, renderer;
+        let player, playerMesh, debugMarker;
+        let testEnvironment = [];
+        
+        // Movement system class
+        class UserMovementSystem {
+            constructor() {
+                // Movement state
+                this.enabled = false;
+                this.debugViewEnabled = false;
+                this.wireframeEnabled = false;
+                this.helpVisible = false;
+                
+                // Movement parameters
+                this.baseSpeed = 2.0;
+                this.maxSpeed = 8.0;
+                this.acceleration = 6.0; // units per second squared
+                this.currentSpeed = this.baseSpeed;
+                this.accelerationTime = 0;
+                this.accelerationThreshold = 2.0; // seconds
+                this.rampUpDuration = 1.0; // seconds
+                
+                // Input state
+                this.keys = {
+                    forward: false,
+                    backward: false,
+                    left: false,
+                    right: false,
+                    space: false
+                };
+                
+                // Spin & stun system
+                this.spinSpeed = 0;
+                this.spinAcceleration = 0.5; // rad/s²
+                this.maxSpinSpeed = 10.0; // rad/s
+                this.isSpinning = false;
+                this.isStunned = false;
+                this.stunDuration = 2.0; // seconds
+                this.fallDuration = 0.5; // seconds
+                this.stunStartTime = 0;
+                this.fallStartTime = 0;
+                this.isFalling = false;
+                
+                // Gamepad support
+                this.gamepadIndex = -1;
+                this.deadzone = 0.1;
+                
+                // Camera
+                this.yaw = 0;
+                this.lookSpeed = 0.002;
+                
+                // Physics
+                this.velocity = new THREE.Vector3();
+                this.position = new THREE.Vector3(0, 1.8, 0); // Eye height
+                
+                // Timing
+                this.lastTime = 0;
+                this.deltaTime = 0;
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                // Keyboard events
+                document.addEventListener('keydown', (e) => this.onKeyDown(e));
+                document.addEventListener('keyup', (e) => this.onKeyUp(e));
+                
+                // Pointer lock events
+                document.addEventListener('pointerlockchange', () => this.onPointerLockChange());
+                document.addEventListener('pointerlockerror', () => this.onPointerLockError());
+                
+                // Mouse movement
+                document.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                
+                // Gamepad connection
+                window.addEventListener('gamepadconnected', (e) => this.onGamepadConnected(e));
+                window.addEventListener('gamepaddisconnected', (e) => this.onGamepadDisconnected(e));
+            }
+            
+            togglePointerLock() {
+                if (this.enabled) {
+                    this.disable();
+                } else {
+                    this.enable();
+                }
+            }
+            
+            enable() {
+                const canvas = renderer.domElement;
+                canvas.requestPointerLock();
+            }
+            
+            disable() {
+                document.exitPointerLock();
+            }
+            
+            onPointerLockChange() {
+                this.enabled = !!document.pointerLockElement;
+                this.updateUI();
+                
+                if (this.enabled) {
+                    this.log("🎯 Movement controls enabled - Use WASD + mouse");
+                } else {
+                    this.log("🔓 Movement controls disabled");
+                }
+            }
+            
+            onPointerLockError() {
+                this.log("❌ Pointer lock failed");
+            }
+            
+            onKeyDown(event) {
+                if (!this.enabled && event.code !== 'KeyH') return;
+                
+                switch (event.code) {
+                    case 'KeyW':
+                        this.keys.forward = true;
+                        break;
+                    case 'KeyS':
+                        this.keys.backward = true;
+                        break;
+                    case 'KeyA':
+                        this.keys.left = true;
+                        break;
+                    case 'KeyD':
+                        this.keys.right = true;
+                        break;
+                    case 'Space':
+                        event.preventDefault();
+                        if (!this.keys.space && !this.isStunned) {
+                            this.startSpin();
+                        }
+                        this.keys.space = true;
+                        break;
+                    case 'KeyH':
+                        this.toggleHelp();
+                        break;
+                }
+            }
+            
+            onKeyUp(event) {
+                if (!this.enabled && event.code !== 'KeyH') return;
+                
+                switch (event.code) {
+                    case 'KeyW':
+                        this.keys.forward = false;
+                        break;
+                    case 'KeyS':
+                        this.keys.backward = false;
+                        break;
+                    case 'KeyA':
+                        this.keys.left = false;
+                        break;
+                    case 'KeyD':
+                        this.keys.right = false;
+                        break;
+                    case 'Space':
+                        if (this.keys.space) {
+                            this.endSpin();
+                        }
+                        this.keys.space = false;
+                        break;
+                }
+            }
+            
+            onMouseMove(event) {
+                if (!this.enabled || this.isStunned) return;
+                
+                this.yaw -= event.movementX * this.lookSpeed;
+                mainCamera.rotation.y = this.yaw;
+            }
+            
+            startSpin() {
+                if (this.isSpinning || this.isStunned) return;
+                
+                this.isSpinning = true;
+                this.log("🌀 Spin charging...");
+            }
+            
+            endSpin() {
+                if (!this.isSpinning) return;
+                
+                const finalSpeed = this.spinSpeed;
+                this.log(`🎯 Spin released! Final speed: ${finalSpeed.toFixed(2)} rad/s`);
+                
+                // Start fall and stun sequence
+                this.isFalling = true;
+                this.fallStartTime = performance.now();
+                this.stunStartTime = this.fallStartTime + this.fallDuration * 1000;
+                
+                this.log("🤸 Falling forward...");
+                
+                // Create visual stun indicator
+                this.createStunIndicator();
+            }
+            
+            createStunIndicator() {
+                const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const indicator = new THREE.Mesh(geometry, material);
+                indicator.position.copy(this.position);
+                indicator.userData = { isStunIndicator: true };
+                scene.add(indicator);
+                
+                // Remove after stun duration
+                setTimeout(() => {
+                    scene.remove(indicator);
+                }, (this.fallDuration + this.stunDuration) * 1000);
+            }
+            
+            updateGamepad() {
+                const gamepads = navigator.getGamepads();
+                if (this.gamepadIndex >= 0 && gamepads[this.gamepadIndex]) {
+                    const gamepad = gamepads[this.gamepadIndex];
+                    
+                    // Movement (left stick)
+                    const leftX = Math.abs(gamepad.axes[0]) > this.deadzone ? gamepad.axes[0] : 0;
+                    const leftY = Math.abs(gamepad.axes[1]) > this.deadzone ? gamepad.axes[1] : 0;
+                    
+                    this.keys.left = leftX < -this.deadzone;
+                    this.keys.right = leftX > this.deadzone;
+                    this.keys.forward = leftY < -this.deadzone;
+                    this.keys.backward = leftY > this.deadzone;
+                    
+                    // Look (right stick X only)
+                    const rightX = Math.abs(gamepad.axes[2]) > this.deadzone ? gamepad.axes[2] : 0;
+                    if (rightX !== 0 && this.enabled && !this.isStunned) {
+                        this.yaw -= rightX * this.lookSpeed * 60; // Scale for 60fps
+                        mainCamera.rotation.y = this.yaw;
+                    }
+                    
+                    // A button for spin
+                    if (gamepad.buttons[0].pressed && !this.keys.space && !this.isStunned) {
+                        this.startSpin();
+                        this.keys.space = true;
+                    } else if (!gamepad.buttons[0].pressed && this.keys.space) {
+                        this.endSpin();
+                        this.keys.space = false;
+                    }
+                    
+                    document.getElementById('gamepad-info').textContent = 
+                        `Gamepad: Connected (${gamepad.id.substring(0, 20)}...)`;
+                } else {
+                    document.getElementById('gamepad-info').textContent = 'Gamepad: Not connected';
+                }
+            }
+            
+            onGamepadConnected(event) {
+                this.gamepadIndex = event.gamepad.index;
+                this.log(`🎮 Gamepad connected: ${event.gamepad.id}`);
+            }
+            
+            onGamepadDisconnected(event) {
+                if (this.gamepadIndex === event.gamepad.index) {
+                    this.gamepadIndex = -1;
+                }
+                this.log(`🎮 Gamepad disconnected`);
+            }
+            
+            update() {
+                const currentTime = performance.now();
+                this.deltaTime = (currentTime - this.lastTime) / 1000;
+                this.lastTime = currentTime;
+                
+                // Update gamepad input
+                this.updateGamepad();
+                
+                // Update spin and stun system
+                this.updateSpinAndStun(currentTime);
+                
+                // Update movement (if not stunned)
+                if (!this.isStunned) {
+                    this.updateMovement();
+                }
+                
+                // Update camera position
+                mainCamera.position.copy(this.position);
+                
+                // Update player mesh position (if exists)
+                if (playerMesh) {
+                    playerMesh.position.copy(this.position);
+                    playerMesh.position.y -= 1.8; // Adjust for eye height
+                }
+                
+                // Update debug marker
+                if (debugMarker) {
+                    debugMarker.position.set(this.position.x, 0.1, this.position.z);
+                }
+                
+                // Update debug info
+                this.updateDebugInfo();
+                
+                // Run automated assertions
+                this.runAssertions();
+            }
+            
+            updateSpinAndStun(currentTime) {
+                if (this.isSpinning && !this.isFalling) {
+                    // Charge spin speed
+                    this.spinSpeed = Math.min(
+                        this.spinSpeed + this.spinAcceleration * this.deltaTime,
+                        this.maxSpinSpeed
+                    );
+                    
+                    // Apply spin rotation
+                    if (playerMesh) {
+                        playerMesh.rotation.y += this.spinSpeed * this.deltaTime;
+                    }
+                    mainCamera.rotation.z = Math.sin(currentTime * 0.01) * this.spinSpeed * 0.1;
+                }
+                
+                if (this.isFalling) {
+                    const fallProgress = (currentTime - this.fallStartTime) / (this.fallDuration * 1000);
+                    
+                    if (fallProgress < 1) {
+                        // Falling forward - rotate camera X
+                        mainCamera.rotation.x = -fallProgress * Math.PI / 2;
+                    } else if (!this.isStunned) {
+                        // Start stun phase
+                        this.isStunned = true;
+                        this.isFalling = false;
+                        this.isSpinning = false;
+                        this.log("😵 Stunned! Controls disabled for 2 seconds...");
+                        
+                        // Schedule recovery
+                        setTimeout(() => {
+                            this.isStunned = false;
+                            this.spinSpeed = 0;
+                            mainCamera.rotation.x = 0;
+                            mainCamera.rotation.z = 0;
+                            if (playerMesh) {
+                                playerMesh.rotation.set(0, 0, 0);
+                            }
+                            this.log("✅ Recovered! Controls re-enabled");
+                        }, this.stunDuration * 1000);
+                    }
+                }
+            }
+            
+            updateMovement() {
+                if (!this.enabled) return;
+                
+                // Calculate movement input
+                let moving = this.keys.forward || this.keys.backward || this.keys.left || this.keys.right;
+                
+                if (moving) {
+                    // Increment acceleration time
+                    this.accelerationTime += this.deltaTime;
+                    
+                    // Calculate current speed with acceleration
+                    if (this.accelerationTime > this.accelerationThreshold) {
+                        const rampProgress = Math.min(
+                            (this.accelerationTime - this.accelerationThreshold) / this.rampUpDuration,
+                            1.0
+                        );
+                        this.currentSpeed = this.baseSpeed + (this.maxSpeed - this.baseSpeed) * rampProgress;
+                    }
+                } else {
+                    // Reset speed instantly when not moving
+                    this.accelerationTime = 0;
+                    this.currentSpeed = this.baseSpeed;
+                }
+                
+                // Calculate movement direction
+                const direction = new THREE.Vector3();
+                
+                if (this.keys.forward) direction.z -= 1;
+                if (this.keys.backward) direction.z += 1;
+                if (this.keys.left) direction.x -= 1;
+                if (this.keys.right) direction.x += 1;
+                
+                direction.normalize();
+                
+                // Apply camera rotation to movement direction
+                direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+                
+                // Calculate velocity
+                this.velocity.copy(direction);
+                this.velocity.multiplyScalar(this.currentSpeed * this.deltaTime);
+                
+                // Apply movement with collision detection
+                this.moveWithCollision();
+            }
+            
+            moveWithCollision() {
+                if (this.velocity.length() === 0) return;
+                
+                const oldPosition = this.position.clone();
+                
+                // Try movement
+                this.position.add(this.velocity);
+                
+                // Simple boundary collision (test room bounds)
+                const bounds = { minX: -9, maxX: 9, minZ: -9, maxZ: 9, minY: 0.5, maxY: 10 };
+                const margin = 0.3;
+                
+                if (this.position.x < bounds.minX + margin ||
+                    this.position.x > bounds.maxX - margin ||
+                    this.position.z < bounds.minZ + margin ||
+                    this.position.z > bounds.maxZ - margin) {
+                    
+                    // Revert movement
+                    this.position.copy(oldPosition);
+                }
+                
+                // Check collision with test environment walls
+                for (const wall of testEnvironment) {
+                    if (wall.userData && wall.userData.collider) {
+                        const box = new THREE.Box3().setFromObject(wall);
+                        const playerBox = new THREE.Box3(
+                            new THREE.Vector3(this.position.x - margin, this.position.y - 1.8, this.position.z - margin),
+                            new THREE.Vector3(this.position.x + margin, this.position.y + 0.2, this.position.z + margin)
+                        );
+                        
+                        if (box.intersectsBox(playerBox)) {
+                            this.position.copy(oldPosition);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            toggleDebugView() {
+                this.debugViewEnabled = !this.debugViewEnabled;
+                
+                if (this.debugViewEnabled) {
+                    // Switch to debug camera (top-down orthographic)
+                    debugCamera.position.set(0, 20, 0);
+                    debugCamera.lookAt(0, 0, 0);
+                    this.log("🔍 Debug view enabled - Top-down orthographic camera");
+                } else {
+                    this.log("🔍 Debug view disabled - First-person camera");
+                }
+                
+                this.updateUI();
+            }
+            
+            toggleWireframe() {
+                this.wireframeEnabled = !this.wireframeEnabled;
+                
+                scene.traverse((object) => {
+                    if (object.isMesh && object !== debugMarker) {
+                        object.material.wireframe = this.wireframeEnabled;
+                    }
+                });
+                
+                this.log(`📐 Wireframe ${this.wireframeEnabled ? 'enabled' : 'disabled'}`);
+                this.updateUI();
+            }
+            
+            toggleHelp() {
+                this.helpVisible = !this.helpVisible;
+                const overlay = document.getElementById('help-overlay');
+                overlay.classList.toggle('active', this.helpVisible);
+            }
+            
+            loadTestEnvironment() {
+                // Clear existing environment
+                testEnvironment.forEach(obj => scene.remove(obj));
+                testEnvironment = [];
+                
+                // Create test room with collision walls
+                const wallHeight = 3;
+                const roomSize = 18;
+                
+                // Floor
+                const floorGeometry = new THREE.PlaneGeometry(roomSize, roomSize);
+                const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x444444 });
+                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                floor.rotation.x = -Math.PI / 2;
+                floor.position.y = 0;
+                floor.userData = { collider: false };
+                scene.add(floor);
+                testEnvironment.push(floor);
+                
+                // Walls
+                const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x666666 });
+                
+                // North wall
+                const northWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(roomSize, wallHeight, 0.2),
+                    wallMaterial
+                );
+                northWall.position.set(0, wallHeight/2, -roomSize/2);
+                northWall.userData = { collider: true };
+                scene.add(northWall);
+                testEnvironment.push(northWall);
+                
+                // South wall
+                const southWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(roomSize, wallHeight, 0.2),
+                    wallMaterial
+                );
+                southWall.position.set(0, wallHeight/2, roomSize/2);
+                southWall.userData = { collider: true };
+                scene.add(southWall);
+                testEnvironment.push(southWall);
+                
+                // East wall
+                const eastWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.2, wallHeight, roomSize),
+                    wallMaterial
+                );
+                eastWall.position.set(roomSize/2, wallHeight/2, 0);
+                eastWall.userData = { collider: true };
+                scene.add(eastWall);
+                testEnvironment.push(eastWall);
+                
+                // West wall
+                const westWall = new THREE.Mesh(
+                    new THREE.BoxGeometry(0.2, wallHeight, roomSize),
+                    wallMaterial
+                );
+                westWall.position.set(-roomSize/2, wallHeight/2, 0);
+                westWall.userData = { collider: true };
+                scene.add(westWall);
+                testEnvironment.push(westWall);
+                
+                this.log("🏢 Test environment loaded - 18x18m room with collision walls");
+            }
+            
+            resetPlayer() {
+                this.position.set(0, 1.8, 0);
+                this.yaw = 0;
+                this.velocity.set(0, 0, 0);
+                this.currentSpeed = this.baseSpeed;
+                this.accelerationTime = 0;
+                this.spinSpeed = 0;
+                this.isSpinning = false;
+                this.isStunned = false;
+                this.isFalling = false;
+                
+                mainCamera.rotation.set(0, 0, 0);
+                if (playerMesh) {
+                    playerMesh.rotation.set(0, 0, 0);
+                }
+                
+                this.log("🔄 Player position reset to center");
+            }
+            
+            updateDebugInfo() {
+                document.getElementById('position-info').textContent = 
+                    `Position: [${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)}, ${this.position.z.toFixed(1)}]`;
+                
+                document.getElementById('speed-info').textContent = 
+                    `Speed: ${this.currentSpeed.toFixed(1)} units/s`;
+                
+                document.getElementById('camera-info').textContent = 
+                    `Camera: Y=${(this.yaw * 180 / Math.PI).toFixed(0)}°`;
+                
+                const state = this.isStunned ? 'Stunned' : 
+                             this.isFalling ? 'Falling' : 
+                             this.isSpinning ? 'Spinning' : 'Normal';
+                document.getElementById('state-info').textContent = `State: ${state}`;
+                
+                // Update stats
+                document.getElementById('base-speed').textContent = `${this.baseSpeed.toFixed(1)} u/s`;
+                document.getElementById('max-speed').textContent = `${this.maxSpeed.toFixed(1)} u/s`;
+                document.getElementById('acceleration').textContent = `${this.acceleration.toFixed(1)} u/s²`;
+                document.getElementById('spin-speed').textContent = `${this.spinSpeed.toFixed(1)} rad/s`;
+            }
+            
+            runAssertions() {
+                // Assert speed ramping after threshold
+                if (this.accelerationTime > this.accelerationThreshold + this.rampUpDuration) {
+                    if (Math.abs(this.currentSpeed - this.maxSpeed) > 0.1) {
+                        this.log("❌ ASSERTION FAILED: Speed should be at maximum after ramp-up");
+                    }
+                }
+                
+                // Assert controls disabled during stun
+                if (this.isStunned && this.enabled) {
+                    // Controls should be visually disabled but pointer lock may remain
+                    // This is handled by the input processing logic
+                }
+            }
+            
+            updateUI() {
+                const movementBtn = document.getElementById('movement-btn');
+                const debugBtn = document.getElementById('debug-btn');
+                const wireframeBtn = document.getElementById('wireframe-btn');
+                
+                if (this.enabled) {
+                    movementBtn.textContent = '🔓 Disable Movement (ESC)';
+                    movementBtn.style.borderColor = '#ff4444';
+                } else {
+                    movementBtn.textContent = '🎯 Enable Movement';
+                    movementBtn.style.borderColor = '#00ff00';
+                }
+                
+                if (this.debugViewEnabled) {
+                    debugBtn.textContent = '👁️ Disable Debug View';
+                    debugBtn.style.borderColor = '#ff4444';
+                } else {
+                    debugBtn.textContent = '🔍 Enable Debug View';
+                    debugBtn.style.borderColor = '#00ff00';
+                }
+                
+                if (this.wireframeEnabled) {
+                    wireframeBtn.textContent = '📐 Disable Wireframe';
+                    wireframeBtn.style.borderColor = '#ff4444';
+                } else {
+                    wireframeBtn.textContent = '📐 Toggle Wireframe';
+                    wireframeBtn.style.borderColor = '#00ff00';
+                }
+            }
+            
+            log(message) {
+                const log = document.getElementById('status-log');
+                const timestamp = new Date().toLocaleTimeString();
+                log.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                log.scrollTop = log.scrollHeight;
+                console.log(`[Movement] ${message}`);
+            }
+        }
+        
+        // Initialize Three.js scene
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x222222);
+            
+            // Main camera (first-person)
+            mainCamera = new THREE.PerspectiveCamera(75, (window.innerWidth - 350) / window.innerHeight, 0.1, 1000);
+            mainCamera.position.set(0, 1.8, 0);
+            
+            // Debug camera (top-down orthographic)
+            const aspect = (window.innerWidth - 350) / window.innerHeight;
+            debugCamera = new THREE.OrthographicCamera(-10 * aspect, 10 * aspect, 10, -10, 0.1, 100);
+            debugCamera.position.set(0, 20, 0);
+            debugCamera.lookAt(0, 0, 0);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth - 350, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(10, 10, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Create debug marker (yellow cross)
+            const markerGeometry = new THREE.RingGeometry(0.1, 0.3, 8);
+            const markerMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xffff00,
+                side: THREE.DoubleSide,
+                depthTest: false
+            });
+            debugMarker = new THREE.Mesh(markerGeometry, markerMaterial);
+            debugMarker.rotation.x = -Math.PI / 2;
+            debugMarker.position.y = 0.1;
+            debugMarker.renderOrder = 1000;
+            scene.add(debugMarker);
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Update movement system
+                MovementSystem.update();
+                
+                // Choose camera based on debug mode
+                const activeCamera = MovementSystem.debugViewEnabled ? debugCamera : mainCamera;
+                renderer.render(scene, activeCamera);
+            }
+            animate();
+        }
+        
+        // Initialize movement system
+        let MovementSystem;
+        
+        function init() {
+            initScene();
+            MovementSystem = new UserMovementSystem();
+            MovementSystem.log("🎮 Movement Test System v1.0 initialized");
+            MovementSystem.log("📋 Standalone user-character movement testbed ready");
+            MovementSystem.log("Click 'Enable Movement' to start testing");
+            
+            // Load initial test environment
+            MovementSystem.loadTestEnvironment();
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth - 350;
+            const height = window.innerHeight;
+            
+            mainCamera.aspect = width / height;
+            mainCamera.updateProjectionMatrix();
+            
+            const aspect = width / height;
+            debugCamera.left = -10 * aspect;
+            debugCamera.right = 10 * aspect;
+            debugCamera.updateProjectionMatrix();
+            
+            renderer.setSize(width, height);
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

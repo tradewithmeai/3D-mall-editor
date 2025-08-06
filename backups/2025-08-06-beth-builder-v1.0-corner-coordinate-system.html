@@ -1,15 +1,9 @@
 <!DOCTYPE html>
-<!--
-Beth the Builder v1.0 - Corner-Based Coordinate System
-Mall Sub-Room Creation Agent with Intuitive SW Corner Origin
-Created: 2025-08-05, Completed: 2025-08-06
-Features: Corner-based coordinates, visual grid overlay, color-coded test markers, comprehensive error handling
--->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beth the Builder v1.0 - Corner-Based Room Creation</title>
+    <title>Beth the Builder - Sub-Room Creation System</title>
     <style>
         body { 
             margin: 0; 
@@ -168,7 +162,7 @@ Features: Corner-based coordinates, visual grid overlay, color-coded test marker
 
             <!-- Room Builder Controls -->
             <div class="section">
-                <h3>🏗️ Beth the Builder v1.0</h3>
+                <h3>🏗️ Beth the Builder</h3>
                 
                 <div class="input-group">
                     <label>X Position (from SW corner)</label>
@@ -212,7 +206,7 @@ Features: Corner-based coordinates, visual grid overlay, color-coded test marker
             <div class="section">
                 <h3>📊 Status Log</h3>
                 <div class="status" id="status-log">
-                    Beth the Builder v1.0 initializing...
+                    Beth the Builder initialized...
                 </div>
             </div>
 
@@ -514,7 +508,7 @@ Features: Corner-based coordinates, visual grid overlay, color-coded test marker
             }
 
             async init() {
-                this.log("🏗️ Beth the Builder v1.0 initializing...");
+                this.log("🏗️ Beth the Builder initializing...");
                 
                 // Load mall unit definition
                 try {
@@ -789,7 +783,7 @@ Features: Corner-based coordinates, visual grid overlay, color-coded test marker
                         version: "1.0",
                         type: "mall-blueprint", 
                         generated: new Date().toISOString(),
-                        agent: "Beth the Builder v1.0"
+                        agent: "Beth the Builder"
                     },
                     mallUnit: this.mallUnit,
                     rooms: this.rooms.map(room => ({
@@ -1144,7 +1138,7 @@ Features: Corner-based coordinates, visual grid overlay, color-coded test marker
                 });
             });
             
-            console.log('🎬 Beth the Builder v1.0 ready for sub-room creation');
+            console.log('🎬 Beth the Builder ready for sub-room creation');
         }
 
         // MovementController global interface will be set up after initialization

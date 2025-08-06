@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Movement Test Debug</title>
+</head>
+<body>
+    <div>Debug Test - Check Console (F12)</div>
+    <div id="status">Loading...</div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        console.log("1. Script started");
+        
+        document.getElementById('status').textContent = "Script running...";
+        
+        if (typeof THREE !== 'undefined') {
+            console.log("2. Three.js loaded successfully");
+            document.getElementById('status').textContent = "Three.js loaded";
+        } else {
+            console.error("2. Three.js failed to load");
+            document.getElementById('status').textContent = "Three.js FAILED";
+        }
+        
+        function testInit() {
+            console.log("3. testInit called");
+            document.getElementById('status').textContent = "Init function called";
+            
+            try {
+                const scene = new THREE.Scene();
+                console.log("4. Scene created successfully");
+                document.getElementById('status').textContent = "Scene created successfully!";
+            } catch (error) {
+                console.error("4. Scene creation failed:", error);
+                document.getElementById('status').textContent = "Scene creation FAILED: " + error.message;
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            console.log("5. Window load event fired");
+            testInit();
+        });
+        
+        console.log("6. Script setup complete");
+    </script>
+</body>
+</html>

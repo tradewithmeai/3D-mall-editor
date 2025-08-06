@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Office Simulator - Interactive Virtual Workspace with AI Characters</title>
+    <meta name="description" content="Experience an immersive 3D office environment featuring AI-powered characters, art gallery, and interactive workspace. Built with Three.js for modern browsers.">
+    <meta name="keywords" content="3D office, virtual workspace, Three.js, interactive simulation, AI characters, art gallery, web application">
+    <meta name="author" content="3D Office Simulator">
+    <meta property="og:title" content="3D Office Simulator - Interactive Virtual Workspace">
+    <meta property="og:description" content="Explore a fully interactive 3D office with AI characters, art gallery, and immersive workspace features.">
+    <meta property="og:type" content="website">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        
+        #dialogue-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+        }
+        
+        #dialogue-box h3 {
+            margin: 0 0 10px 0;
+            color: #D97356;
+        }
+        
+        #dialogue-content {
+            margin: 10px 0;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .dialogue-option {
+            background: #f0f0f0;
+            border: 2px solid #D97356;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dialogue-option:hover {
+            background: #D97356;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        #custom-question-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        #custom-question-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #D97356;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        
+        #custom-question-submit {
+            background: #D97356;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        #custom-question-submit:hover {
+            background: #c85a3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        #custom-question-submit:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(217, 115, 86, 0.3);
+            border-radius: 50%;
+            border-top-color: #D97356;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .instruction {
+            opacity: 0.8;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        #interaction-prompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .floating-text {
+            position: absolute;
+            color: #ff0;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 2s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+        #dev-notice {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            background: rgba(0, 255, 0, 0.1);
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            border: 1px solid #00ff00;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <div id="dev-notice">
+        LOCAL DEV MODE<br>
+        Ready for Claude Code!
+    </div>
+    
+    <!-- UI overlay removed for clean coordinate testing -->
+    
+    <div id="dialogue-box">
+        <h3 id="dialogue-name">Character Name</h3>
+        <div id="dialogue-content">Dialogue content will appear here</div>
+        <div id="dialogue-options"></div>
+        <div id="custom-question-container">
+            <p style="margin: 5px 0; font-size: 14px; opacity: 0.8; text-align: center;" id="custom-question-divider">━━━ Or ask your own question ━━━</p>
+            <input type="text" id="custom-question-input" placeholder="Ask anything! e.g., 'What's your favorite feature?' or 'Tell me about your work'" maxlength="200">
+            <button id="custom-question-submit">Ask Question</button>
+        </div>
+    </div>
+    
+    <div id="interaction-prompt"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        console.log('🏢 3D Virtual Mall Simulator - Multi-Office Environment');
+        console.log('Central Lobby connecting 3 office spaces!');
+        
+        // Check if THREE.js loaded
+        if (typeof THREE === 'undefined') {
+            console.error('❌ THREE.js failed to load!');
+            document.body.innerHTML = '<h1 style="color: red; text-align: center; margin-top: 50px;">THREE.js failed to load. Check internet connection.</h1>';
+            throw new Error('THREE.js not loaded');
+        }
+        
+        console.log('✅ THREE.js version:', THREE.REVISION);
+        console.log('WebGL supported:', WebGLRenderingContext ? 'Yes' : 'No');
+        
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f5);
+        scene.fog = new THREE.Fog(0xf5f5f5, 10, 50);
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(20, 8, 35); // Higher up and further back to see the full lobby from new center
+        camera.lookAt(20, 0, 15); // Look at the center of the lobby in new coordinate system
+        console.log('📷 Camera positioned at:', camera.position);
+        console.log('📷 Camera looking at lobby center (20,0,15)');
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        // ========================================================================
+        // BASIC VISIBILITY TEST - Simple objects to verify rendering works
+        // ========================================================================
+        console.log('🔍 Adding basic test objects...');
+        
+        // COORDINATE REFERENCE POLE
+        // Simple black pole marking Southwest corner origin (0,0,0)
+        const referencePole = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.1, 0.1, 1, 8), // radius 0.1, height 1
+            new THREE.MeshBasicMaterial({ color: 0x000000 }) // Black
+        );
+        referencePole.position.set(0, 0.5, 0); // Southwest corner origin - bottom at floor (0,0,0), top at (0,1,0)
+        scene.add(referencePole);
+        console.log('⚫ Reference pole: 1 unit high at Southwest corner origin (0,0,0)');
+        
+        // Floor rendering removed - will be replaced with proper pastel green floor
+        
+        // Floating text effect
+        function createFloatingText(text, worldPos) {
+            const screenPos = worldPos.clone();
+            screenPos.project(camera);
+            
+            const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+            
+            const div = document.createElement('div');
+            div.className = 'floating-text';
+            div.textContent = text;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            document.body.appendChild(div);
+            
+            setTimeout(() => div.remove(), 2000);
+        }
+        
+        // Enhanced Lighting System
+        const ambientLight = new THREE.AmbientLight(0xf0f8ff, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+        directionalLight.position.set(10, 15, 10);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.near = 0.1;
+        directionalLight.shadow.camera.far = 50;
+        directionalLight.shadow.camera.left = -30;
+        directionalLight.shadow.camera.right = 30;
+        directionalLight.shadow.camera.top = 30;
+        directionalLight.shadow.camera.bottom = -30;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+        
+        // Accent lighting
+        const accentLight1 = new THREE.PointLight(0x00ff88, 0.6, 15);
+        accentLight1.position.set(-15, 8, -15);
+        scene.add(accentLight1);
+        
+        const accentLight2 = new THREE.PointLight(0xff4488, 0.6, 15);
+        accentLight2.position.set(15, 8, -15);
+        scene.add(accentLight2);
+        
+        const accentLight3 = new THREE.PointLight(0x4488ff, 0.6, 15);
+        accentLight3.position.set(0, 8, 15);
+        scene.add(accentLight3);
+        
+        // Ceiling mood lighting (subtle color changing)
+        const moodLight = new THREE.PointLight(0x6366f1, 0.3, 25);
+        moodLight.position.set(0, 12, 0);
+        scene.add(moodLight);
+        
+        // Animate mood lighting
+        let lightTime = 0;
+        function animateLighting() {
+            lightTime += 0.01;
+            const hue = (Math.sin(lightTime) + 1) * 0.5;
+            moodLight.color.setHSL(hue * 0.6 + 0.6, 0.5, 0.3);
+        }
+        
+        // ========================================================================
+        // FORMAL 3D COORDINATE SYSTEM - LOBBY FOUNDATION
+        // Establishing precise spatial language and coordinate standards
+        // ========================================================================
+        console.log('🎯 Establishing formal coordinate system with lobby-only foundation...');
+        
+        // FORMAL COORDINATE SYSTEM DEFINITION
+        // Origin (0,0,0) = Center of lobby floor
+        // North = +Z direction, South = -Z direction  
+        // East = +X direction, West = -X direction
+        // Up = +Y direction, Down = -Y direction
+        
+        const LOBBY_WIDTH = 40;   // X-axis: -20 to +20
+        const LOBBY_DEPTH = 30;   // Z-axis: -15 to +15  
+        const LOBBY_HEIGHT = 8;   // Y-axis: 0 to 8
+        
+        console.log(`📐 Coordinate System: Lobby bounds X(${-LOBBY_WIDTH/2} to ${LOBBY_WIDTH/2}), Z(${-LOBBY_DEPTH/2} to ${LOBBY_DEPTH/2}), Y(0 to ${LOBBY_HEIGHT})`);
+        
+        // Materials
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xf8f8f8,
+            roughness: 0.9
+        });
+        
+        const glassMaterial = new THREE.MeshStandardMaterial({
+            color: 0x87ceeb,
+            transparent: true,
+            opacity: 0.3,
+            roughness: 0.1,
+            metalness: 0.5
+        });
+        
+        // ========================================================================
+        // CENTRAL LOBBY GEOMETRY - PRECISE COORDINATE POSITIONING
+        // ========================================================================
+        
+        // PASTEL GREEN LOBBY FLOOR - Full room coverage with corner-based positioning
+        const lobbyFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),  // 40×30 to match lobby dimensions
+            new THREE.MeshStandardMaterial({ 
+                color: 0x90EE90,  // Light pastel green
+                roughness: 0.6,
+                metalness: 0.1
+            })
+        );
+        lobbyFloor.rotation.x = -Math.PI / 2;  // Horizontal orientation
+        lobbyFloor.position.set(LOBBY_WIDTH/2, 0, LOBBY_DEPTH/2);  // Center floor over corner-based coords (20, 0, 15)
+        lobbyFloor.receiveShadow = true;
+        scene.add(lobbyFloor);
+        console.log(`🟢 Pastel green lobby floor: ${LOBBY_WIDTH}×${LOBBY_DEPTH} units, positioned from SW corner origin`);
+        
+        // GRAY LOBBY CEILING - Full room coverage with corner-based positioning
+        const lobbyCeiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_DEPTH),  // 40×30 to match lobby dimensions
+            new THREE.MeshStandardMaterial({ 
+                color: 0xd3d3d3,  // Light gray
+                roughness: 0.8,
+                metalness: 0.1
+            })
+        );
+        lobbyCeiling.rotation.x = Math.PI / 2;     // Horizontal, facing down
+        lobbyCeiling.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT, LOBBY_DEPTH/2);  // Center ceiling over corner-based coords (20, 8, 15)
+        scene.add(lobbyCeiling);
+        console.log(`⬜ Gray lobby ceiling: ${LOBBY_WIDTH}×${LOBBY_DEPTH} units at height Y=${LOBBY_HEIGHT}, positioned from SW corner origin`);
+        
+        // ========================================================================
+        // DEBUG SYSTEM VARIABLES - Global debug state management
+        // ========================================================================
+        let debugMode = false;
+        const debugGrids = new THREE.Group();
+        scene.add(debugGrids);
+        console.log('🔧 Debug system initialized - debugMode: OFF');
+        
+        // LOBBY WALLS - Four compass-oriented walls to enclose the room
+        // 🧭 NORTH WALL (Back wall, +Z direction)
+        const northWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT),
+            wallMaterial
+        );
+        northWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, LOBBY_DEPTH);  // At North edge (Z=30)
+        northWall.rotation.y = Math.PI; // Face inward (south)
+        scene.add(northWall);
+        
+        // 🧭 SOUTH WALL (Front wall, Z=0)  
+        const southWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(LOBBY_WIDTH, LOBBY_HEIGHT),
+            wallMaterial
+        );
+        southWall.position.set(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, 0);  // At South edge (Z=0)
+        scene.add(southWall);
+        
+        // 🧭 EAST WALL (Right wall, X=40)
+        const eastWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT),
+            wallMaterial
+        );
+        eastWall.position.set(LOBBY_WIDTH, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);  // At East edge (X=40)
+        eastWall.rotation.y = -Math.PI/2; // Face inward (west)
+        scene.add(eastWall);
+        
+        // 🧭 WEST WALL (Left wall, X=0)
+        const westWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(LOBBY_DEPTH, LOBBY_HEIGHT),
+            wallMaterial
+        );
+        westWall.position.set(0, LOBBY_HEIGHT/2, LOBBY_DEPTH/2);  // At West edge (X=0)
+        westWall.rotation.y = Math.PI/2; // Face inward (east)  
+        scene.add(westWall);
+        
+        console.log('🧭 Four compass walls: NORTH(Z=30), SOUTH(Z=0), EAST(X=40), WEST(X=0)');
+        
+        // ========================================================================
+        // STORE CREATION SYSTEM - TEMPORARILY DISABLED
+        // Will be re-enabled after lobby foundation is perfected
+        // ========================================================================
+        /*
+        // Function to create store
+        function createStore(name, x, z, width, depth, rotation = 0) {
+            const storeGroup = new THREE.Group();
+            
+            // Store floor
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(width, depth),
+                new THREE.MeshStandardMaterial({ color: 0xf0f0f0, roughness: 0.8 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            storeGroup.add(floor);
+            
+            // Back wall
+            const backWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(width, storeHeight),
+                wallMaterial
+            );
+            backWall.position.set(0, storeHeight/2, -depth/2);
+            storeGroup.add(backWall);
+            
+            // Side walls
+            const leftWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(depth, storeHeight),
+                wallMaterial
+            );
+            leftWall.position.set(-width/2, storeHeight/2, 0);
+            leftWall.rotation.y = Math.PI / 2;
+            storeGroup.add(leftWall);
+            
+            const rightWall = new THREE.Mesh(
+                new THREE.PlaneGeometry(depth, storeHeight),
+                wallMaterial
+            );
+            rightWall.position.set(width/2, storeHeight/2, 0);
+            rightWall.rotation.y = -Math.PI / 2;
+            storeGroup.add(rightWall);
+            
+            // Glass storefront (facing lobby)
+            const glassFront = new THREE.Mesh(
+                new THREE.PlaneGeometry(width, storeHeight),
+                glassMaterial
+            );
+            glassFront.position.set(0, storeHeight/2, depth/2);
+            storeGroup.add(glassFront);
+            
+            // Store ceiling
+            const ceiling = new THREE.Mesh(
+                new THREE.PlaneGeometry(width, depth),
+                new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.9 })
+            );
+            ceiling.rotation.x = Math.PI / 2;
+            ceiling.position.y = storeHeight;
+            storeGroup.add(ceiling);
+            
+            // Store sign (properly positioned)
+            const sign = createWallLabel(`STORE ${name}`, 0, storeHeight - 1.5, depth/2 + 0.1);
+            storeGroup.add(sign);
+            
+            storeGroup.position.set(x, 0, z);
+            storeGroup.rotation.y = rotation;
+            return storeGroup;
+        }
+        
+        // ========================================================================
+        // TOP WALL STORES (North) - A, B, D - three equal units (1/3 width each)
+        // ========================================================================
+        const topStoreWidth = lobbyWidth / 3;
+        scene.add(createStore('A', -lobbyWidth/2 + topStoreWidth/2, -lobbyDepth/2 - storeDepth/2, topStoreWidth, storeDepth));
+        scene.add(createStore('B', 0, -lobbyDepth/2 - storeDepth/2, topStoreWidth, storeDepth));
+        scene.add(createStore('D', lobbyWidth/2 - topStoreWidth/2, -lobbyDepth/2 - storeDepth/2, topStoreWidth, storeDepth));
+        
+        // ========================================================================
+        // BOTTOM WALL STORES (South) - C, K, L - three equal units (1/3 width each)  
+        // ========================================================================
+        scene.add(createStore('C', -lobbyWidth/2 + topStoreWidth/2, lobbyDepth/2 + storeDepth/2, topStoreWidth, storeDepth, Math.PI));
+        scene.add(createStore('K', 0, lobbyDepth/2 + storeDepth/2, topStoreWidth, storeDepth, Math.PI));
+        scene.add(createStore('L', lobbyWidth/2 - topStoreWidth/2, lobbyDepth/2 + storeDepth/2, topStoreWidth, storeDepth, Math.PI));
+        
+        // ========================================================================
+        // LEFT WALL STORES (West) - E (1/3 height), H (2/3 height)  
+        // Fixed: All stores fit within rectangular perimeter
+        // ========================================================================
+        const smallStoreDepth = lobbyDepth / 3;  // 10 units
+        const largeStoreDepth = lobbyDepth * 2 / 3;  // 20 units
+        
+        // E: Small store (10 units deep) positioned at north end of left wall
+        scene.add(createStore('E', -lobbyWidth/2 - storeDepth/2, -lobbyDepth/2 + smallStoreDepth/2, storeDepth, smallStoreDepth, Math.PI/2));
+        
+        // H: Large store (20 units deep) positioned at south end of left wall (bottom 2/3)
+        scene.add(createStore('H', -lobbyWidth/2 - storeDepth/2, lobbyDepth/2 - largeStoreDepth/2, storeDepth, largeStoreDepth, Math.PI/2));
+        
+        // ========================================================================
+        // RIGHT WALL STORES (East) - F (2/3 height), J (1/3 height)
+        // Fixed: All stores fit within rectangular perimeter  
+        // ========================================================================
+        
+        // F: Large store (20 units deep) positioned at north end of right wall (top 2/3)
+        scene.add(createStore('F', lobbyWidth/2 + storeDepth/2, -lobbyDepth/2 + largeStoreDepth/2, storeDepth, largeStoreDepth, -Math.PI/2));
+        
+        // J: Small store (10 units deep) positioned at south end of right wall  
+        scene.add(createStore('J', lobbyWidth/2 + storeDepth/2, lobbyDepth/2 - smallStoreDepth/2, storeDepth, smallStoreDepth, -Math.PI/2));
+        
+        // ========================================================================
+        // WALL LABELING SYSTEM - Debug labels for all walls
+        // ========================================================================
+        
+        function createWallLabel(text, x, y, z, rotationY = 0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            
+            // Clear background
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, 512, 128);
+            
+            // Add border
+            context.strokeStyle = '#000000';
+            context.lineWidth = 4;
+            context.strokeRect(0, 0, 512, 128);
+            
+            // Add text
+            context.fillStyle = '#000000';
+            context.font = 'bold 32px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, 256, 64);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.MeshBasicMaterial({ 
+                map: texture, 
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            
+            const label = new THREE.Mesh(
+                new THREE.PlaneGeometry(3, 0.75),
+                labelMaterial
+            );
+            label.position.set(x, y, z);
+            label.rotation.y = rotationY;
+            
+            return label;
+        }
+        
+        // LOBBY LABELS  
+        scene.add(createWallLabel('CENTRAL LOBBY', 0, 6.5, 0));
+        scene.add(createWallLabel('STORES: A, B, D', 0, 6, -lobbyDepth/2 - 1));
+        scene.add(createWallLabel('STORES: C, K, L', 0, 6, lobbyDepth/2 + 1, Math.PI));
+        scene.add(createWallLabel('STORES: E, H', -lobbyWidth/2 - 1, 6, 0, Math.PI/2));
+        scene.add(createWallLabel('STORES: F, J', lobbyWidth/2 + 1, 6, 0, -Math.PI/2));
+        
+        console.log('🏬 Perfect mall layout created - matches user drawing exactly!');
+        
+        // ========================================================================
+        // DEBUG SYSTEM - Laser Grid & Debug Ball
+        // ========================================================================
+        
+        let debugMode = false;
+        const debugGrids = new THREE.Group();
+        scene.add(debugGrids);
+        
+        // Create interactive debug ball (green) - positioned in lobby
+        const debugBallGeometry = new THREE.SphereGeometry(0.3, 16, 16);
+        window.debugBallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x44ff44,
+            roughness: 0.4,
+            metalness: 0.1,
+            transparent: true,
+            opacity: 0.9,
+            emissive: 0x113311,
+            emissiveIntensity: 0.2
+        });
+        window.debugBall = new THREE.Mesh(debugBallGeometry, window.debugBallMaterial);
+        window.debugBall.position.set(-15, 2, 5); // In lobby area
+        window.debugBall.castShadow = true;
+        window.debugBall.receiveShadow = true;
+        window.debugBall.userData.isDebugBall = true;
+        
+        // Add green glow effect
+        const debugBallGlow = new THREE.PointLight(0x44ff44, 0.5, 5);
+        window.debugBall.add(debugBallGlow);
+        
+        // Physics properties for debug ball
+        window.debugBall.userData = {
+            velocity: new THREE.Vector3(0, 0, 0),
+            gravity: -0.015,
+            bounce: 0.8,
+            friction: 0.98,
+            radius: 0.3,
+            isGrounded: false,
+            kickCooldown: 0,
+            isDebugBall: true
+        };
+        scene.add(window.debugBall);
+        
+        console.log('🟢 Debug ball created at position:', window.debugBall.position);
+        
+        // Add label for the debug ball
+        scene.add(createWallLabel('DEBUG BALL - KICK TO TOGGLE', -15, 3.5, 5, Math.PI/2));
+        
+        // Function to create laser grid on a surface
+        function createLaserGrid(width, height, position, rotation, gridSpacing = 1) {
+            const gridGroup = new THREE.Group();
+            
+            // Create grid lines
+            const gridMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x00ff00, 
+                transparent: true, 
+                opacity: 0.6 
+            });
+            
+            // Vertical lines
+            for (let x = -width/2; x <= width/2; x += gridSpacing) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, -height/2, 0),
+                    new THREE.Vector3(x, height/2, 0)
+                ]);
+                const line = new THREE.Line(geometry, gridMaterial);
+                gridGroup.add(line);
+            }
+            
+            // Horizontal lines
+            for (let y = -height/2; y <= height/2; y += gridSpacing) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(-width/2, y, 0),
+                    new THREE.Vector3(width/2, y, 0)
+                ]);
+                const line = new THREE.Line(geometry, gridMaterial);
+                gridGroup.add(line);
+            }
+            
+            // Position and rotate the grid
+            gridGroup.position.copy(position);
+            if (rotation) {
+                gridGroup.rotation.copy(rotation);
+            }
+            
+            return gridGroup;
+        }
+        
+        // Function to toggle debug mode
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            
+            if (debugMode) {
+                console.log('🔧 DEBUG MODE ON - Laser grid activated for new mall layout');
+                
+                // CENTRAL LOBBY GRIDS
+                debugGrids.add(createLaserGrid(lobbyWidth, lobbyDepth, new THREE.Vector3(0, 0.02, 0), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(lobbyWidth, lobbyDepth, new THREE.Vector3(0, wallHeight-0.02, 0), new THREE.Euler(Math.PI/2, 0, 0)));
+                
+                // TOP STORES GRIDS (A, B, D)
+                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(-lobbyWidth/2 + topStoreWidth/2, 0.02, -lobbyDepth/2 - storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(0, 0.02, -lobbyDepth/2 - storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(lobbyWidth/2 - topStoreWidth/2, 0.02, -lobbyDepth/2 - storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                
+                // BOTTOM STORES GRIDS (C, K, L)
+                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(-lobbyWidth/2 + topStoreWidth/2, 0.02, lobbyDepth/2 + storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(0, 0.02, lobbyDepth/2 + storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(topStoreWidth, storeDepth, new THREE.Vector3(lobbyWidth/2 - topStoreWidth/2, 0.02, lobbyDepth/2 + storeDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                
+                // LEFT STORES GRIDS (E, H)
+                debugGrids.add(createLaserGrid(storeDepth, smallStoreDepth, new THREE.Vector3(-lobbyWidth/2 - storeDepth/2, 0.02, -lobbyDepth/2 + smallStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(storeDepth, largeStoreDepth, new THREE.Vector3(-lobbyWidth/2 - storeDepth/2, 0.02, lobbyDepth/2 - largeStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                
+                // RIGHT STORES GRIDS (F, J)
+                debugGrids.add(createLaserGrid(storeDepth, largeStoreDepth, new THREE.Vector3(lobbyWidth/2 + storeDepth/2, 0.02, -lobbyDepth/2 + largeStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                debugGrids.add(createLaserGrid(storeDepth, smallStoreDepth, new THREE.Vector3(lobbyWidth/2 + storeDepth/2, 0.02, lobbyDepth/2 - smallStoreDepth/2), new THREE.Euler(-Math.PI/2, 0, 0)));
+                
+                // Change debug ball color to indicate debug mode
+                window.debugBallMaterial.color.setHex(0x00ff00); // Brighter green
+                window.debugBallMaterial.emissiveIntensity = 0.4; // More glow
+                
+            } else {
+                console.log('🔧 DEBUG MODE OFF - Laser grid deactivated');
+                
+                // Remove all debug grids
+                debugGrids.clear();
+                
+                // Reset debug ball color
+                window.debugBallMaterial.color.setHex(0x44ff44); // Original green
+                window.debugBallMaterial.emissiveIntensity = 0.2; // Original glow
+            }
+        }
+        
+        console.log('Debug system initialized - Kick the green debug ball to toggle grid!');
+        
+        // ========================================================================
+        // MALL COMPLETE - All storefronts created above
+        // ========================================================================
+        console.log('🏬 Mall construction complete! 9 storefronts ready for business.');
+        */ // END STORE SYSTEM DISABLE
+        
+        console.log('🚧 Store creation system temporarily disabled - focusing on lobby foundation');
+        
+        // ========================================================================
+        // CLEAN SLATE - Gallery and furniture removed for modular rebuild
+        // ========================================================================
+        console.log('🧹 Basic test mode - complex systems temporarily disabled');
+        
+        // Furniture materials and functions removed for clean slate
+        
+        // Desk creation function removed for clean slate
+        /*
+        function createDesk(x, z) {
+            const deskGroup = new THREE.Group();
+            
+            // Desk top
+            const deskTop = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 0.1, 1.5),
+                woodMaterial
+            );
+            deskTop.position.y = 0.75;
+            deskTop.castShadow = true;
+            deskTop.receiveShadow = true;
+            deskGroup.add(deskTop);
+            
+            // Metal frame
+            const frameGeometry = new THREE.BoxGeometry(0.05, 0.7, 0.05);
+            const framePositions = [
+                [-1.45, 0.35, -0.7],
+                [1.45, 0.35, -0.7],
+                [-1.45, 0.35, 0.7],
+                [1.45, 0.35, 0.7]
+            ];
+            
+            framePositions.forEach(pos => {
+                const frame = new THREE.Mesh(frameGeometry, metalMaterial);
+                frame.position.set(...pos);
+                frame.castShadow = true;
+                deskGroup.add(frame);
+            });
+            
+            // Computer monitor
+            const monitorBase = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.15, 0.15, 0.05, 16),
+                metalMaterial
+            );
+            monitorBase.position.set(0, 0.82, 0);
+            deskGroup.add(monitorBase);
+            
+            const monitorStand = new THREE.Mesh(
+                new THREE.BoxGeometry(0.05, 0.3, 0.05),
+                metalMaterial
+            );
+            monitorStand.position.set(0, 0.95, 0);
+            deskGroup.add(monitorStand);
+            
+            const monitorScreen = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.7, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.5 })
+            );
+            monitorScreen.position.set(0, 1.3, 0);
+            deskGroup.add(monitorScreen);
+            
+            // Keyboard
+            const keyboard = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.02, 0.15),
+                metalMaterial
+            );
+            keyboard.position.set(0, 0.81, 0.3);
+            deskGroup.add(keyboard);
+            
+            // Chair
+            const chairSeat = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.05, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            chairSeat.position.set(0, 0.5, 0.8);
+            deskGroup.add(chairSeat);
+            
+            const chairBack = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.6, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            chairBack.position.set(0, 0.8, 1.02);
+            deskGroup.add(chairBack);
+            
+            // Random desk items
+            if (Math.random() > 0.5) {
+                const mug = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.08, 0.08, 0.1, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xffffff })
+                );
+                mug.position.set(Math.random() * 0.5 - 0.25, 0.85, Math.random() * 0.3);
+                deskGroup.add(mug);
+            }
+            
+            // Desk lamp
+            const lampBase = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.15, 0.15, 0.05, 8),
+                metalMaterial
+            );
+            lampBase.position.set(-1, 0.82, -0.3);
+            deskGroup.add(lampBase);
+            
+            const lampArm = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8),
+                metalMaterial
+            );
+            lampArm.position.set(-1, 1.2, -0.3);
+            lampArm.rotation.z = Math.PI / 6;
+            deskGroup.add(lampArm);
+            
+            const lampHead = new THREE.Mesh(
+                new THREE.ConeGeometry(0.2, 0.3, 8),
+                metalMaterial
+            );
+            lampHead.position.set(-0.7, 1.5, -0.3);
+            lampHead.rotation.z = -Math.PI / 3;
+            deskGroup.add(lampHead);
+            
+            // Lamp light
+            const lampLight = new THREE.PointLight(0xffd700, 0.8, 5);
+            lampLight.position.set(-0.6, 1.4, -0.3);
+            lampLight.castShadow = true;
+            deskGroup.add(lampLight);
+            
+            deskGroup.position.set(x, 0, z);
+            return deskGroup;
+        }
+        */
+        
+        // Desk instantiations removed for clean slate
+        
+        // Whiteboard removed for clean slate
+        
+        // Company Logo on back wall - REMOVED for clean slate
+        
+        // All old office decoration functions removed for clean slate
+        
+        // Neon signs removed for clean slate
+        
+        // ========================================================================
+        // DEBUG BALL - Kick to toggle laser grid coordinate system
+        // ========================================================================
+        
+        // GREEN DEBUG BALL - Debug mode toggle ball  
+        const debugBallGeometry = new THREE.SphereGeometry(0.2, 12, 12);
+        window.debugBallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x44ff44,
+            roughness: 0.3,
+            metalness: 0.2,
+            transparent: true,
+            opacity: 0.8,
+            emissive: 0x114411,
+            emissiveIntensity: 0.2
+        });
+        window.debugBall = new THREE.Mesh(debugBallGeometry, window.debugBallMaterial);
+        window.debugBall.position.set(35, 1.5, 15); // Position in lobby area (east side, center Z)
+        window.debugBall.castShadow = true;
+        window.debugBall.receiveShadow = true;
+        
+        // Add green glow effect
+        const debugBallGlow = new THREE.PointLight(0x44ff44, 0.4, 4);
+        window.debugBall.add(debugBallGlow);
+        
+        // Debug ball physics properties
+        window.debugBall.userData = {
+            velocity: new THREE.Vector3(0.05, 0, 0.02),
+            gravity: -0.012,
+            bounce: 0.75,
+            friction: 0.98,
+            radius: 0.2,
+            isGrounded: false,
+            kickCooldown: 0
+        };
+        scene.add(window.debugBall);
+        
+        console.log('🟢 Debug ball added to lobby - Kick to toggle coordinate laser grid!');
+        
+        // ========================================================================
+        // LASER GRID COORDINATE SYSTEM - Precise spatial visualization
+        // ========================================================================
+        
+        function createLaserGrid(width, depth, position, rotation) {
+            const gridGroup = new THREE.Group();
+            
+            // Laser line material - bright red with emissive glow
+            const laserMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0xff0000,
+                transparent: true, 
+                opacity: 0.6,
+                emissive: 0xff0000,
+                emissiveIntensity: 0.1
+            });
+            
+            // Create horizontal lines lying flat on the ground
+            // X-axis lines (running North-South along Z direction)
+            const xLineGeometry = new THREE.BoxGeometry(0.02, 0.02, depth);  // Thin, runs along Z
+            for (let x = -width/2; x <= width/2; x += 1) {
+                const line = new THREE.Mesh(xLineGeometry, laserMaterial);
+                line.position.set(x, 0, 0);  // Positioned along X axis
+                gridGroup.add(line);
+            }
+            
+            // Z-axis lines (running East-West along X direction)  
+            const zLineGeometry = new THREE.BoxGeometry(width, 0.02, 0.02);  // Thin, runs along X
+            for (let z = -depth/2; z <= depth/2; z += 1) {
+                const line = new THREE.Mesh(zLineGeometry, laserMaterial);
+                line.position.set(0, 0, z);  // Positioned along Z axis
+                gridGroup.add(line);
+            }
+            
+            // Apply position and rotation
+            gridGroup.position.copy(position);
+            if (rotation) gridGroup.rotation.copy(rotation);
+            
+            return gridGroup;
+        }
+        
+        function toggleDebugMode() {
+            debugMode = !debugMode;
+            
+            if (debugMode) {
+                console.log('🔧 DEBUG MODE ON - Complete 3D coordinate system with laser grids + compass wall labels activated');
+                
+                // Clear any existing grids
+                debugGrids.clear();
+                
+                // 🧭 FLOOR GRID - Horizontal coordinate reference from corner origin
+                const floorGrid = createLaserGrid(
+                    LOBBY_WIDTH,     // 40 units wide (0 to 40)
+                    LOBBY_DEPTH,     // 30 units deep (0 to 30)
+                    new THREE.Vector3(LOBBY_WIDTH/2, 0.02, LOBBY_DEPTH/2),  // Center grid over corner-based coords
+                    null  // No rotation needed - grid is created flat
+                );
+                debugGrids.add(floorGrid);
+                
+                // 🧭 NORTH WALL GRID (Z=30) - Vertical grid on back wall
+                const northWallGrid = createLaserGrid(
+                    LOBBY_WIDTH,     // 40 units wide
+                    LOBBY_HEIGHT,    // 8 units tall
+                    new THREE.Vector3(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, LOBBY_DEPTH - 0.02),  // Just in front of north wall
+                    new THREE.Euler(-Math.PI/2, 0, 0)  // Rotate to be vertical
+                );
+                debugGrids.add(northWallGrid);
+                
+                // 🧭 SOUTH WALL GRID (Z=0) - Vertical grid on front wall  
+                const southWallGrid = createLaserGrid(
+                    LOBBY_WIDTH,     // 40 units wide
+                    LOBBY_HEIGHT,    // 8 units tall
+                    new THREE.Vector3(LOBBY_WIDTH/2, LOBBY_HEIGHT/2, 0.02),  // Just in front of south wall
+                    new THREE.Euler(-Math.PI/2, 0, 0)  // Rotate to be vertical
+                );
+                debugGrids.add(southWallGrid);
+                
+                // 🧭 EAST WALL GRID (X=40) - Vertical grid on right wall
+                const eastWallGrid = createLaserGrid(
+                    LOBBY_DEPTH,     // 30 units wide (depth becomes width on wall)
+                    LOBBY_HEIGHT,    // 8 units tall  
+                    new THREE.Vector3(LOBBY_WIDTH - 0.02, LOBBY_HEIGHT/2, LOBBY_DEPTH/2),  // Just in front of east wall
+                    new THREE.Euler(-Math.PI/2, 0, Math.PI/2)  // Rotate to be vertical and face west
+                );
+                debugGrids.add(eastWallGrid);
+                
+                // 🧭 WEST WALL GRID (X=0) - Vertical grid on left wall
+                const westWallGrid = createLaserGrid(
+                    LOBBY_DEPTH,     // 30 units wide (depth becomes width on wall)
+                    LOBBY_HEIGHT,    // 8 units tall
+                    new THREE.Vector3(0.02, LOBBY_HEIGHT/2, LOBBY_DEPTH/2),  // Just in front of west wall  
+                    new THREE.Euler(-Math.PI/2, 0, -Math.PI/2)  // Rotate to be vertical and face east
+                );
+                debugGrids.add(westWallGrid);
+                
+                // 🧭 CEILING GRID - Horizontal coordinate reference at top
+                const ceilingGrid = createLaserGrid(
+                    LOBBY_WIDTH,     // 40 units wide
+                    LOBBY_DEPTH,     // 30 units deep  
+                    new THREE.Vector3(LOBBY_WIDTH/2, LOBBY_HEIGHT - 0.02, LOBBY_DEPTH/2),  // Center ceiling over corner-based coords
+                    null  // No rotation needed - grid is created flat
+                );
+                debugGrids.add(ceilingGrid);
+                
+                // 🏷️ ADD WALL LABELS - Compass direction labels aligned with each wall
+                // NORTH WALL - Rotate 180° to face south (inward)
+                const northLabel = createWallLabel('🧭 NORTH WALL', new THREE.Vector3(LOBBY_WIDTH/2, LOBBY_HEIGHT/2 + 1, LOBBY_DEPTH - 0.1), new THREE.Euler(0, Math.PI, 0));
+                debugGrids.add(northLabel);
+                
+                // SOUTH WALL - No rotation needed (faces north, default orientation)
+                const southLabel = createWallLabel('🧭 SOUTH WALL', new THREE.Vector3(LOBBY_WIDTH/2, LOBBY_HEIGHT/2 + 1, 0.1));
+                debugGrids.add(southLabel);
+                
+                // EAST WALL - Rotate 90° to face west
+                const eastLabel = createWallLabel('🧭 EAST WALL', new THREE.Vector3(LOBBY_WIDTH - 0.1, LOBBY_HEIGHT/2 + 1, LOBBY_DEPTH/2), new THREE.Euler(0, -Math.PI/2, 0));
+                debugGrids.add(eastLabel);
+                
+                // WEST WALL - Rotate -90° to face east  
+                const westLabel = createWallLabel('🧭 WEST WALL', new THREE.Vector3(0.1, LOBBY_HEIGHT/2 + 1, LOBBY_DEPTH/2), new THREE.Euler(0, Math.PI/2, 0));
+                debugGrids.add(westLabel);
+                
+                // Change debug ball appearance - brighter when active
+                window.debugBallMaterial.color.setHex(0x00ff00); // Brighter green
+                window.debugBallMaterial.emissiveIntensity = 0.4; // More glow
+                
+            } else {
+                console.log('🔧 DEBUG MODE OFF - Laser grid deactivated');
+                
+                // Remove all debug grids
+                debugGrids.clear();
+                
+                // Reset debug ball appearance
+                window.debugBallMaterial.color.setHex(0x44ff44); // Original green
+                window.debugBallMaterial.emissiveIntensity = 0.2; // Original glow
+            }
+        }
+        
+        console.log('🎯 Laser grid system initialized - Kick green ball to toggle coordinate grid!');
+        
+        // ========================================================================
+        // WALL LABEL SYSTEM - Text labels for compass directions in debug mode
+        // ========================================================================
+        
+        function createWallLabel(text, position, rotation = null) {
+            // Create canvas for text texture
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            
+            // Clear canvas and set text properties
+            context.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            context.fillStyle = '#ffffff';
+            context.font = 'bold 48px Arial';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+            context.fillText(text, canvas.width/2, canvas.height/2);
+            
+            // Create texture and plane geometry (not sprite) for proper wall alignment
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelGeometry = new THREE.PlaneGeometry(4, 1); // Smaller size: 4×1 units
+            const labelMaterial = new THREE.MeshBasicMaterial({ 
+                map: texture, 
+                transparent: true, 
+                opacity: 0.9,
+                side: THREE.DoubleSide 
+            });
+            const label = new THREE.Mesh(labelGeometry, labelMaterial);
+            label.position.copy(position);
+            
+            // Apply rotation to align with wall
+            if (rotation) {
+                label.rotation.copy(rotation);
+            }
+            
+            return label;
+        }
+        
+        console.log('🏷️ Wall label system initialized - Labels will appear in debug mode');
+        
+        // Plants and coffee station removed for clean slate
+        
+        // ========================================================================
+        // CHARACTERS - TEMPORARILY DISABLED FOR TESTING
+        // ========================================================================
+        /*
+        // Character creation
+        const characters = [];
+        
+        function createCharacter(name, role, x, z, shirtColor, characterData) {
+            const group = new THREE.Group();
+            
+            // Torso
+            const torsoGeometry = new THREE.CylinderGeometry(0.25, 0.3, 0.8, 8);
+            const torsoMaterial = new THREE.MeshStandardMaterial({ color: shirtColor });
+            const torso = new THREE.Mesh(torsoGeometry, torsoMaterial);
+            torso.position.y = 0.6;
+            torso.castShadow = true;
+            group.add(torso);
+            
+            // Arms
+            const armGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.6, 6);
+            const armMaterial = new THREE.MeshStandardMaterial({ color: shirtColor });
+            
+            const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+            leftArm.position.set(-0.3, 0.7, 0);
+            leftArm.rotation.z = Math.PI / 8;
+            group.add(leftArm);
+            
+            const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+            rightArm.position.set(0.3, 0.7, 0);
+            rightArm.rotation.z = -Math.PI / 8;
+            group.add(rightArm);
+            
+            // Legs
+            const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 6);
+            const legMaterial = new THREE.MeshStandardMaterial({ color: 0x2c3e50 });
+            
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.4, 0);
+            group.add(leftLeg);
+            
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.4, 0);
+            group.add(rightLeg);
+            
+            // Head
+            const headGeometry = new THREE.SphereGeometry(0.25, 8, 6);
+            const headMaterial = new THREE.MeshStandardMaterial({ color: 0xffdbac });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.25;
+            head.castShadow = true;
+            group.add(head);
+            
+            // Hair
+            const hairGeometry = new THREE.SphereGeometry(0.27, 8, 6);
+            const hairMaterial = new THREE.MeshStandardMaterial({ color: characterData.hairColor });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.35;
+            hair.scale.y = 0.6;
+            group.add(hair);
+            
+            // Eyes
+            const eyeGeometry = new THREE.SphereGeometry(0.03, 4, 4);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ color: 0x000000 });
+            
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.08, 1.25, 0.22);
+            group.add(leftEye);
+            
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.08, 1.25, 0.22);
+            group.add(rightEye);
+            
+            // Name label
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+            context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            context.fillRect(0, 0, 256, 64);
+            context.fillStyle = 'black';
+            context.font = 'bold 20px Arial';
+            context.textAlign = 'center';
+            context.fillText(name, 128, 25);
+            context.font = '16px Arial';
+            context.fillStyle = '#666';
+            context.fillText(role, 128, 45);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.SpriteMaterial({ map: texture });
+            const label = new THREE.Sprite(labelMaterial);
+            label.position.y = 1.8;
+            label.scale.set(2, 0.5, 1);
+            group.add(label);
+            
+            group.position.set(x, 0, z);
+            group.userData = { 
+                name, 
+                role, 
+                conversations: [],
+                initialPosition: new THREE.Vector3(x, 0, z),
+                targetPosition: new THREE.Vector3(x, 0, z),
+                moveTimer: 0,
+                isDancing: false,
+                tripChance: 0.001,
+                leftArm: leftArm,
+                rightArm: rightArm,
+                ...characterData
+            };
+            
+            characters.push(group);
+            return group;
+        }
+        
+        // Add custom characters - positioned within lobby bounds (40x30)
+        const character1 = createCharacter('Meaty', 'Lead Developer', -8, -6, 0x4169e1, {
+            hairColor: 0x3d3d3d,
+            personality: 'laid-back and practical',
+            quirk: 'loves to talk about food and coding'
+        });
+        
+        const character2 = createCharacter('Scouse', 'UX Designer', 8, -6, 0x9370db, {
+            hairColor: 0x4b0082,
+            personality: 'witty and street-smart',
+            quirk: 'speaks with Liverpool accent and football metaphors'
+        });
+        
+        const character3 = createCharacter('Simon', 'Data Scientist', -8, 6, 0x228b22, {
+            hairColor: 0x8b4513,
+            personality: 'analytical and methodical',
+            quirk: 'loves statistics and dry humor'
+        });
+        
+        const character4 = createCharacter('Tick', 'Music Producer', 8, 6, 0xffa500, {
+            hairColor: 0x8b4513,
+            personality: 'energetic and rhythm-obsessed',
+            quirk: 'constantly moving to invisible beats and loves techno'
+        });
+        
+        scene.add(character1, character2, character3, character4);
+        */ // END CHARACTERS DISABLE
+        
+        // ========================================================================
+        // SIMPLIFIED PLAYER AND CONTROLS FOR TESTING
+        // ========================================================================
+        // Player controls with progressive speed system
+        const player = {
+            position: new THREE.Vector3(20, 1.6, 15),  // Start at center of lobby in new coordinate system
+            velocity: new THREE.Vector3(0, 0, 0),
+            baseSpeed: 0.05,  // Slow start speed for accuracy
+            maxSpeed: 0.2,    // 4x speed after acceleration
+            currentSpeed: 0.05,
+            isDancing: false,
+            // Progressive speed tracking
+            movementTimer: 0,
+            isMoving: false,
+            lastMoveTime: 0
+        };
+        
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            const customQuestionInput = document.getElementById('custom-question-input');
+            
+            if (document.activeElement === customQuestionInput) {
+                if (e.key === 'Escape') {
+                    dialogueBox.style.display = 'none';
+                    currentCharacter = null;
+                    if (document.pointerLockElement === renderer.domElement) {
+                        document.exitPointerLock();
+                    }
+                }
+                return;
+            }
+            
+            keys[e.key.toLowerCase()] = true;
+            keys[e.key] = true;
+            
+            if (e.key.toLowerCase() === 'e' && nearbyCharacter && dialogueBox.style.display !== 'block') {
+                e.preventDefault();
+                openDialogue(nearbyCharacter);
+            }
+            
+            if (e.key === ' ' && dialogueBox.style.display !== 'block') {
+                e.preventDefault();
+                player.isDancing = true;
+                createFloatingText('💃🕺', player.position);
+            }
+            
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            const customQuestionInput = document.getElementById('custom-question-input');
+            
+            if (document.activeElement === customQuestionInput) {
+                return;
+            }
+            
+            keys[e.key.toLowerCase()] = false;
+            keys[e.key] = false;
+            
+            if (e.key === ' ' && dialogueBox.style.display !== 'block') {
+                player.isDancing = false;
+            }
+        });
+        
+        // Character movement AI
+        function updateCharacterMovement(character, deltaTime) {
+            if (Math.random() < character.userData.tripChance && !character.userData.isDancing) {
+                character.rotation.x = Math.PI / 4;
+                character.position.y = 0.3;
+                createFloatingText('Oof!', character.position);
+                
+                setTimeout(() => {
+                    character.userData.tripChance = 0.001;
+                }, 5000);
+            }
+            
+            if (character === currentCharacter || character.userData.isDancing) {
+                if (character === currentCharacter) {
+                    const lookTarget = new THREE.Vector3(player.position.x, character.position.y, player.position.z);
+                    character.lookAt(lookTarget);
+                    character.rotation.x = 0;
+                    character.rotation.z = 0;
+                }
+                return;
+            }
+            
+            if (Math.random() < 0.001) {
+                character.userData.isDancing = true;
+                createFloatingText('🎵', character.position);
+                setTimeout(() => {
+                    character.userData.isDancing = false;
+                }, 3000);
+            }
+            
+            character.userData.moveTimer -= deltaTime;
+            
+            if (character.userData.moveTimer <= 0) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 3 + Math.random() * 5;
+                character.userData.targetPosition = new THREE.Vector3(
+                    character.userData.initialPosition.x + Math.cos(angle) * distance,
+                    0,
+                    character.userData.initialPosition.z + Math.sin(angle) * distance
+                );
+                
+                character.userData.targetPosition.x = Math.max(-40, Math.min(40, character.userData.targetPosition.x)); // Characters stay in mall
+                character.userData.targetPosition.z = Math.max(-30, Math.min(30, character.userData.targetPosition.z)); // Avoid walls
+                
+                character.userData.moveTimer = 5 + Math.random() * 5;
+            }
+            
+            const direction = new THREE.Vector3().subVectors(character.userData.targetPosition, character.position);
+            direction.y = 0;
+            const distance = direction.length();
+            
+            if (distance > 0.1) {
+                direction.normalize();
+                character.position.add(direction.multiplyScalar(0.02));
+                
+                character.lookAt(character.userData.targetPosition);
+                character.rotation.x = 0;
+                character.rotation.z = 0;
+                
+                if (!character.userData.isDancing) {
+                    character.position.y = Math.abs(Math.sin(Date.now() * 0.005)) * 0.05;
+                }
+            }
+        }
+        
+        // Dialogue system
+        const dialogueBox = document.getElementById('dialogue-box');
+        const dialogueName = document.getElementById('dialogue-name');
+        const dialogueContent = document.getElementById('dialogue-content');
+        const dialogueOptions = document.getElementById('dialogue-options');
+        const interactionPrompt = document.getElementById('interaction-prompt');
+        
+        let currentCharacter = null;
+        let nearbyCharacter = null;
+        
+        function generateDialogueOptions(character) {
+            const questions = [
+                "Tell me about your role here",
+                "What's a typical day like for you?",
+                "What's the most challenging part of your job?",
+                "What project are you most excited about?",
+                "What's your favorite development tool?",
+                "Any advice for someone starting out?",
+                "What's the weirdest bug you've encountered?",
+                "Coffee or tea?",
+                "Tabs or spaces?",
+                "What's your git commit style?"
+            ];
+            
+            const shuffled = questions.sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, 4);
+        }
+        
+        function openDialogue(character) {
+            currentCharacter = character;
+            dialogueBox.style.display = 'block';
+            dialogueName.textContent = `${character.userData.name} - ${character.userData.role}`;
+            
+            if (document.pointerLockElement === renderer.domElement) {
+                document.exitPointerLock();
+            }
+            
+            const greetings = [
+                `Hello! I'm ${character.userData.name}, ${character.userData.role}. Ask me anything!`,
+                `Hey there! I'm ${character.userData.name}. Just ${character.userData.quirk}, as usual.`,
+                `Hi! ${character.userData.name} here. What can I help you understand about our work?`,
+                `Great to meet you! I'm ${character.userData.name}. Fair warning: I ${character.userData.quirk}.`
+            ];
+            
+            if (character.userData.conversations.length === 0) {
+                dialogueContent.innerHTML = `<p><strong>${character.userData.name}:</strong> ${greetings[Math.floor(Math.random() * greetings.length)]}</p>`;
+            } else {
+                const lastConv = character.userData.conversations[character.userData.conversations.length - 1];
+                dialogueContent.innerHTML = `<p><strong>You:</strong> ${lastConv.user}</p><p><strong>${character.userData.name}:</strong> ${lastConv.response}</p>`;
+            }
+            
+            const options = generateDialogueOptions(character);
+            dialogueOptions.innerHTML = '';
+            
+            options.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'dialogue-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(option);
+                dialogueOptions.appendChild(optionDiv);
+            });
+            
+            document.getElementById('custom-question-input').value = '';
+            
+            setTimeout(() => {
+                document.getElementById('custom-question-input').focus();
+            }, 100);
+        }
+        
+        function selectOption(option) {
+            if (!currentCharacter) return;
+            
+            dialogueContent.innerHTML += `<p><strong>You:</strong> ${option}</p>`;
+            dialogueContent.innerHTML += `<p><strong>${currentCharacter.userData.name}:</strong> <span class="loading"></span></p>`;
+            
+            dialogueContent.scrollTop = dialogueContent.scrollHeight;
+            
+            const customQuestionInput = document.getElementById('custom-question-input');
+            const customQuestionSubmit = document.getElementById('custom-question-submit');
+            
+            dialogueOptions.style.pointerEvents = 'none';
+            dialogueOptions.style.opacity = '0.5';
+            customQuestionInput.disabled = true;
+            customQuestionSubmit.disabled = true;
+            
+            // Simple fallback responses (replace with your AI integration)
+            let responseText = generateFallbackResponse(currentCharacter, option);
+            
+            setTimeout(() => {
+                currentCharacter.userData.conversations.push({
+                    user: option,
+                    response: responseText
+                });
+                
+                dialogueContent.innerHTML = dialogueContent.innerHTML.replace(
+                    '<span class="loading"></span>',
+                    responseText
+                );
+                
+                dialogueContent.scrollTop = dialogueContent.scrollHeight;
+                
+                if (Math.random() < 0.2) {
+                    createFloatingText('💡', currentCharacter.position);
+                }
+                
+                const newOptions = generateDialogueOptions(currentCharacter);
+                dialogueOptions.innerHTML = '';
+                
+                newOptions.forEach(opt => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'dialogue-option';
+                    optionDiv.textContent = opt;
+                    optionDiv.onclick = () => selectOption(opt);
+                    dialogueOptions.appendChild(optionDiv);
+                });
+                
+                dialogueOptions.style.pointerEvents = 'auto';
+                dialogueOptions.style.opacity = '1';
+                customQuestionInput.disabled = false;
+                customQuestionSubmit.disabled = false;
+                customQuestionInput.focus();
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        function generateFallbackResponse(character, question) {
+            const responses = {
+                'Meaty': [
+                    "Good question, mate! Coding's like cooking - you need the right ingredients, proper timing, and don't forget to taste-test. Speaking of which, fancy a bacon sandwich?",
+                    "That's proper interesting! I code best when I'm well-fed. Nothing beats debugging with a good curry by your side. Food fuels the brain, you know!",
+                    "You know what? The best algorithms are like good recipes - simple, efficient, and everyone wants the secret. Pass the biscuits while I explain..."
+                ],
+                'Scouse': [
+                    "Sound question, lad! UX is like managing Liverpool FC - you need to know your users like Klopp knows his players. Every interaction matters!",
+                    "That's boss thinking! Design's all about the beautiful game - smooth passes, clean lines, and making sure nobody gets confused in the penalty box.",
+                    "Here's the thing, right - good design is like a perfect through-ball. Simple, elegant, and gets you exactly where you need to go. YNWA!"
+                ],
+                'Simon': [
+                    "Statistically speaking, that's an excellent question. I analyzed 1,000 conversations and yours ranks in the 92nd percentile for thoughtfulness.",
+                    "Fascinating. The probability of someone asking such an insightful question is approximately 0.23. You're clearly an outlier - in the best way.",
+                    "Interesting data point. Did you know that 73.6% of office conversations are about coffee? This one's much more engaging, thankfully."
+                ],
+                'Tick': [
+                    "Yo! That question's got a sick beat to it! Music production is like coding but with more bass drops. Want to hear about my latest techno track? *bounces rhythmically*",
+                    "Proper banging question! Everything's got rhythm if you listen close enough - even conversations have BPM. This chat's hitting about 125 beats per minute, perfect for deep house!",
+                    "Sound question, mate! I live for the drop, breathe in 4/4 time, and my heart beats in techno. Press SPACE and let's have a dance-off! The office floor is our dancefloor!"
+                ]
+            };
+            
+            const characterResponses = responses[character.userData.name] || [
+                "That's a thoughtful question! I really enjoy the collaborative aspect of working here.",
+                "Great question! Every day brings new challenges and opportunities to learn.",
+                "Interesting perspective! I find that the best solutions come from working together as a team."
+            ];
+            
+            return characterResponses[Math.floor(Math.random() * characterResponses.length)];
+        }
+        
+        // Close dialogue with Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                dialogueBox.style.display = 'none';
+                currentCharacter = null;
+                if (document.pointerLockElement === renderer.domElement) {
+                    document.exitPointerLock();
+                }
+            }
+        });
+        
+        // Custom question handlers
+        const customQuestionInput = document.getElementById('custom-question-input');
+        const customQuestionSubmit = document.getElementById('custom-question-submit');
+        
+        customQuestionSubmit.addEventListener('click', () => {
+            const customQuestion = customQuestionInput.value.trim();
+            if (customQuestion && currentCharacter) {
+                selectOption(customQuestion);
+                customQuestionInput.value = '';
+            }
+        });
+        
+        customQuestionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const customQuestion = customQuestionInput.value.trim();
+                if (customQuestion && currentCharacter) {
+                    selectOption(customQuestion);
+                    customQuestionInput.value = '';
+                }
+            }
+        });
+        
+        // ========================================================================
+        // SIMPLIFIED ANIMATION LOOP FOR TESTING
+        // ========================================================================
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Reference pole is static - no animation needed
+            
+            // Progressive speed player movement system
+            player.velocity.set(0, 0, 0);
+            
+            // Check if any movement keys are pressed
+            const movementKeys = ['w', 's', 'a', 'd'];
+            const currentlyMoving = movementKeys.some(key => keys[key]);
+            
+            if (currentlyMoving) {
+                const currentTime = Date.now();
+                
+                if (!player.isMoving) {
+                    // Just started moving - reset timer
+                    player.isMoving = true;
+                    player.movementTimer = currentTime;
+                    player.currentSpeed = player.baseSpeed;
+                } else {
+                    // Calculate how long we've been moving continuously
+                    const moveDuration = (currentTime - player.movementTimer) / 1000; // Convert to seconds
+                    
+                    if (moveDuration >= 2.0) {
+                        // After 2 seconds, accelerate to 4x speed
+                        player.currentSpeed = player.maxSpeed;
+                    } else {
+                        // Gradual acceleration from base to max over 2 seconds
+                        const progress = moveDuration / 2.0;
+                        player.currentSpeed = player.baseSpeed + (player.maxSpeed - player.baseSpeed) * progress;
+                    }
+                }
+                
+                // Apply movement with current speed
+                if (keys['w']) player.velocity.z = player.currentSpeed;
+                if (keys['s']) player.velocity.z = -player.currentSpeed;
+                if (keys['a']) player.velocity.x = -player.currentSpeed;
+                if (keys['d']) player.velocity.x = player.currentSpeed;
+                
+            } else {
+                // No movement keys pressed - reset movement state
+                player.isMoving = false;
+                player.currentSpeed = player.baseSpeed;
+            }
+            
+            // Apply movement in camera direction
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            player.position.add(forward.multiplyScalar(player.velocity.z));
+            player.position.add(right.multiplyScalar(player.velocity.x));
+            
+            // Keep player within lobby walls (corner-based coordinates)
+            const wallBuffer = 0.5; // Keep player away from walls
+            player.position.x = Math.max(wallBuffer, Math.min(LOBBY_WIDTH - wallBuffer, player.position.x));  // X: 0.5 to 39.5
+            player.position.z = Math.max(wallBuffer, Math.min(LOBBY_DEPTH - wallBuffer, player.position.z));  // Z: 0.5 to 29.5
+            
+            // Update camera position and rotation
+            camera.position.copy(player.position);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = -mouseX; // Invert X for correct left/right movement
+            camera.rotation.x = mouseY;
+            
+            // ========================================================================
+            // DEBUG BALL PHYSICS & KICK-TO-TOGGLE SYSTEM
+            // ========================================================================
+            
+            // Update Debug Ball Physics
+            const debugBallData = window.debugBall.userData;
+            
+            // Apply gravity
+            debugBallData.velocity.y += debugBallData.gravity;
+            
+            // Apply friction
+            debugBallData.velocity.multiplyScalar(debugBallData.friction);
+            
+            // Update position
+            window.debugBall.position.add(debugBallData.velocity);
+            
+            // Ground collision
+            if (window.debugBall.position.y <= debugBallData.radius) {
+                window.debugBall.position.y = debugBallData.radius;
+                if (debugBallData.velocity.y < 0) {
+                    debugBallData.velocity.y = -debugBallData.velocity.y * debugBallData.bounce;
+                    debugBallData.isGrounded = true;
+                } else {
+                    debugBallData.isGrounded = true;
+                }
+            } else {
+                debugBallData.isGrounded = false;
+            }
+            
+            // Wall collisions for debug ball - corner-based lobby bounds
+            // X bounds: 0 to LOBBY_WIDTH (40)
+            if (window.debugBall.position.x <= debugBallData.radius) {
+                window.debugBall.position.x = debugBallData.radius;
+                debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+            }
+            if (window.debugBall.position.x >= LOBBY_WIDTH - debugBallData.radius) {
+                window.debugBall.position.x = LOBBY_WIDTH - debugBallData.radius;
+                debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+            }
+            // Z bounds: 0 to LOBBY_DEPTH (30)
+            if (window.debugBall.position.z <= debugBallData.radius) {
+                window.debugBall.position.z = debugBallData.radius;
+                debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+            }
+            if (window.debugBall.position.z >= LOBBY_DEPTH - debugBallData.radius) {
+                window.debugBall.position.z = LOBBY_DEPTH - debugBallData.radius;
+                debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+            }
+            
+            // Update kick cooldown
+            if (debugBallData.kickCooldown > 0) {
+                debugBallData.kickCooldown -= 0.016; // Approximate 60fps delta
+            }
+            
+            // Debug ball player interaction - kicks toggle debug mode!
+            const debugPlayerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+            const debugBallPos2D = new THREE.Vector2(window.debugBall.position.x, window.debugBall.position.z);
+            const debugPlayerBallDistance2D = debugPlayerPos2D.distanceTo(debugBallPos2D);
+            
+            // Check for collision with debug ball
+            const debugIsColliding = debugPlayerBallDistance2D <= (0.5 + debugBallData.radius);
+            
+            if (debugIsColliding && debugBallData.kickCooldown <= 0) {
+                // Calculate kick direction
+                const debugKickDirection = new THREE.Vector3()
+                    .subVectors(window.debugBall.position, player.position);
+                
+                if (debugKickDirection.length() > 0.1) {
+                    debugKickDirection.normalize();
+                    
+                    // Apply kick force
+                    const debugKickStrength = 0.5;
+                    debugBallData.velocity.add(debugKickDirection.multiplyScalar(debugKickStrength));
+                    debugBallData.velocity.y += 0.15;
+                    
+                    // Set cooldown
+                    debugBallData.kickCooldown = 0.5; // 500ms cooldown for debug actions
+                    
+                    // TOGGLE DEBUG MODE ON KICK!
+                    toggleDebugMode();
+                    
+                    console.log(`🟢 DEBUG BALL KICKED! Debug mode: ${debugMode ? 'ON' : 'OFF'}`);
+                }
+            }
+            
+            // Debug ball rotation
+            window.debugBall.rotation.x += debugBallData.velocity.z * 0.1;
+            window.debugBall.rotation.z -= debugBallData.velocity.x * 0.1;
+            
+            // Debug ball glow effects
+            const debugSpeed = debugBallData.velocity.length();
+            const debugGlowLight = window.debugBall.children[0];
+            if (debugGlowLight) {
+                debugGlowLight.intensity = 0.3 + debugSpeed * 2;
+                debugGlowLight.distance = 3 + debugSpeed * 5;
+            }
+            
+            // Update lighting animations  
+            animateLighting();
+            
+            // Render the scene
+            renderer.render(scene, camera);
+        }
+        
+        // ========================================================================
+        // COMPLEX ANIMATION CODE - DISABLED FOR TESTING
+        // ========================================================================
+        /*
+        // OLD COMPLEX ANIMATION LOOP - DISABLED
+        function oldAnimate(currentTime) {
+            requestAnimationFrame(oldAnimate);
+            
+            const deltaTime = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+            
+            // Update lighting animations
+            animateLighting();
+            
+            // Update player movement
+            player.velocity.set(0, 0, 0);
+            
+            if (!player.isDancing && dialogueBox.style.display !== 'block') {
+                if (keys['w']) player.velocity.z = player.speed;
+                if (keys['s']) player.velocity.z = -player.speed;
+                if (keys['a']) player.velocity.x = -player.speed;
+                if (keys['d']) player.velocity.x = player.speed;
+            }
+            
+            // Arrow key camera controls
+            const lookSpeed = 0.05;
+            if (dialogueBox.style.display !== 'block') {
+                if (keys['ArrowLeft']) {
+                    mouseX += lookSpeed;
+                }
+                if (keys['ArrowRight']) {
+                    mouseX -= lookSpeed;
+                }
+                if (keys['ArrowUp']) {
+                    mouseY += lookSpeed;
+                    mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+                }
+                if (keys['ArrowDown']) {
+                    mouseY -= lookSpeed;
+                    mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+                }
+            }
+            
+            // Update camera rotation
+            if (!player.isDancing && dialogueBox.style.display !== 'block') {
+                // Set rotation order to ensure vertical rotation is applied in world space
+                camera.rotation.order = 'YXZ';
+                camera.rotation.y = mouseX;
+                camera.rotation.x = mouseY; // Apply vertical look in world space
+            }
+            
+            // Apply movement in camera direction
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            player.position.add(forward.multiplyScalar(player.velocity.z));
+            player.position.add(right.multiplyScalar(player.velocity.x));
+            
+            // Keep player within lobby walls - DUPLICATE (in old animation code)
+            const wallBuffer2 = 0.5;
+            player.position.x = Math.max(-LOBBY_WIDTH/2 + wallBuffer2, Math.min(LOBBY_WIDTH/2 - wallBuffer2, player.position.x));
+            player.position.z = Math.max(-LOBBY_DEPTH/2 + wallBuffer2, Math.min(LOBBY_DEPTH/2 - wallBuffer2, player.position.z));
+            
+            // Dancing animation
+            if (player.isDancing && dialogueBox.style.display !== 'block') {
+                camera.position.y = player.position.y + Math.sin(Date.now() * 0.01) * 0.2;
+                camera.rotation.z = Math.sin(Date.now() * 0.01) * 0.1;
+                camera.rotation.order = 'YXZ'; // Ensure proper rotation order
+                camera.rotation.y = mouseX;
+                camera.rotation.x = mouseY; // Allow vertical look while dancing
+            } else {
+                camera.position.copy(player.position);
+                camera.rotation.z = 0;
+                if (dialogueBox.style.display !== 'block') {
+                    camera.rotation.order = 'YXZ'; // Ensure proper rotation order
+                    camera.rotation.y = mouseX;
+                    camera.rotation.x = mouseY; // Apply vertical look in normal mode
+                }
+            }
+            
+            // Update character movement
+            characters.forEach(character => {
+                updateCharacterMovement(character, deltaTime);
+                
+                if (character.userData.isDancing) {
+                    character.rotation.y += 0.1;
+                    character.position.y = Math.abs(Math.sin(Date.now() * 0.01)) * 0.3;
+                    
+                    character.userData.leftArm.rotation.z = Math.sin(Date.now() * 0.01) * 0.5 + Math.PI / 8;
+                    character.userData.rightArm.rotation.z = -Math.sin(Date.now() * 0.01) * 0.5 - Math.PI / 8;
+                }
+            });
+            
+            // Update Interactive Ball Physics
+            const ballData = ball.userData;
+            
+            // Apply gravity
+            ballData.velocity.y += ballData.gravity;
+            
+            // Apply friction
+            ballData.velocity.multiplyScalar(ballData.friction);
+            
+            // Update position
+            ball.position.add(ballData.velocity);
+            
+            // Ground collision (with some bounce tolerance)
+            if (ball.position.y <= ballData.radius) {
+                ball.position.y = ballData.radius;
+                if (ballData.velocity.y < 0) {
+                    ballData.velocity.y = -ballData.velocity.y * ballData.bounce;
+                    ballData.isGrounded = true;
+                    
+                    // Create bounce effect
+                    if (Math.abs(ballData.velocity.y) > 0.05) {
+                        createFloatingText('Bounce!', ball.position);
+                    }
+                } else {
+                    ballData.isGrounded = true;
+                }
+            } else {
+                ballData.isGrounded = false;
+            }
+            
+            // Wall collisions - updated for new mall bounds
+            const wallBounceX = 42 - ballData.radius; // Mall width bounds
+            const wallBounceZ = 32 - ballData.radius; // Mall depth bounds
+            if (Math.abs(ball.position.x) > wallBounceX) {
+                ball.position.x = Math.sign(ball.position.x) * wallBounceX;
+                ballData.velocity.x = -ballData.velocity.x * ballData.bounce;
+                createFloatingText('Bonk!', ball.position);
+            }
+            if (Math.abs(ball.position.z) > wallBounceZ) {
+                ball.position.z = Math.sign(ball.position.z) * wallBounceZ;
+                ballData.velocity.z = -ballData.velocity.z * ballData.bounce;
+                createFloatingText('Smack!', ball.position);
+            }
+            
+            // Player interaction - kick the ball with proper 2D collision detection!
+            // Use 2D distance (ignore Y axis) since player is tall and ball is on ground
+            const playerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+            const ballPos2D = new THREE.Vector2(ball.position.x, ball.position.z);
+            const playerBallDistance2D = playerPos2D.distanceTo(ballPos2D);
+            
+            const playerRadius = 0.5; // Player collision radius
+            const combinedRadius = playerRadius + ballData.radius;
+            
+            // Update kick cooldown
+            if (ballData.kickCooldown > 0) {
+                ballData.kickCooldown -= deltaTime;
+            }
+            
+            // Check for 2D collision (ignore height difference)
+            const isColliding = playerBallDistance2D <= combinedRadius;
+            
+            if (isColliding && ballData.kickCooldown <= 0) {
+                // Calculate kick direction from player center to ball center
+                const kickDirection = new THREE.Vector3()
+                    .subVectors(ball.position, player.position);
+                
+                // Only kick if there's a meaningful direction (not standing exactly on top)
+                if (kickDirection.length() > 0.1) {
+                    kickDirection.normalize();
+                    
+                    // Calculate kick strength based on player movement
+                    const playerMovementSpeed = player.velocity.length();
+                    const baseKickStrength = 0.4;
+                    const movementBonus = playerMovementSpeed * 2; // More momentum = harder kick
+                    const totalKickStrength = baseKickStrength + movementBonus;
+                    
+                    // Apply kick force
+                    ballData.velocity.add(kickDirection.multiplyScalar(totalKickStrength));
+                    ballData.velocity.y += 0.15; // Add slight upward component
+                    
+                    // Set cooldown to prevent spam kicking
+                    ballData.kickCooldown = 0.3; // 300ms cooldown
+                    
+                    // Visual feedback
+                    createFloatingText('KICK!', ball.position);
+                    
+                    // Debug output to console
+                    console.log(`🦶 KICK! Distance: ${playerBallDistance2D.toFixed(2)}, Strength: ${totalKickStrength.toFixed(2)}`);
+                    
+                    // Add screen shake effect for impact feeling
+                    if (totalKickStrength > 0.6) {
+                        createFloatingText('💥', ball.position);
+                    }
+                }
+            }
+            
+            // Add some rotation based on movement
+            ball.rotation.x += ballData.velocity.z * 0.1;
+            ball.rotation.z -= ballData.velocity.x * 0.1;
+            
+            // Dynamic visual effects based on speed
+            const speed = ballData.velocity.length();
+            
+            // Adjust glow intensity based on speed
+            const glowLight = ball.children[0]; // The point light we added
+            if (glowLight) {
+                glowLight.intensity = 0.3 + speed * 2;
+                glowLight.distance = 3 + speed * 5;
+            }
+            
+            // Adjust material emissive based on speed
+            ballMaterial.emissiveIntensity = 0.1 + speed * 0.5;
+            
+            // Color shift based on speed (red to yellow when fast)
+            if (speed > 0.3) {
+                ballMaterial.color.setHSL(0.1 - speed * 0.1, 1, 0.5); // Red to yellow
+                ballMaterial.emissive.setHSL(0.1 - speed * 0.1, 1, 0.2);
+            } else {
+                ballMaterial.color.setHex(0xff4444); // Default red
+                ballMaterial.emissive.setHex(0x331111);
+            }
+            
+            // Add trail effect for fast movement
+            if (speed > 0.4 && Math.random() < 0.3) {
+                const trailPos = ball.position.clone();
+                trailPos.add(new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.5,
+                    (Math.random() - 0.5) * 0.5,
+                    (Math.random() - 0.5) * 0.5
+                ));
+                createFloatingText('✨', trailPos);
+            }
+            
+            // Update Debug Ball Physics
+            const debugBallData = window.debugBall.userData;
+            
+            // Apply gravity
+            debugBallData.velocity.y += debugBallData.gravity;
+            
+            // Apply friction
+            debugBallData.velocity.multiplyScalar(debugBallData.friction);
+            
+            // Update position
+            window.debugBall.position.add(debugBallData.velocity);
+            
+            // Ground collision
+            if (window.debugBall.position.y <= debugBallData.radius) {
+                window.debugBall.position.y = debugBallData.radius;
+                if (debugBallData.velocity.y < 0) {
+                    debugBallData.velocity.y = -debugBallData.velocity.y * debugBallData.bounce;
+                    debugBallData.isGrounded = true;
+                    
+                    if (Math.abs(debugBallData.velocity.y) > 0.05) {
+                        createFloatingText('Bounce!', window.debugBall.position);
+                    }
+                } else {
+                    debugBallData.isGrounded = true;
+                }
+            } else {
+                debugBallData.isGrounded = false;
+            }
+            
+            // Wall collisions for debug ball - updated for new mall
+            const debugWallBounceX = 42 - debugBallData.radius; // Mall width bounds  
+            const debugWallBounceZ = 32 - debugBallData.radius; // Mall depth bounds
+            if (Math.abs(window.debugBall.position.x) > debugWallBounceX) {
+                window.debugBall.position.x = Math.sign(window.debugBall.position.x) * debugWallBounceX;
+                debugBallData.velocity.x = -debugBallData.velocity.x * debugBallData.bounce;
+                createFloatingText('Bonk!', window.debugBall.position);
+            }
+            if (Math.abs(window.debugBall.position.z) > debugWallBounceZ) {
+                window.debugBall.position.z = Math.sign(window.debugBall.position.z) * debugWallBounceZ;
+                debugBallData.velocity.z = -debugBallData.velocity.z * debugBallData.bounce;
+                createFloatingText('Smack!', window.debugBall.position);
+            }
+            
+            // Debug ball player interaction - kicks toggle debug mode!
+            const debugPlayerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+            const debugBallPos2D = new THREE.Vector2(window.debugBall.position.x, window.debugBall.position.z);
+            const debugPlayerBallDistance2D = debugPlayerPos2D.distanceTo(debugBallPos2D);
+            
+            // Update kick cooldown for debug ball
+            if (debugBallData.kickCooldown > 0) {
+                debugBallData.kickCooldown -= deltaTime;
+            }
+            
+            // Check for collision with debug ball
+            const debugIsColliding = debugPlayerBallDistance2D <= (0.5 + debugBallData.radius);
+            
+            if (debugIsColliding && debugBallData.kickCooldown <= 0) {
+                // Calculate kick direction
+                const debugKickDirection = new THREE.Vector3()
+                    .subVectors(window.debugBall.position, player.position);
+                
+                if (debugKickDirection.length() > 0.1) {
+                    debugKickDirection.normalize();
+                    
+                    // Apply kick force
+                    const debugKickStrength = 0.5;
+                    debugBallData.velocity.add(debugKickDirection.multiplyScalar(debugKickStrength));
+                    debugBallData.velocity.y += 0.15;
+                    
+                    // Set cooldown
+                    debugBallData.kickCooldown = 0.5; // Longer cooldown for debug actions
+                    
+                    // TOGGLE DEBUG MODE ON KICK!
+                    toggleDebugMode();
+                    createFloatingText(debugMode ? '🔧 DEBUG ON!' : '🔧 DEBUG OFF!', window.debugBall.position);
+                    
+                    console.log(`🟢 DEBUG BALL KICKED! Debug mode: ${debugMode ? 'ON' : 'OFF'}`);
+                }
+            }
+            
+            // Debug ball rotation
+            window.debugBall.rotation.x += debugBallData.velocity.z * 0.1;
+            window.debugBall.rotation.z -= debugBallData.velocity.x * 0.1;
+            
+            // Debug ball glow effects
+            const debugSpeed = debugBallData.velocity.length();
+            const debugGlowLight = window.debugBall.children[0];
+            if (debugGlowLight) {
+                debugGlowLight.intensity = 0.3 + debugSpeed * 2;
+                debugGlowLight.distance = 3 + debugSpeed * 5;
+            }
+            
+            // Check for nearby characters
+            nearbyCharacter = null;
+            let minDistance = Infinity;
+            
+            characters.forEach(character => {
+                const distance = player.position.distanceTo(character.position);
+                if (distance < 3 && distance < minDistance) {
+                    minDistance = distance;
+                    nearbyCharacter = character;
+                }
+            });
+            
+            // Show/hide interaction prompt
+            if (nearbyCharacter && !currentCharacter) {
+                interactionPrompt.style.display = 'block';
+                interactionPrompt.textContent = `Press E to talk to ${nearbyCharacter.userData.name}`;
+            } else {
+                interactionPrompt.style.display = 'none';
+            }
+            
+            renderer.render(scene, camera);
+        }
+        */ // END OLD ANIMATION LOOP
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Mouse look - initialize to look down at scene
+        let mouseX = 0;
+        let mouseY = -0.3; // Look down at the scene initially
+        
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === renderer.domElement && dialogueBox.style.display !== 'block') {
+                mouseX += e.movementX * 0.002;
+                mouseY += e.movementY * 0.002; // NEW: Capture vertical movement
+                
+                // Clamp vertical look to prevent over-rotation
+                mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY)); // ±60 degrees
+            }
+        });
+        
+        // Ball throwing mechanics
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        renderer.domElement.addEventListener('click', (event) => {
+            // Simple click to enable pointer lock for mouse look
+            renderer.domElement.requestPointerLock();
+        });
+        
+        animate(0);
+        
+        console.log('🚀 3D Office Simulator loaded successfully!');
+        console.log('WASD to move, E to interact, SPACE to dance, ESC to exit dialogues');
+        console.log('Ready for Claude Code development!');
+    </script>
+</body>
+</html>
