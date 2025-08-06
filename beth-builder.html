@@ -632,7 +632,7 @@
                 // Standardized color scheme for visual identification
                 const colors = {
                     floor: 0x8B4513,     // Brown floor
-                    ceiling: 0x00FF00,   // Green ceiling (changed from grey for better visibility)
+                    ceiling: 0xFFFFFF,   // White ceiling (clear and visible)
                     northSouth: 0x4169E1, // Blue north/south walls
                     eastWest: 0xDC143C    // Red east/west walls
                 };
@@ -685,11 +685,11 @@
                 const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
                 ceiling.rotation.x = Math.PI / 2;
                 ceiling.position.set(room.x, height - 0.05, room.z);
-                ceiling.userData = { id: `${room.id}-ceiling`, type: 'ceiling', roomId: room.id, color: 'green' };
+                ceiling.userData = { id: `${room.id}-ceiling`, type: 'ceiling', roomId: room.id, color: 'white' };
                 scene.add(ceiling);
                 room.meshes.push(ceiling);
 
-                this.log(`🏗️ Room created: Brown floor, Green ceiling, Blue N/S walls, Red E/W walls (${room.meshes.length} meshes)`);
+                this.log(`🏗️ Room created: Brown floor, White ceiling, Blue N/S walls, Red E/W walls (${room.meshes.length} meshes)`);
             }
 
             createWall(width, height, depth, color = 0xffffff) {
@@ -769,7 +769,7 @@
                             <div style="font-size: 9px; color: #999;">Position: [${room.x}, ${room.z}] Size: ${room.width}×${room.depth}m</div>
                             <div style="font-size: 10px; margin-top: 2px;">
                                 <span style="color: #8B4513;">●</span> Floor: ${components.floor} 
-                                <span style="color: #00FF00;">●</span> Ceiling: ${components.ceiling}<br>
+                                <span style="color: #FFFFFF;">●</span> Ceiling: ${components.ceiling}<br>
                                 <span style="color: #4169E1;">●</span> N/S Walls: ${components.northSouth} 
                                 <span style="color: #DC143C;">●</span> E/W Walls: ${components.eastWest}
                             </div>
