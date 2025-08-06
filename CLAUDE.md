@@ -426,7 +426,7 @@ gh repo view --web                    # Open GitHub repo
 - 🔴 **Red East/West Walls** (#DC143C) - Perpendicular wall identification
 
 #### 🔍 Enhanced Validation Tools
-- **Wireframe Toggle** - Semi-transparent view with 30% opacity preserving colors
+- **Wireframe Toggle** - Full wireframe view preserving colors for structural validation
 - **Component Count Display** - Real-time breakdown with color-coded dots
 - **Enhanced Status Logging** - Detailed position, rotation, and size information
 - **Structural Validation** - Visual confirmation of all room components

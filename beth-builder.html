@@ -215,7 +215,7 @@
                 <h3>👁️ View Controls</h3>
                 <button class="btn" onclick="Beth.toggleWireframe()" id="wireframe-btn">🔍 Toggle Wireframe View</button>
                 <div style="font-size: 11px; color: #cccccc; margin-top: 8px;">
-                    Shows wireframe structure with 30% opacity.<br>
+                    Shows wireframe structure with full colors.<br>
                     Useful for validating component positioning.
                 </div>
             </div>
@@ -815,10 +815,8 @@
                             });
                         }
                         
-                        // Apply wireframe with 30% opacity
+                        // Apply wireframe rendering
                         mesh.material.wireframe = true;
-                        mesh.material.transparent = true;
-                        mesh.material.opacity = 0.3;
                         
                     } else {
                         // Restore original material properties
