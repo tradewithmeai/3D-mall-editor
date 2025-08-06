@@ -1,0 +1,38 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "type": "mall-unit",
+    "description": "Immutable mall unit boundary for sub-room creation",
+    "created": "2025-08-05"
+  },
+  "dimensions": {
+    "width": 20,
+    "depth": 20, 
+    "height": 4,
+    "units": "meters"
+  },
+  "boundaries": {
+    "minX": -10,
+    "maxX": 10,
+    "minZ": -10,
+    "maxZ": 10,
+    "minY": 0,
+    "maxY": 4
+  },
+  "constraints": {
+    "minRoomSize": 2,
+    "maxRoomSize": 18,
+    "wallThickness": 0.2,
+    "floorThickness": 0.1
+  },
+  "materials": {
+    "boundary": {
+      "color": "#ffff00",
+      "opacity": 0.3,
+      "wireframe": true
+    },
+    "floor": {
+      "color": "#cccccc"
+    }
+  }
+}
