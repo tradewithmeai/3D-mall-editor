@@ -679,17 +679,22 @@
                 scene.add(westWall);
                 room.meshes.push(westWall);
 
-                // Create ceiling (light grey)
+                // Create ceiling (white) - Fixed rotation to face UP toward camera
                 const ceilingGeometry = new THREE.PlaneGeometry(room.width, room.depth);
-                const ceilingMaterial = new THREE.MeshStandardMaterial({ color: colors.ceiling });
+                const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+                    color: colors.ceiling,
+                    side: THREE.DoubleSide  // Ensure visibility from both sides
+                });
                 const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
-                ceiling.rotation.x = Math.PI / 2;
+                ceiling.rotation.x = -Math.PI / 2;  // Fixed: negative rotation to face UP
                 ceiling.position.set(room.x, height - 0.05, room.z);
                 ceiling.userData = { id: `${room.id}-ceiling`, type: 'ceiling', roomId: room.id, color: 'white' };
                 scene.add(ceiling);
                 room.meshes.push(ceiling);
 
+                // Enhanced logging for ceiling debugging
                 this.log(`🏗️ Room created: Brown floor, White ceiling, Blue N/S walls, Red E/W walls (${room.meshes.length} meshes)`);
+                this.log(`📐 Ceiling details: Position [${room.x}, ${height - 0.05}, ${room.z}], Rotation [-90°, 0°, 0°], Size ${room.width}×${room.depth}m`);
             }
 
             createWall(width, height, depth, color = 0xffffff) {
