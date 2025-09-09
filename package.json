@@ -1,0 +1,10 @@
+{
+  "name": "3d-mall",
+  "version": "1.0.0",
+  "description": "3D mall floorplan editor and simulator",
+  "scripts": {
+    "start:editor": "npx http-server -c-1 -p 5173 ."
+  },
+  "devDependencies": {},
+  "dependencies": {}
+}

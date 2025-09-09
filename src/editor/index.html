@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Mall Floorplan Editor</title>
+    <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+    <div class="editor-container">
+        <header>
+            <h1>Floorplan Editor</h1>
+            <div class="controls">
+                <div class="tool-palette">
+                    <label>Tool:</label>
+                    <button id="tool-empty" class="tool-btn active" data-tool="empty">Empty</button>
+                    <button id="tool-floor" class="tool-btn" data-tool="floor">Floor</button>
+                    <button id="tool-wall" class="tool-btn" data-tool="wall">Wall</button>
+                </div>
+                <div class="file-controls">
+                    <button id="import-btn">Import JSON</button>
+                    <button id="export-btn">Export JSON</button>
+                    <button id="clear-btn">Clear Grid</button>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="grid-container">
+                <canvas id="grid-canvas" width="800" height="600"></canvas>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Grid Info</h3>
+                <div id="grid-info">
+                    <p>Size: <span id="grid-size">40x30</span></p>
+                    <p>Cell Size: <span id="cell-size">20px</span></p>
+                    <p>Tool: <span id="current-tool">Empty</span></p>
+                </div>
+                
+                <h3>Legend</h3>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f0f0f0;"></div>
+                        <span>Empty</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #8B4513;"></div>
+                        <span>Floor</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #404040;"></div>
+                        <span>Wall</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Hidden file input for JSON import -->
+    <input type="file" id="file-input" accept=".json" style="display: none;">
+    
+    <script src="editor.js"></script>
+</body>
+</html>
