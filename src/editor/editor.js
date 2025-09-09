@@ -8,10 +8,16 @@ class FloorplanEditor {
         this.currentTool = 'empty';
         this.isDrawing = false;
         
-        // Initialize grid data
+        // Initialize grid data for floor tiles
         this.grid = this.createEmptyGrid();
         
-        // Colors for different tile types
+        // Initialize edge data structures
+        // H(x,y) for horizontal edges between (x,y)–(x+1,y)
+        // V(x,y) for vertical edges between (x,y)–(x,y+1)
+        this.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        
+        // Colors for different elements
         this.colors = {
             empty: '#f0f0f0',
             floor: '#8B4513',
@@ -38,6 +44,17 @@ class FloorplanEditor {
         return grid;
     }
     
+    createEmptyEdgeSet(width, height) {
+        const edges = [];
+        for (let y = 0; y < height; y++) {
+            edges[y] = [];
+            for (let x = 0; x < width; x++) {
+                edges[y][x] = false;
+            }
+        }
+        return edges;
+    }
+    
     setupEventListeners() {
         // Tool selection
         document.querySelectorAll('.tool-btn').forEach(btn => {
@@ -52,12 +69,12 @@ class FloorplanEditor {
         // Canvas mouse events
         this.canvas.addEventListener('mousedown', (e) => {
             this.isDrawing = true;
-            this.paint(e);
+            this.handleMouseAction(e);
         });
         
         this.canvas.addEventListener('mousemove', (e) => {
             if (this.isDrawing) {
-                this.paint(e);
+                this.handleMouseAction(e);
             }
         });
         
@@ -83,14 +100,25 @@ class FloorplanEditor {
         });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
-            this.clearGrid();
+            this.clearAll();
         });
     }
     
-    paint(e) {
+    handleMouseAction(e) {
         const rect = this.canvas.getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left) / this.cellSize);
-        const y = Math.floor((e.clientY - rect.top) / this.cellSize);
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        
+        if (this.currentTool === 'wall-edge') {
+            this.handleEdgePaint(mouseX, mouseY);
+        } else {
+            this.handleTilePaint(mouseX, mouseY);
+        }
+    }
+    
+    handleTilePaint(mouseX, mouseY) {
+        const x = Math.floor(mouseX / this.cellSize);
+        const y = Math.floor(mouseY / this.cellSize);
         
         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
             if (this.grid[y][x] !== this.currentTool) {
@@ -98,6 +126,78 @@ class FloorplanEditor {
                 this.renderCell(x, y);
             }
         }
+    }
+    
+    handleEdgePaint(mouseX, mouseY) {
+        const edge = this.snapToNearestEdge(mouseX, mouseY);
+        if (!edge) return;
+        
+        const { type, x, y } = edge;
+        
+        // Toggle edge state
+        if (type === 'horizontal') {
+            this.horizontalEdges[y][x] = !this.horizontalEdges[y][x];
+        } else if (type === 'vertical') {
+            this.verticalEdges[y][x] = !this.verticalEdges[y][x];
+        }
+        
+        this.render(); // Full re-render to update edges
+    }
+    
+    snapToNearestEdge(mouseX, mouseY) {
+        const gridX = mouseX / this.cellSize;
+        const gridY = mouseY / this.cellSize;
+        
+        const cellX = Math.floor(gridX);
+        const cellY = Math.floor(gridY);
+        
+        const fracX = gridX - cellX;
+        const fracY = gridY - cellY;
+        
+        const edgeThreshold = 0.3; // Distance threshold for snapping to edges
+        
+        let closestEdge = null;
+        let minDistance = Infinity;
+        
+        // Check horizontal edges (top and bottom of current cell)
+        // Top edge: between (cellX, cellY) and (cellX+1, cellY)
+        if (cellY >= 0 && cellY < this.gridHeight && cellX >= 0 && cellX < this.gridWidth) {
+            const distToTop = Math.abs(fracY);
+            if (distToTop < edgeThreshold && distToTop < minDistance) {
+                minDistance = distToTop;
+                closestEdge = { type: 'horizontal', x: cellX, y: cellY };
+            }
+        }
+        
+        // Bottom edge: between (cellX, cellY+1) and (cellX+1, cellY+1)
+        if (cellY >= -1 && cellY < this.gridHeight - 1 && cellX >= 0 && cellX < this.gridWidth) {
+            const distToBottom = Math.abs(fracY - 1);
+            if (distToBottom < edgeThreshold && distToBottom < minDistance) {
+                minDistance = distToBottom;
+                closestEdge = { type: 'horizontal', x: cellX, y: cellY + 1 };
+            }
+        }
+        
+        // Check vertical edges (left and right of current cell)
+        // Left edge: between (cellX, cellY) and (cellX, cellY+1)
+        if (cellY >= 0 && cellY < this.gridHeight && cellX >= 0 && cellX < this.gridWidth) {
+            const distToLeft = Math.abs(fracX);
+            if (distToLeft < edgeThreshold && distToLeft < minDistance) {
+                minDistance = distToLeft;
+                closestEdge = { type: 'vertical', x: cellX, y: cellY };
+            }
+        }
+        
+        // Right edge: between (cellX+1, cellY) and (cellX+1, cellY+1)
+        if (cellY >= 0 && cellY < this.gridHeight && cellX >= -1 && cellX < this.gridWidth - 1) {
+            const distToRight = Math.abs(fracX - 1);
+            if (distToRight < edgeThreshold && distToRight < minDistance) {
+                minDistance = distToRight;
+                closestEdge = { type: 'vertical', x: cellX + 1, y: cellY };
+            }
+        }
+        
+        return closestEdge;
     }
     
     renderCell(x, y) {
@@ -115,16 +215,58 @@ class FloorplanEditor {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
-        // Render all cells
+        // Render all cells (floors and wall tiles)
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
                 this.renderCell(x, y);
             }
         }
+        
+        // Render edges
+        this.renderEdges();
     }
     
-    clearGrid() {
+    renderEdges() {
+        this.ctx.strokeStyle = '#000';
+        this.ctx.lineWidth = 3;
+        
+        // Render horizontal edges
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.horizontalEdges[y][x]) {
+                    const startX = x * this.cellSize;
+                    const endX = (x + 1) * this.cellSize;
+                    const edgeY = y * this.cellSize;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(startX, edgeY);
+                    this.ctx.lineTo(endX, edgeY);
+                    this.ctx.stroke();
+                }
+            }
+        }
+        
+        // Render vertical edges
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.verticalEdges[y][x]) {
+                    const edgeX = x * this.cellSize;
+                    const startY = y * this.cellSize;
+                    const endY = (y + 1) * this.cellSize;
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(edgeX, startY);
+                    this.ctx.lineTo(edgeX, endY);
+                    this.ctx.stroke();
+                }
+            }
+        }
+    }
+    
+    clearAll() {
         this.grid = this.createEmptyGrid();
+        this.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
         this.render();
     }
     
@@ -134,6 +276,7 @@ class FloorplanEditor {
         document.getElementById('current-tool').textContent = this.currentTool;
     }
     
+    // Convert current state to instances for JSON export
     gridToInstances() {
         const instances = [];
         
@@ -143,17 +286,22 @@ class FloorplanEditor {
             position: [0, 0.5, 0]
         });
         
-        // Convert grid to 3D instances
+        // First, rasterize edges to wall tiles using the specified rule
+        const wallTiles = this.rasterizeEdgesToWalls();
+        
+        // Convert floors and rasterized walls to 3D instances
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
                 const tileType = this.grid[y][x];
+                const isWall = wallTiles[y][x];
+                
                 if (tileType === 'floor') {
                     instances.push({
                         type: "lobbyFloor",
                         position: [x * 2, 0, y * 2],
                         rotation: [-1.5707963267948966, 0, 0]
                     });
-                } else if (tileType === 'wall') {
+                } else if (tileType === 'wall' || isWall) {
                     instances.push({
                         type: "lobbyWall",
                         position: [x * 2, 4, y * 2],
@@ -166,30 +314,109 @@ class FloorplanEditor {
         return instances;
     }
     
+    // Rasterize edges back to wall tiles for export
+    rasterizeEdgesToWalls() {
+        const wallTiles = [];
+        for (let y = 0; y < this.gridHeight; y++) {
+            wallTiles[y] = [];
+            for (let x = 0; x < this.gridWidth; x++) {
+                wallTiles[y][x] = false;
+            }
+        }
+        
+        // For horizontal edges H(x,y), mark tile (x, y-1) as wall if in bounds
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.horizontalEdges[y][x]) {
+                    if (y - 1 >= 0) {
+                        wallTiles[y - 1][x] = true;
+                    }
+                }
+            }
+        }
+        
+        // For vertical edges V(x,y), mark tile (x-1, y) as wall if in bounds
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.verticalEdges[y][x]) {
+                    if (x - 1 >= 0) {
+                        wallTiles[y][x - 1] = true;
+                    }
+                }
+            }
+        }
+        
+        return wallTiles;
+    }
+    
+    // Import instances and reconstruct edges heuristically
     instancesToGrid(instances) {
         const newGrid = this.createEmptyGrid();
+        const newHorizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        const newVerticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        
+        // First pass: extract floors and walls from instances
+        const wallPositions = new Set();
         
         instances.forEach(instance => {
-            if (instance.type === 'lobbyFloor') {
-                const x = Math.floor(instance.position[0] / 2);
-                const z = Math.floor(instance.position[2] / 2);
-                if (x >= 0 && x < this.gridWidth && z >= 0 && z < this.gridHeight) {
-                    newGrid[z][x] = 'floor';
-                }
-            } else if (instance.type === 'lobbyWall' || 
-                      instance.type === 'lobbyNorthWall' || 
-                      instance.type === 'lobbySouthWall' || 
-                      instance.type === 'lobbyEastWall' || 
-                      instance.type === 'lobbyWestWall') {
-                const x = Math.floor(instance.position[0] / 2);
-                const z = Math.floor(instance.position[2] / 2);
-                if (x >= 0 && x < this.gridWidth && z >= 0 && z < this.gridHeight) {
-                    newGrid[z][x] = 'wall';
+            if (instance.position && instance.type) {
+                const [worldX, worldY, worldZ] = instance.position;
+                const gridX = Math.floor(worldX / 2);
+                const gridY = Math.floor(worldZ / 2);
+                
+                if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
+                    if (instance.type === 'lobbyFloor') {
+                        newGrid[gridY][gridX] = 'floor';
+                    } else if (this.isWallType(instance.type)) {
+                        newGrid[gridY][gridX] = 'wall';
+                        wallPositions.add(`${gridX},${gridY}`);
+                    }
                 }
             }
         });
         
-        return newGrid;
+        // Second pass: reconstruct edges from wall tiles heuristically
+        for (const posKey of wallPositions) {
+            const [x, y] = posKey.split(',').map(Number);
+            this.reconstructEdgesFromWall(x, y, wallPositions, newHorizontalEdges, newVerticalEdges);
+        }
+        
+        return { grid: newGrid, horizontalEdges: newHorizontalEdges, verticalEdges: newVerticalEdges };
+    }
+    
+    reconstructEdgesFromWall(x, y, wallPositions, horizontalEdges, verticalEdges) {
+        // Check 4 borders of this wall tile and create edges where appropriate
+        
+        // Top edge: horizontal edge at (x, y)
+        if (!wallPositions.has(`${x},${y-1}`)) {
+            horizontalEdges[y][x] = true;
+        }
+        
+        // Bottom edge: horizontal edge at (x, y+1)
+        if (y + 1 < this.gridHeight && !wallPositions.has(`${x},${y+1}`)) {
+            horizontalEdges[y + 1][x] = true;
+        }
+        
+        // Left edge: vertical edge at (x, y)
+        if (!wallPositions.has(`${x-1},${y}`)) {
+            verticalEdges[y][x] = true;
+        }
+        
+        // Right edge: vertical edge at (x+1, y)
+        if (x + 1 < this.gridWidth && !wallPositions.has(`${x+1},${y}`)) {
+            verticalEdges[y][x + 1] = true;
+        }
+    }
+    
+    isWallType(instanceType) {
+        const wallTypes = [
+            'lobbyWall',
+            'lobbyNorthWall', 
+            'lobbySouthWall',
+            'lobbyEastWall',
+            'lobbyWestWall'
+        ];
+        return wallTypes.includes(instanceType);
     }
     
     exportJSON() {
@@ -216,7 +443,10 @@ class FloorplanEditor {
             const jsonData = JSON.parse(text);
             
             if (jsonData.instances && Array.isArray(jsonData.instances)) {
-                this.grid = this.instancesToGrid(jsonData.instances);
+                const result = this.instancesToGrid(jsonData.instances);
+                this.grid = result.grid;
+                this.horizontalEdges = result.horizontalEdges;
+                this.verticalEdges = result.verticalEdges;
                 this.render();
                 console.log('Imported JSON:', jsonData);
             } else {

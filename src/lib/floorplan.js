@@ -1,5 +1,6 @@
 /**
  * Floorplan utility functions for grid<->JSON conversion and manipulation
+ * Supports both tile-based and edge-based wall systems
  */
 
 /**
@@ -266,4 +267,217 @@ export function validateRoomLayoutJSON(jsonData) {
     }
     
     return { isValid, errors };
+}
+
+/**
+ * Create empty edge sets for horizontal and vertical edges
+ * @param {number} width - Grid width
+ * @param {number} height - Grid height
+ * @returns {Object} Object with horizontalEdges and verticalEdges arrays
+ */
+export function createEmptyEdgeSets(width, height) {
+    const horizontalEdges = [];
+    const verticalEdges = [];
+    
+    for (let y = 0; y < height; y++) {
+        horizontalEdges[y] = [];
+        verticalEdges[y] = [];
+        for (let x = 0; x < width; x++) {
+            horizontalEdges[y][x] = false;
+            verticalEdges[y][x] = false;
+        }
+    }
+    
+    return { horizontalEdges, verticalEdges };
+}
+
+/**
+ * Rasterize edge sets back to wall tiles for JSON export
+ * Uses the rule: H(x,y) -> tile(x, y-1), V(x,y) -> tile(x-1, y)
+ * @param {Array<Array<boolean>>} horizontalEdges - Horizontal edge set
+ * @param {Array<Array<boolean>>} verticalEdges - Vertical edge set
+ * @param {number} gridWidth - Grid width
+ * @param {number} gridHeight - Grid height
+ * @returns {Array<Array<boolean>>} 2D array of wall tile positions
+ */
+export function rasterizeEdgesToWalls(horizontalEdges, verticalEdges, gridWidth, gridHeight) {
+    const wallTiles = [];
+    for (let y = 0; y < gridHeight; y++) {
+        wallTiles[y] = [];
+        for (let x = 0; x < gridWidth; x++) {
+            wallTiles[y][x] = false;
+        }
+    }
+    
+    // For horizontal edges H(x,y), mark tile (x, y-1) as wall if in bounds
+    for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+            if (horizontalEdges[y][x]) {
+                if (y - 1 >= 0) {
+                    wallTiles[y - 1][x] = true;
+                }
+            }
+        }
+    }
+    
+    // For vertical edges V(x,y), mark tile (x-1, y) as wall if in bounds
+    for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+            if (verticalEdges[y][x]) {
+                if (x - 1 >= 0) {
+                    wallTiles[y][x - 1] = true;
+                }
+            }
+        }
+    }
+    
+    return wallTiles;
+}
+
+/**
+ * Reconstruct edge sets from wall tile positions heuristically
+ * Creates edges on borders of wall tiles that don't touch other walls
+ * @param {Array<Array<string>>} grid - Grid with wall tiles
+ * @param {number} gridWidth - Grid width
+ * @param {number} gridHeight - Grid height
+ * @returns {Object} Object with horizontalEdges and verticalEdges arrays
+ */
+export function reconstructEdgesFromWalls(grid, gridWidth, gridHeight) {
+    const { horizontalEdges, verticalEdges } = createEmptyEdgeSets(gridWidth, gridHeight);
+    
+    // Collect wall positions
+    const wallPositions = new Set();
+    for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+            if (isWallType(grid[y][x]) || grid[y][x] === 'wall') {
+                wallPositions.add(`${x},${y}`);
+            }
+        }
+    }
+    
+    // For each wall tile, check its 4 borders and add edges where appropriate
+    for (const posKey of wallPositions) {
+        const [x, y] = posKey.split(',').map(Number);
+        
+        // Top edge: horizontal edge at (x, y)
+        if (!wallPositions.has(`${x},${y-1}`)) {
+            horizontalEdges[y][x] = true;
+        }
+        
+        // Bottom edge: horizontal edge at (x, y+1)
+        if (y + 1 < gridHeight && !wallPositions.has(`${x},${y+1}`)) {
+            horizontalEdges[y + 1][x] = true;
+        }
+        
+        // Left edge: vertical edge at (x, y)
+        if (!wallPositions.has(`${x-1},${y}`)) {
+            verticalEdges[y][x] = true;
+        }
+        
+        // Right edge: vertical edge at (x+1, y)
+        if (x + 1 < gridWidth && !wallPositions.has(`${x+1},${y}`)) {
+            verticalEdges[y][x + 1] = true;
+        }
+    }
+    
+    return { horizontalEdges, verticalEdges };
+}
+
+/**
+ * Convert edge sets and floor grid to instances for JSON export
+ * @param {Array<Array<string>>} grid - Floor tile grid
+ * @param {Array<Array<boolean>>} horizontalEdges - Horizontal edge set
+ * @param {Array<Array<boolean>>} verticalEdges - Vertical edge set
+ * @param {Object} options - Conversion options
+ * @returns {Array} Array of instances for JSON export
+ */
+export function edgeGridToInstances(grid, horizontalEdges, verticalEdges, options = {}) {
+    const {
+        cellSize = 2,
+        floorHeight = 0,
+        wallHeight = 4,
+        includeReferencePole = true
+    } = options;
+    
+    const instances = [];
+    
+    // Add reference pole by default
+    if (includeReferencePole) {
+        instances.push({
+            type: "referencePole",
+            position: [0, 0.5, 0]
+        });
+    }
+    
+    const gridHeight = grid.length;
+    const gridWidth = grid[0]?.length || 0;
+    
+    // Rasterize edges to wall tiles
+    const wallTiles = rasterizeEdgesToWalls(horizontalEdges, verticalEdges, gridWidth, gridHeight);
+    
+    // Convert floors and rasterized walls to 3D instances
+    for (let y = 0; y < gridHeight; y++) {
+        for (let x = 0; x < gridWidth; x++) {
+            const tileType = grid[y][x];
+            const isWall = wallTiles[y][x];
+            const worldX = x * cellSize;
+            const worldZ = y * cellSize;
+            
+            if (tileType === 'floor') {
+                instances.push({
+                    type: "lobbyFloor",
+                    position: [worldX, floorHeight, worldZ],
+                    rotation: [-1.5707963267948966, 0, 0]
+                });
+            } else if (tileType === 'wall' || isWall) {
+                instances.push({
+                    type: "lobbyWall",
+                    position: [worldX, wallHeight, worldZ],
+                    rotation: [0, 0, 0]
+                });
+            }
+        }
+    }
+    
+    return instances;
+}
+
+/**
+ * Convert instances to grid and edge sets
+ * @param {Array} instances - Array of 3D instances
+ * @param {Object} options - Conversion options
+ * @returns {Object} Object with grid, horizontalEdges, and verticalEdges
+ */
+export function instancesToEdgeGrid(instances, options = {}) {
+    const {
+        cellSize = 2,
+        gridWidth = 40,
+        gridHeight = 30,
+        defaultTile = 'empty'
+    } = options;
+    
+    // Initialize grid and edge sets
+    const grid = createEmptyGrid(gridWidth, gridHeight, defaultTile);
+    
+    // Extract floors and walls from instances
+    instances.forEach(instance => {
+        if (instance.position && instance.type) {
+            const [worldX, worldY, worldZ] = instance.position;
+            const gridX = Math.floor(worldX / cellSize);
+            const gridY = Math.floor(worldZ / cellSize);
+            
+            if (isValidGridPosition(gridX, gridY, gridWidth, gridHeight)) {
+                if (instance.type === 'lobbyFloor') {
+                    grid[gridY][gridX] = 'floor';
+                } else if (isWallType(instance.type)) {
+                    grid[gridY][gridX] = 'wall';
+                }
+            }
+        }
+    });
+    
+    // Reconstruct edges from wall tiles
+    const { horizontalEdges, verticalEdges } = reconstructEdgesFromWalls(grid, gridWidth, gridHeight);
+    
+    return { grid, horizontalEdges, verticalEdges };
 }

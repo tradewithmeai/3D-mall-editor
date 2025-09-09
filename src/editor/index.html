@@ -15,7 +15,8 @@
                     <label>Tool:</label>
                     <button id="tool-empty" class="tool-btn active" data-tool="empty">Empty</button>
                     <button id="tool-floor" class="tool-btn" data-tool="floor">Floor</button>
-                    <button id="tool-wall" class="tool-btn" data-tool="wall">Wall</button>
+                    <button id="tool-wall" class="tool-btn" data-tool="wall">Wall (tile)</button>
+                    <button id="tool-wall-edge" class="tool-btn" data-tool="wall-edge">Wall (edge)</button>
                 </div>
                 <div class="file-controls">
                     <button id="import-btn">Import JSON</button>
@@ -50,7 +51,11 @@
                     </div>
                     <div class="legend-item">
                         <div class="legend-color" style="background-color: #404040;"></div>
-                        <span>Wall</span>
+                        <span>Wall (tile)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="border-top: 3px solid #000;"></div>
+                        <span>Wall (edge)</span>
                     </div>
                 </div>
             </div>
