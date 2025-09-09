@@ -336,7 +336,7 @@ export function rasterizeEdgesToWalls(horizontalEdges, verticalEdges, gridWidth,
 
 /**
  * Reconstruct edge sets from wall tile positions heuristically
- * Creates edges on borders of wall tiles that don't touch other walls
+ * Creates edges on borders of wall tiles where the neighbor is not a wall
  * @param {Array<Array<string>>} grid - Grid with wall tiles
  * @param {number} gridWidth - Grid width
  * @param {number} gridHeight - Grid height
@@ -345,7 +345,7 @@ export function rasterizeEdgesToWalls(horizontalEdges, verticalEdges, gridWidth,
 export function reconstructEdgesFromWalls(grid, gridWidth, gridHeight) {
     const { horizontalEdges, verticalEdges } = createEmptyEdgeSets(gridWidth, gridHeight);
     
-    // Collect wall positions
+    // Collect wall positions from instances (not grid tiles)
     const wallPositions = new Set();
     for (let y = 0; y < gridHeight; y++) {
         for (let x = 0; x < gridWidth; x++) {
@@ -355,28 +355,32 @@ export function reconstructEdgesFromWalls(grid, gridWidth, gridHeight) {
         }
     }
     
-    // For each wall tile, check its 4 borders and add edges where appropriate
+    // For each wall tile, add edges on its borders where the neighbor is not a wall
     for (const posKey of wallPositions) {
         const [x, y] = posKey.split(',').map(Number);
         
-        // Top edge: horizontal edge at (x, y)
-        if (!wallPositions.has(`${x},${y-1}`)) {
+        // Top edge: horizontal edge at (x, y) - only if cell above is not a wall
+        if (y === 0 || !wallPositions.has(`${x},${y-1}`)) {
             horizontalEdges[y][x] = true;
         }
         
-        // Bottom edge: horizontal edge at (x, y+1)
-        if (y + 1 < gridHeight && !wallPositions.has(`${x},${y+1}`)) {
-            horizontalEdges[y + 1][x] = true;
+        // Bottom edge: horizontal edge at (x, y+1) - only if cell below is not a wall  
+        if (y === gridHeight - 1 || !wallPositions.has(`${x},${y+1}`)) {
+            if (y + 1 < gridHeight) {
+                horizontalEdges[y + 1][x] = true;
+            }
         }
         
-        // Left edge: vertical edge at (x, y)
-        if (!wallPositions.has(`${x-1},${y}`)) {
+        // Left edge: vertical edge at (x, y) - only if cell to left is not a wall
+        if (x === 0 || !wallPositions.has(`${x-1},${y}`)) {
             verticalEdges[y][x] = true;
         }
         
-        // Right edge: vertical edge at (x+1, y)
-        if (x + 1 < gridWidth && !wallPositions.has(`${x+1},${y}`)) {
-            verticalEdges[y][x + 1] = true;
+        // Right edge: vertical edge at (x+1, y) - only if cell to right is not a wall
+        if (x === gridWidth - 1 || !wallPositions.has(`${x+1},${y}`)) {
+            if (x + 1 < gridWidth) {
+                verticalEdges[y][x + 1] = true;
+            }
         }
     }
     
