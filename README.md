@@ -31,6 +31,8 @@ A powerful foundation for building 3D virtual environments with Three.js, featur
 ### 🏢 **Mall Units Scaffold**
 Optional units system for future mall logic development. Schema validation at [docs/schema/README.md](docs/schema/README.md). No changes to rendering. Editor unchanged.
 
+Unit types (`retail`, `service`, `food`, `kiosk`, `corridor`) and occupancy rules (`vacant`, `occupied`, `reserved`) with enforced conditional requirements. Occupied units require `tenantId`, vacant units forbid `tenantId`/`since` fields. Full backward compatibility maintained.
+
 ## 🚀 **Quick Start**
 
 1. **Clone the repository:**

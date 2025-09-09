@@ -31,6 +31,12 @@
         "side": "north",
         "offset": 0
       },
+      "type": "retail",
+      "occupancy": {
+        "status": "occupied",
+        "tenantId": "tenant-abc",
+        "since": "2025-09-09"
+      },
       "meta": {
         "category": "retail",
         "size": "small"
@@ -48,6 +54,10 @@
       "entrance": {
         "side": "east",
         "offset": 0
+      },
+      "type": "kiosk",
+      "occupancy": {
+        "status": "vacant"
       }
     }
   ]

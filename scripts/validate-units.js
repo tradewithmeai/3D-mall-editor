@@ -41,7 +41,7 @@ function validateUnits() {
     const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
     
     // Validate units against schema
-    const ajv = new Ajv();
+    const ajv = new Ajv({ formats: true });
     const validate = ajv.compile(schema);
     
     // Create validation data with just the units property

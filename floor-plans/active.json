@@ -1,24 +1,54 @@
 {
   "instances": [
     {
-      "type": "lobbyFloor",
-      "position": [0, 0, 0]
+      "position": [0, 0, 0],
+      "type": "Floor"
     },
     {
-      "type": "lobbyFloor", 
-      "position": [2, 0, 0]
+      "position": [2, 0, 0],
+      "type": "Floor"
     },
     {
-      "type": "lobbyFloor",
-      "position": [0, 0, 2] 
+      "position": [0, 0, 2],
+      "type": "Floor"
     },
     {
-      "type": "lobbyFloor",
-      "position": [2, 0, 2]
+      "position": [2, 0, 2],
+      "type": "Floor"
+    }
+  ],
+  "units": [
+    {
+      "id": "unit-101",
+      "name": "Small Shop",
+      "gridRect": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 1
+      },
+      "entrance": {
+        "side": "north",
+        "offset": 0
+      },
+      "meta": {
+        "category": "retail",
+        "size": "small"
+      }
     },
     {
-      "type": "lobbyWall",
-      "position": [4, 4, 2]
+      "id": "unit-102",
+      "name": "Corner Unit",
+      "gridRect": {
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 1
+      },
+      "entrance": {
+        "side": "east",
+        "offset": 0
+      }
     }
   ]
 }
