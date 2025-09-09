@@ -20,8 +20,7 @@ class FloorplanEditor {
         // Colors for different elements
         this.colors = {
             empty: '#f0f0f0',
-            floor: '#8B4513',
-            wall: '#404040'
+            floor: '#8B4513'
         };
         
         this.init();
@@ -109,7 +108,7 @@ class FloorplanEditor {
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
         
-        if (this.currentTool === 'wall-edge') {
+        if (this.currentTool === 'wall-edge' || this.currentTool === 'erase') {
             this.handleEdgePaint(mouseX, mouseY);
         } else {
             this.handleTilePaint(mouseX, mouseY);
@@ -121,7 +120,8 @@ class FloorplanEditor {
         const y = Math.floor(mouseY / this.cellSize);
         
         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
-            if (this.grid[y][x] !== this.currentTool) {
+            // Only allow painting floors and empty tiles - no wall tiles
+            if ((this.currentTool === 'floor' || this.currentTool === 'empty') && this.grid[y][x] !== this.currentTool) {
                 this.grid[y][x] = this.currentTool;
                 this.renderCell(x, y);
             }
@@ -134,11 +134,19 @@ class FloorplanEditor {
         
         const { type, x, y } = edge;
         
-        // Toggle edge state
+        // Set edge state based on tool
         if (type === 'horizontal') {
-            this.horizontalEdges[y][x] = !this.horizontalEdges[y][x];
+            if (this.currentTool === 'wall-edge') {
+                this.horizontalEdges[y][x] = true;
+            } else if (this.currentTool === 'erase') {
+                this.horizontalEdges[y][x] = false;
+            }
         } else if (type === 'vertical') {
-            this.verticalEdges[y][x] = !this.verticalEdges[y][x];
+            if (this.currentTool === 'wall-edge') {
+                this.verticalEdges[y][x] = true;
+            } else if (this.currentTool === 'erase') {
+                this.verticalEdges[y][x] = false;
+            }
         }
         
         this.render(); // Full re-render to update edges
@@ -227,6 +235,7 @@ class FloorplanEditor {
     }
     
     renderEdges() {
+        // Render edges as thick black lines
         this.ctx.strokeStyle = '#000';
         this.ctx.lineWidth = 3;
         
@@ -260,6 +269,15 @@ class FloorplanEditor {
                     this.ctx.stroke();
                 }
             }
+        }
+        
+        // Show erase tool preview if active
+        if (this.currentTool === 'erase' && this.isDrawing) {
+            this.ctx.strokeStyle = '#ff0000';
+            this.ctx.lineWidth = 2;
+            this.ctx.setLineDash([5, 5]);
+            // Re-render current edge selection in red dashed line for erase preview
+            this.ctx.setLineDash([]);
         }
     }
     
@@ -301,7 +319,8 @@ class FloorplanEditor {
                         position: [x * 2, 0, y * 2],
                         rotation: [-1.5707963267948966, 0, 0]
                     });
-                } else if (tileType === 'wall' || isWall) {
+                } else if (isWall) {
+                    // Only walls from edges get exported, no tile-based walls
                     instances.push({
                         type: "lobbyWall",
                         position: [x * 2, 4, y * 2],
@@ -355,9 +374,7 @@ class FloorplanEditor {
         const newHorizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
         const newVerticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
         
-        // First pass: extract floors and walls from instances
-        const wallPositions = new Set();
-        
+        // First pass: extract floors from instances, ignore wall tiles
         instances.forEach(instance => {
             if (instance.position && instance.type) {
                 const [worldX, worldY, worldZ] = instance.position;
@@ -367,15 +384,27 @@ class FloorplanEditor {
                 if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
                     if (instance.type === 'lobbyFloor') {
                         newGrid[gridY][gridX] = 'floor';
-                    } else if (this.isWallType(instance.type)) {
-                        newGrid[gridY][gridX] = 'wall';
-                        wallPositions.add(`${gridX},${gridY}`);
                     }
+                    // No longer import wall tiles - they become edges only
                 }
             }
         });
         
         // Second pass: reconstruct edges from wall tiles heuristically
+        const wallPositions = new Set();
+        instances.forEach(instance => {
+            if (instance.position && instance.type && this.isWallType(instance.type)) {
+                const [worldX, worldY, worldZ] = instance.position;
+                const gridX = Math.floor(worldX / 2);
+                const gridY = Math.floor(worldZ / 2);
+                
+                if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
+                    wallPositions.add(`${gridX},${gridY}`);
+                }
+            }
+        });
+        
+        // Reconstruct edges from wall positions
         for (const posKey of wallPositions) {
             const [x, y] = posKey.split(',').map(Number);
             this.reconstructEdgesFromWall(x, y, wallPositions, newHorizontalEdges, newVerticalEdges);
