@@ -3,16 +3,10 @@ name: CI
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-    branches: [ wip-post-v1 ]
-  workflow_dispatch:
-  push:
-    branches: [ wip-post-v1 ]
+    branches: [wip-post-v1]
+  workflow_dispatch: {}
 
 jobs:
-  diag:
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "event=${{ github.event_name }} ref=${{ github.ref }} sha=${{ github.sha }}"
   schema:
     runs-on: ubuntu-latest
     name: Schema Validation
