@@ -210,6 +210,7 @@
     <div id="interaction-prompt"></div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="src/runtime/loadFloorplan.browser.js"></script>
     <script>
         console.log('🏢 3D Virtual Mall Simulator - Multi-Office Environment');
         console.log('Central Lobby connecting 3 office spaces!');
@@ -228,6 +229,9 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xf5f5f5);
         scene.fog = new THREE.Fog(0xf5f5f5, 10, 50);
+        
+        // Load floorplan
+        window.loadFloorplan('/floor-plans/active.json').then(g => scene.add(g)).catch(console.error);
         
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.set(20, 8, 35); // Higher up and further back to see the full lobby from new center
