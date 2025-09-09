@@ -5,6 +5,7 @@
   "scripts": {
     "start:editor": "npx http-server -c-1 -p 5173 ."
   },
-  "devDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "ajv": "^8.17.1"
+  }
 }

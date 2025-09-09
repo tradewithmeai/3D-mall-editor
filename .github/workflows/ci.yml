@@ -46,6 +46,7 @@ jobs:
           # Add unit test commands here
           npm install ajv@8 || echo "AJV install failed, continuing..."
           node tests/units/validate-units.test.js
+          node tests/units/occupancy-rules.test.js
           echo "✅ Unit tests passed"
 
   visual:

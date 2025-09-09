@@ -53,6 +53,52 @@
             "required": ["side", "offset"],
             "additionalProperties": false
           },
+          "type": {
+            "type": "string",
+            "enum": ["retail", "service", "food", "kiosk", "corridor"]
+          },
+          "occupancy": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": ["vacant", "occupied", "reserved"]
+              },
+              "tenantId": {
+                "type": "string",
+                "pattern": "^tenant-[a-z0-9-]+$"
+              },
+              "since": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "required": ["status"],
+            "additionalProperties": false,
+            "allOf": [
+              {
+                "if": {
+                  "properties": { "status": { "const": "occupied" } }
+                },
+                "then": {
+                  "required": ["tenantId"]
+                }
+              },
+              {
+                "if": {
+                  "properties": { "status": { "const": "vacant" } }
+                },
+                "then": {
+                  "not": {
+                    "anyOf": [
+                      { "required": ["tenantId"] },
+                      { "required": ["since"] }
+                    ]
+                  }
+                }
+              }
+            ]
+          },
           "meta": {
             "type": "object",
             "additionalProperties": true

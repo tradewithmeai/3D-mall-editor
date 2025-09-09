@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gh repo edit:*)"
+      "Bash(gh repo edit:*)",
+      "Bash(npm install:*)",
+      "Bash(echo \"Exit code: $?\")"
     ],
     "deny": [],
     "ask": []
