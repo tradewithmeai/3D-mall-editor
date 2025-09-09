@@ -1,0 +1,389 @@
+{
+  "instances": [
+    {
+      "type": "referencePole",
+      "position": [
+        0,
+        0.5,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        18,
+        4,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        20,
+        4,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        22,
+        4,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        24,
+        4,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        26,
+        4,
+        10
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        16,
+        4,
+        12
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        12
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        12
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        12
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        12
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        12
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        16,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        14
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        14
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        14
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        14
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        14
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        16,
+        4,
+        16
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        22,
+        4,
+        18
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        22,
+        4,
+        20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    }
+  ]
+}

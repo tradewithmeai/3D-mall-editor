@@ -17,12 +17,24 @@ import { buildWalls } from './walls.js';
 export async function loadFloorplan(path: string): Promise<THREE.Group> {
     const res = await fetch(path);
     const json = await res.json();
+    
+    // Parse units if present (units tolerance)
+    if (json.units && Array.isArray(json.units)) {
+        console.info(`Units scaffold detected: ${json.units.length} units`);
+    }
+    
     const layout = parseLayout(json);
     const edges = tilesToEdges(layout);
     const floorsGroup = buildFloors(layout);
     const wallsGroup = buildWalls(edges);
     const group = new THREE.Group();
     group.name = 'floorplan';
+    
+    // Store units data on the group for future access
+    if (json.units) {
+        (group as any).units = json.units;
+    }
+    
     group.add(floorsGroup, wallsGroup);
     return group;
 }

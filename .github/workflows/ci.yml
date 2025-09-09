@@ -24,6 +24,10 @@ jobs:
           # Add schema validation commands here
           find . -name "*.json" -type f -exec echo "Validating {}" \; -exec node -e "JSON.parse(require('fs').readFileSync('{}', 'utf8'))" \;
           echo "✅ Schema validation passed"
+      - name: Validate units schema
+        run: |
+          npm install ajv@8 || echo "AJV install failed, continuing..."
+          node scripts/validate-units.js
 
   unit:
     runs-on: ubuntu-latest
@@ -40,6 +44,8 @@ jobs:
         run: |
           echo "Unit tests job"
           # Add unit test commands here
+          npm install ajv@8 || echo "AJV install failed, continuing..."
+          node tests/units/validate-units.test.js
           echo "✅ Unit tests passed"
 
   visual:

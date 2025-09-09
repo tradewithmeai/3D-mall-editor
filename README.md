@@ -28,6 +28,9 @@ A powerful foundation for building 3D virtual environments with Three.js, featur
 - **White walls** - Clean canvas for customization
 - **Proper lighting system** - Ambient, directional, and mood lighting
 
+### 🏢 **Mall Units Scaffold**
+Optional units system for future mall logic development. Schema validation at [docs/schema/README.md](docs/schema/README.md). No changes to rendering. Editor unchanged.
+
 ## 🚀 **Quick Start**
 
 1. **Clone the repository:**
