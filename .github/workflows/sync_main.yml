@@ -1,0 +1,29 @@
+name: Sync main from wip-post-v1
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: sync-main
+  cancel-in-progress: true
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout wip-post-v1
+        uses: actions/checkout@v4
+        with:
+          ref: wip-post-v1
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Fetch main
+        run: |
+          git fetch origin main || true
+      - name: Update local main pointer to wip-post-v1
+        run: |
+          git checkout -B main
+      - name: Push fast-forwarded main
+        run: |
+          git push origin main --force-with-lease
