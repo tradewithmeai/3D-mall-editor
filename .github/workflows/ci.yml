@@ -34,7 +34,7 @@ jobs:
         run: npm run split:units
       - name: Check idempotency
         run: |
-          CHANGES=$(git status --porcelain | grep -E "floor-plans/(mall|units)" || true)
+          CHANGES=$(git status --porcelain | grep -E "floor-plans/(mall|units_generated)" || true)
           if [ -n "$CHANGES" ]; then
             echo "Idempotency check failed"
             git status --porcelain

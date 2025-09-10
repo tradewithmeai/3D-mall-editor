@@ -8,7 +8,8 @@
       "Bash(curl:*)",
       "Bash(npm run validate:mall:*)",
       "Bash(npm run split:units:*)",
-      "Bash(bash scripts/validate-all-units.sh:*)"
+      "Bash(bash scripts/validate-all-units.sh:*)",
+      "Bash(npm run promote:unit:*)"
     ],
     "deny": [],
     "ask": []

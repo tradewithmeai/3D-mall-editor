@@ -3,11 +3,24 @@
 const fs = require('fs');
 const path = require('path');
 
+// Parse command line arguments
+const args = process.argv.slice(2);
+let outDir = 'floor-plans/units_generated'; // Default to generated directory
+
+for (let i = 0; i < args.length; i++) {
+    if (args[i] === '--out-dir' && i + 1 < args.length) {
+        outDir = args[i + 1];
+        break;
+    }
+}
+
 // File paths
 const mallJsonPath = 'floor-plans/mall/mall.json';
 const unitDraftPath = 'floor-plans/mall/unit-draft.json';
-const unitsDir = 'floor-plans/units';
-const unitsIndexPath = 'floor-plans/mall/units-index.json';
+const unitsDir = outDir;
+const unitsIndexPath = outDir === 'floor-plans/units_generated' 
+    ? 'floor-plans/mall/units-index.generated.json'
+    : 'floor-plans/mall/units-index.json';
 
 try {
     // Load mall.json and unit-draft.json

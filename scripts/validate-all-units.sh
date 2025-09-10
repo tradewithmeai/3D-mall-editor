@@ -1,28 +1,38 @@
 #!/bin/bash
 
-# Validate all unit JSON files
+# Validate all unit JSON files in both units/ and units_generated/
 EXIT_CODE=0
 VALIDATED=0
 
-# Check if units directory exists
-if [ ! -d "floor-plans/units" ]; then
-    echo "No units directory found - skipping unit validation"
-    exit 0
-fi
-
-# Loop through all unit JSON files
-for unit_file in floor-plans/units/unit-*.json; do
-    if [ -f "$unit_file" ]; then
-        echo "Validating: $unit_file"
-        node scripts/validate-units.js "$unit_file"
-        if [ $? -ne 0 ]; then
-            EXIT_CODE=1
-            echo "Validation failed for: $unit_file"
-        else
-            ((VALIDATED++))
-        fi
+# Function to validate units in a directory
+validate_units_in_dir() {
+    local dir=$1
+    local dir_name=$2
+    
+    if [ -d "$dir" ]; then
+        echo "Checking $dir_name directory..."
+        for unit_file in $dir/unit-*.json; do
+            if [ -f "$unit_file" ]; then
+                echo "Validating: $unit_file"
+                node scripts/validate-units.js "$unit_file"
+                if [ $? -ne 0 ]; then
+                    EXIT_CODE=1
+                    echo "Validation failed for: $unit_file"
+                else
+                    ((VALIDATED++))
+                fi
+            fi
+        done
+    else
+        echo "No $dir_name directory found - skipping"
     fi
-done
+}
+
+# Validate authored units
+validate_units_in_dir "floor-plans/units" "units"
+
+# Validate generated units  
+validate_units_in_dir "floor-plans/units_generated" "units_generated"
 
 if [ $VALIDATED -eq 0 ]; then
     echo "No unit files found to validate"
