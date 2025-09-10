@@ -113,6 +113,29 @@ header h1 {
     background: #5a369a !important;
 }
 
+#load-units-btn {
+    background: #fd7e14 !important;
+    border-color: #fd7e14 !important;
+}
+
+#load-units-btn:hover {
+    background: #dc6502 !important;
+}
+
+#unit-select {
+    padding: 8px 12px;
+    border: 1px solid #fd7e14;
+    border-radius: 4px;
+    background: white;
+    color: #333;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#unit-select:hover {
+    background: #f8f9fa;
+}
+
 main {
     display: flex;
     gap: 20px;

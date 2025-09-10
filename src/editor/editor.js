@@ -27,6 +27,11 @@ class FloorplanEditor {
         this.templateOverlay = null;
         this.showTemplate = false;
         
+        // Unit overlay state
+        this.unitsIndex = null;
+        this.selectedUnit = null;
+        this.unitOverlay = null;
+        
         this.init();
     }
     
@@ -113,6 +118,15 @@ class FloorplanEditor {
         
         document.getElementById('toggle-template-btn')?.addEventListener('click', () => {
             this.toggleTemplate();
+        });
+        
+        // Units index controls
+        document.getElementById('load-units-btn')?.addEventListener('click', () => {
+            this.loadUnitsIndex();
+        });
+        
+        document.getElementById('unit-select')?.addEventListener('change', (e) => {
+            this.selectUnit(e.target.value);
         });
     }
     
@@ -248,6 +262,9 @@ class FloorplanEditor {
         
         // Render template overlay
         this.renderTemplate();
+        
+        // Render unit overlay
+        this.renderUnitOverlay();
     }
     
     renderEdges() {
@@ -570,6 +587,85 @@ class FloorplanEditor {
         } else {
             alert('No template loaded. Load a template first.');
         }
+    }
+    
+    async loadUnitsIndex() {
+        try {
+            const response = await fetch('/floor-plans/mall/units-index.json');
+            const indexData = await response.json();
+            
+            if (indexData.units && Array.isArray(indexData.units)) {
+                this.unitsIndex = indexData.units;
+                console.log(`Units index loaded: ${this.unitsIndex.length} entries`);
+                
+                // Populate dropdown
+                const unitSelect = document.getElementById('unit-select');
+                if (unitSelect) {
+                    // Clear existing options except the first one
+                    unitSelect.innerHTML = '<option value="">Select Unit...</option>';
+                    
+                    // Add unit options
+                    this.unitsIndex.forEach(unit => {
+                        const option = document.createElement('option');
+                        option.value = unit.id;
+                        option.textContent = unit.id;
+                        unitSelect.appendChild(option);
+                    });
+                    
+                    unitSelect.style.display = 'inline-block';
+                }
+            } else {
+                alert('Invalid units index format. Expected "units" array.');
+            }
+        } catch (error) {
+            alert('Error loading units index: ' + error.message);
+            console.error('Units index load error:', error);
+        }
+    }
+    
+    selectUnit(unitId) {
+        if (!unitId) {
+            this.selectedUnit = null;
+            this.unitOverlay = null;
+            this.render();
+            return;
+        }
+        
+        const unit = this.unitsIndex?.find(u => u.id === unitId);
+        if (unit && unit.rect) {
+            this.selectedUnit = unitId;
+            this.unitOverlay = unit.rect;
+            console.log(`Unit overlay: ${unitId} rect ${unit.rect.x},${unit.rect.y},${unit.rect.w},${unit.rect.h}`);
+            this.render();
+        }
+    }
+    
+    renderUnitOverlay() {
+        if (!this.unitOverlay) return;
+        
+        const { x, y, w, h } = this.unitOverlay;
+        
+        // Calculate pixel coordinates for unit boundary
+        const pixelX = x * this.cellSize;
+        const pixelY = y * this.cellSize;
+        const pixelWidth = w * this.cellSize;
+        const pixelHeight = h * this.cellSize;
+        
+        // Draw ghosted unit boundary rectangle
+        this.ctx.strokeStyle = 'rgba(0, 255, 255, 0.6)'; // Semi-transparent cyan
+        this.ctx.lineWidth = 2;
+        this.ctx.setLineDash([6, 3]);
+        
+        this.ctx.beginPath();
+        this.ctx.strokeRect(pixelX, pixelY, pixelWidth, pixelHeight);
+        
+        // Reset line dash for other rendering
+        this.ctx.setLineDash([]);
+        
+        // Add unit info text
+        this.ctx.fillStyle = 'rgba(0, 255, 255, 0.9)';
+        this.ctx.font = '12px Arial';
+        this.ctx.fillText(`Unit: ${this.selectedUnit}`, pixelX + 4, pixelY + 16);
     }
 }
 
