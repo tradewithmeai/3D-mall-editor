@@ -1,0 +1,8 @@
+{
+  "id": "mall-001",
+  "grid": {
+    "width": 60,
+    "height": 40,
+    "cellSize": 20
+  }
+}

@@ -2,8 +2,8 @@ class FloorplanEditor {
     constructor() {
         this.canvas = document.getElementById('grid-canvas');
         this.ctx = this.canvas.getContext('2d');
-        this.gridWidth = 40;
-        this.gridHeight = 30;
+        this.gridWidth = 60;
+        this.gridHeight = 40;
         this.cellSize = 20;
         this.currentTool = 'empty';
         this.isDrawing = false;
@@ -22,6 +22,10 @@ class FloorplanEditor {
             empty: '#f0f0f0',
             floor: '#8B4513'
         };
+        
+        // Template overlay state
+        this.templateOverlay = null;
+        this.showTemplate = false;
         
         this.init();
     }
@@ -100,6 +104,15 @@ class FloorplanEditor {
         
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
+        });
+        
+        // Template overlay controls
+        document.getElementById('load-template-btn')?.addEventListener('click', () => {
+            this.loadTemplate();
+        });
+        
+        document.getElementById('toggle-template-btn')?.addEventListener('click', () => {
+            this.toggleTemplate();
         });
     }
     
@@ -232,6 +245,9 @@ class FloorplanEditor {
         
         // Render edges
         this.renderEdges();
+        
+        // Render template overlay
+        this.renderTemplate();
     }
     
     renderEdges() {
@@ -279,6 +295,34 @@ class FloorplanEditor {
             // Re-render current edge selection in red dashed line for erase preview
             this.ctx.setLineDash([]);
         }
+    }
+    
+    renderTemplate() {
+        if (!this.showTemplate || !this.templateOverlay) return;
+        
+        // Draw ghosted template boundary overlay
+        const templateWidth = this.templateOverlay.width;
+        const templateHeight = this.templateOverlay.height;
+        
+        // Calculate pixel coordinates for template boundary
+        const pixelWidth = templateWidth * this.cellSize;
+        const pixelHeight = templateHeight * this.cellSize;
+        
+        // Draw ghosted boundary rectangle
+        this.ctx.strokeStyle = 'rgba(255, 0, 255, 0.5)'; // Semi-transparent magenta
+        this.ctx.lineWidth = 3;
+        this.ctx.setLineDash([8, 4]);
+        
+        this.ctx.beginPath();
+        this.ctx.strokeRect(0, 0, pixelWidth, pixelHeight);
+        
+        // Reset line dash for other rendering
+        this.ctx.setLineDash([]);
+        
+        // Add template info text
+        this.ctx.fillStyle = 'rgba(255, 0, 255, 0.8)';
+        this.ctx.font = '14px Arial';
+        this.ctx.fillText(`Template: ${templateWidth}×${templateHeight}`, 10, 25);
     }
     
     clearAll() {
@@ -484,6 +528,47 @@ class FloorplanEditor {
         } catch (error) {
             alert('Error reading JSON file: ' + error.message);
             console.error('Import error:', error);
+        }
+    }
+    
+    async loadTemplate() {
+        try {
+            const response = await fetch('/floor-plans/mall/mall.json');
+            const templateData = await response.json();
+            
+            if (templateData.gridSize) {
+                this.templateOverlay = templateData.gridSize;
+                this.showTemplate = true;
+                this.render();
+                console.log('Template loaded:', templateData);
+                
+                // Update toggle button text and show it
+                const toggleBtn = document.getElementById('toggle-template-btn');
+                if (toggleBtn) {
+                    toggleBtn.textContent = 'Hide Template';
+                    toggleBtn.style.display = 'inline-block';
+                }
+            } else {
+                alert('Invalid template format. Expected "gridSize" property.');
+            }
+        } catch (error) {
+            alert('Error loading template: ' + error.message);
+            console.error('Template load error:', error);
+        }
+    }
+    
+    toggleTemplate() {
+        if (this.templateOverlay) {
+            this.showTemplate = !this.showTemplate;
+            this.render();
+            
+            // Update toggle button text
+            const toggleBtn = document.getElementById('toggle-template-btn');
+            if (toggleBtn) {
+                toggleBtn.textContent = this.showTemplate ? 'Hide Template' : 'Show Template';
+            }
+        } else {
+            alert('No template loaded. Load a template first.');
         }
     }
 }

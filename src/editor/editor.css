@@ -11,7 +11,7 @@ body {
 }
 
 .editor-container {
-    max-width: 1200px;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -93,6 +93,24 @@ header h1 {
 
 #clear-btn:hover {
     background: #c82333 !important;
+}
+
+#load-template-btn {
+    background: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+}
+
+#load-template-btn:hover {
+    background: #138496 !important;
+}
+
+#toggle-template-btn {
+    background: #6f42c1 !important;
+    border-color: #6f42c1 !important;
+}
+
+#toggle-template-btn:hover {
+    background: #5a369a !important;
 }
 
 main {

@@ -3,7 +3,11 @@
     "allow": [
       "Bash(gh repo edit:*)",
       "Bash(npm install:*)",
-      "Bash(echo \"Exit code: $?\")"
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(start:*)",
+      "Bash(curl:*)",
+      "Bash(npm run validate:mall:*)",
+      "Bash(npm run split:units:*)"
     ],
     "deny": [],
     "ask": []

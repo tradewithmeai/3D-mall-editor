@@ -22,19 +22,21 @@
                     <button id="import-btn">Import JSON</button>
                     <button id="export-btn">Export JSON</button>
                     <button id="clear-btn">Clear Grid</button>
+                    <button id="load-template-btn">Load Template</button>
+                    <button id="toggle-template-btn" style="display: none;">Show Template</button>
                 </div>
             </div>
         </header>
         
         <main>
             <div class="grid-container">
-                <canvas id="grid-canvas" width="800" height="600"></canvas>
+                <canvas id="grid-canvas" width="1200" height="800"></canvas>
             </div>
             
             <div class="info-panel">
                 <h3>Grid Info</h3>
                 <div id="grid-info">
-                    <p>Size: <span id="grid-size">40x30</span></p>
+                    <p>Size: <span id="grid-size">60x40</span></p>
                     <p>Cell Size: <span id="cell-size">20px</span></p>
                     <p>Tool: <span id="current-tool">Empty</span></p>
                 </div>

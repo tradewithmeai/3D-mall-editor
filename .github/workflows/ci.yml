@@ -28,6 +28,21 @@ jobs:
         run: |
           npm install ajv@8 || echo "AJV install failed, continuing..."
           node scripts/validate-units.js
+      - name: Validate mall schema
+        run: npm run validate:mall
+      - name: Split mall into units
+        run: npm run split:units
+      - name: Check idempotency
+        run: |
+          CHANGES=$(git status --porcelain | grep -E "floor-plans/(mall|units)" || true)
+          if [ -n "$CHANGES" ]; then
+            echo "Idempotency check failed"
+            git status --porcelain
+            exit 1
+          fi
+          echo "Idempotency check passed"
+      - name: Validate all units
+        run: bash scripts/validate-all-units.sh
 
   unit:
     runs-on: ubuntu-latest
@@ -47,6 +62,7 @@ jobs:
           npm install ajv@8 || echo "AJV install failed, continuing..."
           node tests/units/validate-units.test.js
           node tests/units/occupancy-rules.test.js
+          node tests/container-model.test.js
           echo "✅ Unit tests passed"
 
   visual:
