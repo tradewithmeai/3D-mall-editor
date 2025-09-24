@@ -509,39 +509,214 @@ class FloorplanEditor {
         return wallTypes.includes(instanceType);
     }
     
+    // Convert current editor state to scene.v1 format
+    toSceneV1() {
+        const now = new Date().toISOString();
+
+        // Convert grid data to coordinate arrays
+        const floorTiles = [];
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.grid[y][x] === 'floor') {
+                    floorTiles.push([x, y]);
+                }
+            }
+        }
+
+        // Convert edge data to coordinate arrays
+        const horizontalEdges = [];
+        const verticalEdges = [];
+
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.horizontalEdges[y] && this.horizontalEdges[y][x]) {
+                    horizontalEdges.push([x, y]);
+                }
+                if (this.verticalEdges[y] && this.verticalEdges[y][x]) {
+                    verticalEdges.push([x, y]);
+                }
+            }
+        }
+
+        return {
+            meta: {
+                schema: "scene.v1",
+                version: "1.0",
+                created: now,
+                modified: now
+            },
+            grid: {
+                width: this.gridWidth,
+                height: this.gridHeight,
+                cellSize: this.cellSize
+            },
+            tiles: {
+                floor: floorTiles
+            },
+            edges: {
+                horizontal: horizontalEdges,
+                vertical: verticalEdges
+            }
+        };
+    }
+
+    // Convert scene.v1 format to editor state
+    fromSceneV1(sceneData) {
+        // Validate basic structure
+        if (!sceneData.meta || sceneData.meta.schema !== "scene.v1") {
+            throw new Error('Invalid scene.v1 format');
+        }
+        if (!sceneData.grid) {
+            throw new Error('Missing grid data in scene.v1');
+        }
+
+        // Update grid dimensions
+        this.gridWidth = sceneData.grid.width;
+        this.gridHeight = sceneData.grid.height;
+        this.cellSize = sceneData.grid.cellSize;
+
+        // Initialize empty grids
+        this.grid = this.createEmptyGrid();
+        this.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+
+        // Load floor tiles
+        if (sceneData.tiles && sceneData.tiles.floor) {
+            sceneData.tiles.floor.forEach(([x, y]) => {
+                if (y < this.gridHeight && x < this.gridWidth) {
+                    this.grid[y][x] = 'floor';
+                }
+            });
+        }
+
+        // Load edges
+        if (sceneData.edges) {
+            if (sceneData.edges.horizontal) {
+                sceneData.edges.horizontal.forEach(([x, y]) => {
+                    if (y < this.gridHeight && x < this.gridWidth) {
+                        this.horizontalEdges[y][x] = true;
+                    }
+                });
+            }
+            if (sceneData.edges.vertical) {
+                sceneData.edges.vertical.forEach(([x, y]) => {
+                    if (y < this.gridHeight && x < this.gridWidth) {
+                        this.verticalEdges[y][x] = true;
+                    }
+                });
+            }
+        }
+    }
+
     exportJSON() {
-        const instances = this.gridToInstances();
-        const jsonData = { instances };
-        
-        const dataStr = JSON.stringify(jsonData, null, 2);
+        // Export using scene.v1 format
+        const sceneData = this.toSceneV1();
+
+        const dataStr = JSON.stringify(sceneData, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        
+
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
-        link.download = 'room-layout.json';
+        link.download = 'scene.json';
         link.click();
-        
-        console.log('Exported JSON:', jsonData);
+
+        console.log('Exported scene.v1:', sceneData);
     }
     
+    // Detect format and convert to scene.v1
+    detectAndConvertFormat(jsonData) {
+        // Check if it's already scene.v1
+        if (jsonData.meta && jsonData.meta.schema === "scene.v1") {
+            return jsonData;
+        }
+
+        // Check if it's a mall template format
+        if (jsonData.grid && jsonData.id && jsonData.id.startsWith('mall-')) {
+            // Convert mall template to scene.v1 - just the grid structure
+            return {
+                meta: {
+                    schema: "scene.v1",
+                    version: "1.0",
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString(),
+                    convertedFrom: "mall-template"
+                },
+                grid: jsonData.grid,
+                tiles: { floor: [] },
+                edges: { horizontal: [], vertical: [] }
+            };
+        }
+
+        // Check if it's legacy instances format
+        if (jsonData.instances && Array.isArray(jsonData.instances)) {
+            // Convert legacy instances to scene.v1
+            const result = this.instancesToGrid(jsonData.instances);
+
+            // Convert the grid arrays back to coordinate format
+            const floorTiles = [];
+            const horizontalEdges = [];
+            const verticalEdges = [];
+
+            for (let y = 0; y < this.gridHeight; y++) {
+                for (let x = 0; x < this.gridWidth; x++) {
+                    if (result.grid[y] && result.grid[y][x] === 'floor') {
+                        floorTiles.push([x, y]);
+                    }
+                    if (result.horizontalEdges[y] && result.horizontalEdges[y][x]) {
+                        horizontalEdges.push([x, y]);
+                    }
+                    if (result.verticalEdges[y] && result.verticalEdges[y][x]) {
+                        verticalEdges.push([x, y]);
+                    }
+                }
+            }
+
+            return {
+                meta: {
+                    schema: "scene.v1",
+                    version: "1.0",
+                    created: new Date().toISOString(),
+                    modified: new Date().toISOString(),
+                    convertedFrom: "legacy-instances"
+                },
+                grid: {
+                    width: this.gridWidth,
+                    height: this.gridHeight,
+                    cellSize: this.cellSize
+                },
+                tiles: { floor: floorTiles },
+                edges: { horizontal: horizontalEdges, vertical: verticalEdges }
+            };
+        }
+
+        throw new Error('Unrecognized JSON format. Expected scene.v1, mall template, or legacy instances format.');
+    }
+
     async importJSON(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
+
         try {
             const text = await file.text();
             const jsonData = JSON.parse(text);
-            
-            if (jsonData.instances && Array.isArray(jsonData.instances)) {
-                const result = this.instancesToGrid(jsonData.instances);
-                this.grid = result.grid;
-                this.horizontalEdges = result.horizontalEdges;
-                this.verticalEdges = result.verticalEdges;
-                this.render();
-                console.log('Imported JSON:', jsonData);
+
+            // Detect format and convert to scene.v1
+            const sceneData = this.detectAndConvertFormat(jsonData);
+
+            // Load the scene.v1 data
+            this.fromSceneV1(sceneData);
+            this.updateInfo(); // Update UI with new grid dimensions
+            this.render();
+
+            console.log('Imported and converted to scene.v1:', sceneData);
+
+            // Show conversion info to user
+            if (sceneData.meta.convertedFrom) {
+                alert(`File imported and converted from ${sceneData.meta.convertedFrom} format to scene.v1`);
             } else {
-                alert('Invalid JSON format. Expected "instances" array.');
+                alert('Scene.v1 file imported successfully');
             }
+
         } catch (error) {
             alert('Error reading JSON file: ' + error.message);
             console.error('Import error:', error);
@@ -553,12 +728,12 @@ class FloorplanEditor {
             const response = await fetch('/floor-plans/mall/mall.json');
             const templateData = await response.json();
             
-            if (templateData.gridSize) {
-                this.templateOverlay = templateData.gridSize;
+            if (templateData.grid) {
+                this.templateOverlay = templateData.grid;
                 this.showTemplate = true;
                 this.render();
                 console.log('Template loaded:', templateData);
-                
+
                 // Update toggle button text and show it
                 const toggleBtn = document.getElementById('toggle-template-btn');
                 if (toggleBtn) {
@@ -566,7 +741,7 @@ class FloorplanEditor {
                     toggleBtn.style.display = 'inline-block';
                 }
             } else {
-                alert('Invalid template format. Expected "gridSize" property.');
+                alert('Invalid template format. Expected "grid" property.');
             }
         } catch (error) {
             alert('Error loading template: ' + error.message);

@@ -6,9 +6,11 @@
     "start:editor": "npx http-server -c-1 -p 5173 .",
     "validate:mall": "node scripts/validate-mall.js",
     "split:units": "node scripts/split-mall-into-units.js --out-dir floor-plans/units_generated",
-    "promote:unit": "node scripts/promote-unit.js"
+    "promote:unit": "node scripts/promote-unit.js",
+    "test:round-trip": "node tests/golden-round-trip.test.js"
   },
   "dependencies": {
-    "ajv": "^8.17.1"
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
   }
 }
