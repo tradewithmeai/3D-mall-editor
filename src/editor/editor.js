@@ -1082,11 +1082,15 @@ class FloorplanEditor {
         console.log('Room export - Debug templateType:', this.templateType);
 
         if (this.overlayModel.templateData && this.overlayModel.templateData.id) {
-            parentGalleryId = this.overlayModel.templateData.id;
-            console.log('Room export - Using overlayModel.templateData.id:', parentGalleryId);
+            const templateId = this.overlayModel.templateData.id;
+            // Ensure the parent ID has the correct gallery- prefix for validation
+            parentGalleryId = templateId.startsWith('gallery-') ? templateId : `gallery-${templateId}`;
+            console.log('Room export - Using overlayModel.templateData.id:', templateId, '-> parentGalleryId:', parentGalleryId);
         } else if (this.templateContext && this.templateContext.id) {
-            parentGalleryId = this.templateContext.id;
-            console.log('Room export - Using templateContext.id:', parentGalleryId);
+            const templateId = this.templateContext.id;
+            // Ensure the parent ID has the correct gallery- prefix for validation
+            parentGalleryId = templateId.startsWith('gallery-') ? templateId : `gallery-${templateId}`;
+            console.log('Room export - Using templateContext.id:', templateId, '-> parentGalleryId:', parentGalleryId);
         } else {
             console.warn('Room export - No valid parent gallery ID found, using default:', parentGalleryId);
         }
