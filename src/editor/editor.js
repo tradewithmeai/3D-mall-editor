@@ -195,6 +195,42 @@ class FloorplanEditor {
         document.getElementById('run-smoke-test')?.addEventListener('click', () => {
             this.runSmokeTest();
         });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Only act when canvas/editor has focus, not text inputs
+            if (document.activeElement?.tagName === 'INPUT' ||
+                document.activeElement?.tagName === 'TEXTAREA' ||
+                document.activeElement?.tagName === 'SELECT') {
+                return;
+            }
+
+            switch (e.key.toLowerCase()) {
+                case 'o':
+                    // Toggle overlay visibility
+                    if (this.overlayModel?.templateData) {
+                        this.showTemplate = !this.showTemplate;
+                        this.render();
+                        console.log(`Overlay toggled: ${this.showTemplate ? 'shown' : 'hidden'}`);
+                    }
+                    e.preventDefault();
+                    break;
+
+                case 'c':
+                    // Clear template
+                    this.clearTemplate();
+                    console.log('Template cleared via hotkey');
+                    e.preventDefault();
+                    break;
+
+                case 't':
+                    // Run smoke test
+                    this.runSmokeTest();
+                    console.log('Smoke test started via hotkey');
+                    e.preventDefault();
+                    break;
+            }
+        });
     }
     
     handleMouseAction(e) {
@@ -852,67 +888,6 @@ class FloorplanEditor {
     }
 
 
-    // Calculate gallery template bounds for overlay constraints
-    calculateGalleryTemplateBounds(templateData) {
-        if (!templateData.rect) {
-            return null;
-        }
-
-        return [{
-            id: templateData.id,
-            rect: templateData.rect
-        }];
-    }
-
-    // Build gallery template constraints from template data
-    buildGalleryTemplateConstraints(templateData) {
-        const constraints = {
-            allowedAreas: [],
-            boundaryPoints: []
-        };
-
-        if (templateData.rect) {
-            constraints.allowedAreas.push(templateData.rect);
-        }
-
-        return constraints;
-    }
-
-    // Calculate room template bounds for overlay constraints
-    calculateRoomTemplateBounds(templateData) {
-        if (!templateData.rect) {
-            return null;
-        }
-
-        return [{
-            id: templateData.id,
-            rect: templateData.rect
-        }];
-    }
-
-    // Build room template constraints from template data
-    buildRoomTemplateConstraints(templateData) {
-        const constraints = {
-            allowedAreas: [],
-            boundaryPoints: [],
-            features: templateData.features || {}
-        };
-
-        if (templateData.rect) {
-            constraints.allowedAreas.push(templateData.rect);
-        }
-
-        // Add room feature constraints if available
-        if (templateData.features && templateData.features.floorZones) {
-            templateData.features.floorZones.forEach(zone => {
-                if (zone.bounds) {
-                    constraints.allowedAreas.push(zone.bounds);
-                }
-            });
-        }
-
-        return constraints;
-    }
 
     // Authoritative grid cell setter with constraint enforcement
     setGridCell(x, y, value) {
@@ -1319,8 +1294,29 @@ class FloorplanEditor {
             this.clearScene();
             this.overlayModel = this.overlayModel || {};
             this.overlayModel.templateData = dto;
-            this.overlayModel.bounds = makeBounds(dto);
-            this.showTemplate = dto.type !== 'scene';
+
+            // Validate DTO rects before enabling edits
+            if ((dto.type === 'unit' || dto.type === 'room')) {
+                if (!dto.rect || dto.rect.w <= 0 || dto.rect.h <= 0) {
+                    this.showToast('error', 'Template Invalid', 'Template rect invalid; editing disabled');
+                    this.showTemplate = false;
+                    this.overlayModel.bounds = null;
+                    console.warn('Invalid template rect, editing disabled:', dto.rect);
+                } else {
+                    this.overlayModel.bounds = makeBounds(dto);
+                    this.showTemplate = true;
+                }
+            } else if (dto.type === 'mall') {
+                if (!dto.units || dto.units.length === 0) {
+                    console.warn('Mall template has no units; allowing unrestricted editing');
+                }
+                this.overlayModel.bounds = makeBounds(dto);
+                this.showTemplate = true;
+            } else {
+                this.overlayModel.bounds = makeBounds(dto);
+                this.showTemplate = dto.type !== 'scene';
+            }
+
             this.templateType = dto.type;
             this.updateModeBadge();
 
@@ -1584,8 +1580,29 @@ class FloorplanEditor {
         this.clearScene();
         this.overlayModel = this.overlayModel || {};
         this.overlayModel.templateData = dto;
-        this.overlayModel.bounds = makeBounds(dto);
-        this.showTemplate = dto.type !== 'scene';
+
+        // Validate DTO rects before enabling edits
+        if ((dto.type === 'unit' || dto.type === 'room')) {
+            if (!dto.rect || dto.rect.w <= 0 || dto.rect.h <= 0) {
+                this.showToast('error', 'Template Invalid', 'Template rect invalid; editing disabled');
+                this.showTemplate = false;
+                this.overlayModel.bounds = null;
+                console.warn('Invalid template rect, editing disabled:', dto.rect);
+            } else {
+                this.overlayModel.bounds = makeBounds(dto);
+                this.showTemplate = true;
+            }
+        } else if (dto.type === 'mall') {
+            if (!dto.units || dto.units.length === 0) {
+                console.warn('Mall template has no units; allowing unrestricted editing');
+            }
+            this.overlayModel.bounds = makeBounds(dto);
+            this.showTemplate = true;
+        } else {
+            this.overlayModel.bounds = makeBounds(dto);
+            this.showTemplate = dto.type !== 'scene';
+        }
+
         this.templateType = dto.type;
         this.updateModeBadge();
 

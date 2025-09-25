@@ -1,0 +1,14 @@
+{
+  "meta": {
+    "schema": "unit-template.v1",
+    "version": "1.0"
+  },
+  "id": "invalid-unit",
+  "rect": {
+    "x": 10,
+    "y": 10,
+    "w": 0,
+    "h": -5
+  },
+  "rooms": []
+}

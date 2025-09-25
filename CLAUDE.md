@@ -69,6 +69,25 @@ Interactive 3D mall floorplan editor with hierarchical template system for multi
 - **Rooms Export Format:** Rooms are exported with `gridRect` property
 - **Rooms Import Normalization:** TemplateLoader accepts both `rect` and `gridRect`, normalizes to DTO `rect`
 - **UI vs Schema:** User sees "Gallery" in UI, but files use `unit-template.v1` schema
+- **Bounds Authority:** TemplateBounds.js is single source of truth; exports never include scene instances in templates
+- **Invalid Rects:** Templates with invalid rects (w≤0 or h≤0) disable editing with toast notification
+
+## 🎯 Keyboard Shortcuts
+
+**Quick UX Toggles:**
+- **'o'** - Toggle overlay visibility (show/hide template boundaries)
+- **'c'** - Clear template (removes current template and returns to scene mode)
+- **'t'** - Run smoke test (executes built-in end-to-end validation)
+
+*Note: Shortcuts only work when canvas has focus, not when typing in text inputs.*
+
+## 📋 Supported Schema Formats
+
+**Drag & Drop Compatible:**
+- `scene.v1` - Complete scene with floor tiles and wall edges
+- `mall-template.v1` - Mall layout with unit boundaries
+- `unit-template.v1` - Gallery template with room layouts (UI shows "Gallery")
+- `room-template.v1` - Individual room template with zones
 
 **Room Template Structure:**
 ```json
