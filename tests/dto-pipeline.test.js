@@ -45,6 +45,23 @@ const fixtures = {
         id: 'test-gallery',
         rect: { x: 5, y: 5, w: 10, h: 8 },
         rooms: []
+    },
+
+    // GridRect normalization test: rooms with gridRect should normalize to rect
+    unitWithGridRects: {
+        meta: { schema: 'unit-template.v1', version: '1.0' },
+        id: 'test-unit-gridrects',
+        rect: { x: 10, y: 10, w: 12, h: 8 },
+        rooms: [
+            {
+                id: 'room-1',
+                gridRect: { x: 12, y: 12, w: 4, h: 3 }
+            },
+            {
+                id: 'room-2',
+                gridRect: { x: 16, y: 12, w: 3, h: 4 }
+            }
+        ]
     }
 };
 
@@ -141,6 +158,40 @@ function runTests() {
         passed++;
     } catch (error) {
         console.log('❌ Bounds checking failed:', error.message, '\n');
+        failed++;
+    }
+
+    // Test 5: GridRect normalization
+    try {
+        console.log('Test 5: GridRect Normalization');
+
+        // Schema detection should work for unit with gridRects
+        const gridRectKind = detect(fixtures.unitWithGridRects);
+        console.assert(gridRectKind === 'unit-template.v1', `Expected 'unit-template.v1', got '${gridRectKind}'`);
+
+        // DTO normalization should convert gridRect to rect
+        const { dto: gridRectDto } = loadTemplate(fixtures.unitWithGridRects);
+        console.assert(gridRectDto.type === 'unit', `Expected dto.type='unit', got '${gridRectDto.type}'`);
+        console.assert(Array.isArray(gridRectDto.rooms) && gridRectDto.rooms.length === 2, 'Should have 2 rooms');
+
+        // Check first room normalization
+        const room1 = gridRectDto.rooms[0];
+        console.assert(room1.id === 'room-1', `Expected room1.id='room-1', got '${room1.id}'`);
+        console.assert(room1.rect && !room1.gridRect, 'Room1 should have rect, not gridRect');
+        console.assert(room1.rect.x === 12 && room1.rect.y === 12, 'Room1 rect position should match gridRect');
+        console.assert(room1.rect.w === 4 && room1.rect.h === 3, 'Room1 rect size should match gridRect');
+
+        // Check second room normalization
+        const room2 = gridRectDto.rooms[1];
+        console.assert(room2.id === 'room-2', `Expected room2.id='room-2', got '${room2.id}'`);
+        console.assert(room2.rect && !room2.gridRect, 'Room2 should have rect, not gridRect');
+        console.assert(room2.rect.x === 16 && room2.rect.y === 12, 'Room2 rect position should match gridRect');
+        console.assert(room2.rect.w === 3 && room2.rect.h === 4, 'Room2 rect size should match gridRect');
+
+        console.log('✅ GridRect normalization passed\n');
+        passed++;
+    } catch (error) {
+        console.log('❌ GridRect normalization failed:', error.message, '\n');
         failed++;
     }
 

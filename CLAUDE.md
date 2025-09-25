@@ -20,11 +20,11 @@ Interactive 3D mall floorplan editor with hierarchical template system for multi
 
 ### ✅ CRITICAL ISSUES RESOLVED
 
-**1. Template Naming Confusion Fixed:**
-- ✅ Renamed all "unit-template" references to "gallery-template"
-- ✅ Updated schema: `unit-template.v1` → `gallery-template.v1`
-- ✅ Updated ID prefixes: `unit-` → `gallery-`
-- ✅ Room templates now reference `parentGalleryId` instead of `parentUnitId`
+**1. Template Naming Clarification:**
+- ✅ UI Label: "Gallery" (user-facing display)
+- ✅ Schema: `unit-template.v1` (technical format)
+- ✅ Clarification: UI shows "Gallery" but exports use unit-template.v1 schema
+- ✅ Room templates reference `parentUnitId` in exports, `parentGalleryId` in some legacy contexts
 
 **2. Duplicate Overlay Bug Fixed:**
 - ❌ **Previous Issue:** Two overlays drawn simultaneously (purple + cyan dashed lines)
@@ -44,21 +44,31 @@ Interactive 3D mall floorplan editor with hierarchical template system for multi
 
 ### ✅ TEMPLATE SYSTEM IMPLEMENTATION COMPLETE
 
-**Gallery Template Structure:**
+**Gallery Template Structure (UI label: "Gallery", Schema: unit-template.v1):**
 ```json
 {
   "meta": {
-    "schema": "gallery-template.v1",
+    "schema": "unit-template.v1",
     "version": "1.0",
     "name": "Sample Gallery Template"
   },
   "id": "gallery-sample-20250925",
   "parentMallId": "mall-sample-20250924",
   "rect": { "x": 2, "y": 2, "w": 8, "h": 6 },
-  "rooms": [...],
+  "rooms": [
+    {
+      "id": "room-1",
+      "gridRect": { "x": 3, "y": 3, "w": 3, "h": 2 }
+    }
+  ],
   "created": "2025-09-25T01:15:00.000Z"
 }
 ```
+
+**Important Notes:**
+- **Rooms Export Format:** Rooms are exported with `gridRect` property
+- **Rooms Import Normalization:** TemplateLoader accepts both `rect` and `gridRect`, normalizes to DTO `rect`
+- **UI vs Schema:** User sees "Gallery" in UI, but files use `unit-template.v1` schema
 
 **Room Template Structure:**
 ```json
@@ -101,7 +111,7 @@ Interactive 3D mall floorplan editor with hierarchical template system for multi
 
 **Template Hierarchy Test Suite:**
 - `test-mall-template.v1.json` - Mall with 2 units
-- `test-gallery-template.v1.json` - Gallery with 3 rooms (8×6 size)
+- `test-unit-template.v1.json` - Gallery template (UI: "Gallery", Schema: unit-template.v1) with 3 rooms (8×6 size)
 - `test-room-template.v1.json` - Room with walls and floor zones (6×4 size)
 
 **Workflow Testing:**
@@ -148,7 +158,7 @@ Interactive 3D mall floorplan editor with hierarchical template system for multi
 │   └── editor.css          # Editor styles
 ├── test-files/
 │   ├── test-mall-template.v1.json
-│   ├── test-gallery-template.v1.json
+│   ├── test-unit-template.v1.json
 │   └── test-room-template.v1.json
 ├── package.json            # NPM configuration
 ├── CLAUDE.md              # This development log
