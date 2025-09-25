@@ -1,5 +1,6 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
+import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 
 class FloorplanEditor {
     constructor() {
@@ -820,10 +821,6 @@ class FloorplanEditor {
 
     // Export as Mall Template format for unit splitting workflow
     exportAsMallTemplate() {
-        // Generate a unique mall ID with timestamp
-        const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-        const mallId = `mall-${timestamp}`;
-
         // Detect units from connected floor regions
         const units = this.detectUnitsFromFloorTiles();
 
@@ -834,37 +831,13 @@ class FloorplanEditor {
             return;
         }
 
-        // Create proper mall-template.v1 schema
-        const mallTemplate = {
-            meta: {
-                schema: "mall-template.v1",
-                version: "1.0",
-                name: "Generated Mall Template"
-            },
-            id: mallId,
-            grid: {
-                width: this.gridWidth,
-                height: this.gridHeight,
-                cellSize: this.cellSize
-            },
-            units: units,
-            created: new Date().toISOString()
-        };
-
-        // Add legacy metadata if available
-        if (this.templateOverlay && this.templateOverlay.parentMallId) {
-            mallTemplate.meta.basedOn = this.templateOverlay.parentMallId;
-        }
-
-        // Validate template before saving
-        try {
-            this.validateWithAJV(mallTemplate, 'mall-template.v1');
-            console.log('✅ Mall template validation passed');
-        } catch (error) {
-            alert(`Export failed: ${error.message}`);
-            console.error('❌ Mall template validation failed:', error);
-            return;
-        }
+        // Use ExportBuilder for consistent format
+        const mallTemplate = buildMallTemplate({
+            gridWidth: this.gridWidth,
+            gridHeight: this.gridHeight,
+            cellSize: this.cellSize,
+            units: units
+        });
 
         const dataStr = JSON.stringify(mallTemplate, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -878,35 +851,6 @@ class FloorplanEditor {
         alert(`Mall template saved (${units.length} units detected)\\nReady for template loading workflow`);
     }
 
-    // Calculate template bounds for overlay constraints
-    calculateTemplateBounds(templateData) {
-        if (!templateData.units || !Array.isArray(templateData.units)) {
-            return null;
-        }
-
-        return templateData.units.map(unit => ({
-            id: unit.id,
-            rect: unit.rect
-        }));
-    }
-
-    // Build template constraints from template data
-    buildTemplateConstraints(templateData) {
-        const constraints = {
-            allowedAreas: [],
-            boundaryPoints: []
-        };
-
-        if (templateData.units && Array.isArray(templateData.units)) {
-            templateData.units.forEach(unit => {
-                if (unit.rect) {
-                    constraints.allowedAreas.push(unit.rect);
-                }
-            });
-        }
-
-        return constraints;
-    }
 
     // Calculate gallery template bounds for overlay constraints
     calculateGalleryTemplateBounds(templateData) {
@@ -1036,16 +980,14 @@ class FloorplanEditor {
     // Export as Gallery Template format with parent relationship
     exportAsGalleryTemplate() {
         const dto = this.overlayModel?.templateData;
-        const out = {
-            meta: {
-                schema: 'unit-template.v1',
-                version: '1.0',
-                parent: dto?.parentMallId ? { schema: 'mall-template.v1', id: dto.parentMallId } : undefined
-            },
+
+        // Use ExportBuilder for consistent format
+        const out = buildUnitTemplate({
             id: dto?.id || 'unit',
             rect: dto?.rect || { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
-            rooms: dto?.rooms || []
-        };
+            rooms: dto?.rooms || [],
+            parentMallId: dto?.parentMallId
+        });
 
         const dataStr = JSON.stringify(out, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -1069,16 +1011,13 @@ class FloorplanEditor {
             return;
         }
 
-        const out = {
-            meta: {
-                schema: 'room-template.v1',
-                version: '1.0',
-                parent: { schema: 'unit-template.v1', id: dto.id || 'unit' }
-            },
+        // Use ExportBuilder for consistent format
+        const out = buildRoomTemplate({
             id: dto.id ? `${dto.id}-room` : 'room',
-            rect: { ...dto.rect }, // required
-            zones: [] // optional array, default []
-        };
+            rect: { ...dto.rect },
+            zones: [],
+            parentUnitId: dto.id || 'unit'
+        });
 
         // DO NOT export instances/scene content here
         const dataStr = JSON.stringify(out, null, 2);
@@ -1288,8 +1227,39 @@ class FloorplanEditor {
 
     // Export as Scene v1 format (renamed from exportJSON)
     exportAsScene() {
-        // Export using scene.v1 format
-        const sceneData = this.toSceneV1();
+        // Collect floor tiles
+        const floorTiles = [];
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.grid[y][x] === 'floor') {
+                    floorTiles.push([x, y]);
+                }
+            }
+        }
+
+        // Collect edge data
+        const hEdges = [];
+        const vEdges = [];
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.horizontalEdges[y] && this.horizontalEdges[y][x]) {
+                    hEdges.push([x, y]);
+                }
+                if (this.verticalEdges[y] && this.verticalEdges[y][x]) {
+                    vEdges.push([x, y]);
+                }
+            }
+        }
+
+        // Use ExportBuilder for consistent format
+        const sceneData = buildSceneV1({
+            gridWidth: this.gridWidth,
+            gridHeight: this.gridHeight,
+            cellSize: this.cellSize,
+            floorTiles: floorTiles,
+            hEdges: hEdges,
+            vEdges: vEdges
+        });
 
         const dataStr = JSON.stringify(sceneData, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -1333,196 +1303,6 @@ class FloorplanEditor {
         }
     }
     
-    // Detect format and convert to scene.v1
-    // DEPRECATED: This method is no longer used. Template loading now handled by core/TemplateLoader.js
-    detectAndConvertFormat(jsonData) {
-        // Check if it's already scene.v1
-        if (jsonData.meta && jsonData.meta.schema === "scene.v1") {
-            return jsonData;
-        }
-
-        // Check if it's a mall template format - LOAD AS OVERLAY CONSTRAINTS, NOT CONTENT
-        if (jsonData.grid && jsonData.id && jsonData.id.startsWith('mall-')) {
-            // Validate mall template structure
-            this.validateMallTemplate(jsonData);
-
-            // Store template in overlayModel (constraints), not as scene content
-            this.overlayModel.templateData = jsonData;
-            this.overlayModel.bounds = this.calculateTemplateBounds(jsonData);
-            this.overlayModel.constraints = this.buildTemplateConstraints(jsonData);
-            this.updateModeBadge();
-
-            // Set template context
-            this.templateType = 'mall';
-            this.templateContext = {
-                id: jsonData.id,
-                originalData: jsonData,
-                loadedAt: new Date().toISOString()
-            };
-
-            // Enable template display by default
-            this.showTemplate = true;
-
-            console.log('Mall template loaded as overlay constraints:', jsonData.id);
-
-            // Return EMPTY scene.v1 for user to create content within template bounds
-            return {
-                meta: {
-                    schema: "scene.v1",
-                    version: "1.0",
-                    created: new Date().toISOString(),
-                    modified: new Date().toISOString()
-                },
-                grid: jsonData.grid,
-                tiles: { floor: [] }, // Empty - user creates content
-                edges: { horizontal: [], vertical: [] } // Empty - user creates content
-            };
-        }
-
-        // Check if it's a gallery template format
-        if (jsonData.meta && jsonData.meta.schema === "gallery-template.v1" && jsonData.id && jsonData.id.startsWith('gallery-')) {
-            // Validate gallery template structure
-            this.validateGalleryTemplate(jsonData);
-
-            // Set template context for gallery template
-            this.templateType = 'gallery';
-            this.templateContext = {
-                id: jsonData.id,
-                parentMallId: jsonData.parentMallId,
-                originalData: jsonData,
-                loadedAt: new Date().toISOString()
-            };
-
-            // Store template in overlayModel (constraints), not as scene content
-            this.overlayModel.templateData = jsonData;
-            this.overlayModel.bounds = this.calculateGalleryTemplateBounds(jsonData);
-            this.overlayModel.constraints = this.buildGalleryTemplateConstraints(jsonData);
-            this.updateModeBadge();
-
-            // Enable template display by default
-            this.showTemplate = true;
-
-            console.log('Gallery template loaded as overlay constraints:', jsonData.id);
-
-            // Update grid dimensions to match gallery template boundaries
-            if (jsonData.rect) {
-                this.gridWidth = jsonData.rect.w;
-                this.gridHeight = jsonData.rect.h;
-                this.cellSize = 20;
-            }
-
-            // Return EMPTY scene.v1 for user to create content within template bounds
-            return {
-                meta: {
-                    schema: "scene.v1",
-                    version: "1.0",
-                    created: new Date().toISOString(),
-                    modified: new Date().toISOString()
-                },
-                grid: {
-                    width: this.gridWidth,
-                    height: this.gridHeight,
-                    cellSize: this.cellSize
-                },
-                tiles: { floor: [] }, // Empty - user creates content
-                edges: { horizontal: [], vertical: [] } // Empty - user creates content
-            };
-        }
-
-        // Check if it's a room template format
-        if (jsonData.meta && jsonData.meta.schema === "room-template.v1" && jsonData.id && jsonData.id.startsWith('room-')) {
-            // Validate room template structure
-            this.validateRoomTemplate(jsonData);
-
-            // Set template context for room template
-            this.templateType = 'room';
-            this.templateContext = {
-                id: jsonData.id,
-                parentGalleryId: jsonData.parentGalleryId,
-                originalData: jsonData,
-                loadedAt: new Date().toISOString()
-            };
-
-            // Store template in overlayModel (constraints), not as scene content
-            this.overlayModel.templateData = jsonData;
-            this.overlayModel.bounds = this.calculateRoomTemplateBounds(jsonData);
-            this.overlayModel.constraints = this.buildRoomTemplateConstraints(jsonData);
-            this.updateModeBadge();
-
-            // Enable template display by default
-            this.showTemplate = true;
-
-            console.log('Room template loaded as overlay constraints:', jsonData.id);
-
-            // Update grid dimensions to match room template boundaries
-            if (jsonData.rect) {
-                this.gridWidth = jsonData.rect.w;
-                this.gridHeight = jsonData.rect.h;
-                this.cellSize = 20;
-            }
-
-            // Return EMPTY scene.v1 for user to create content within template bounds
-            return {
-                meta: {
-                    schema: "scene.v1",
-                    version: "1.0",
-                    created: new Date().toISOString(),
-                    modified: new Date().toISOString()
-                },
-                grid: {
-                    width: this.gridWidth,
-                    height: this.gridHeight,
-                    cellSize: this.cellSize
-                },
-                tiles: { floor: [] }, // Empty - user creates content
-                edges: { horizontal: [], vertical: [] } // Empty - user creates content
-            };
-        }
-
-        // Check if it's legacy instances format
-        if (jsonData.instances && Array.isArray(jsonData.instances)) {
-            // Convert legacy instances to scene.v1
-            const result = this.instancesToGrid(jsonData.instances);
-
-            // Convert the grid arrays back to coordinate format
-            const floorTiles = [];
-            const horizontalEdges = [];
-            const verticalEdges = [];
-
-            for (let y = 0; y < this.gridHeight; y++) {
-                for (let x = 0; x < this.gridWidth; x++) {
-                    if (result.grid[y] && result.grid[y][x] === 'floor') {
-                        floorTiles.push([x, y]);
-                    }
-                    if (result.horizontalEdges[y] && result.horizontalEdges[y][x]) {
-                        horizontalEdges.push([x, y]);
-                    }
-                    if (result.verticalEdges[y] && result.verticalEdges[y][x]) {
-                        verticalEdges.push([x, y]);
-                    }
-                }
-            }
-
-            return {
-                meta: {
-                    schema: "scene.v1",
-                    version: "1.0",
-                    created: new Date().toISOString(),
-                    modified: new Date().toISOString(),
-                    convertedFrom: "legacy-instances"
-                },
-                grid: {
-                    width: this.gridWidth,
-                    height: this.gridHeight,
-                    cellSize: this.cellSize
-                },
-                tiles: { floor: floorTiles },
-                edges: { horizontal: horizontalEdges, vertical: verticalEdges }
-            };
-        }
-
-        throw new Error('Unrecognized JSON format. Expected scene.v1, mall template, or legacy instances format.');
-    }
 
     async importJSON(event) {
         const file = event.target.files[0];
@@ -1950,33 +1730,6 @@ class FloorplanEditor {
         }
     }
 
-    // Schema Detection and Validation
-    // DEPRECATED: Schema detection now handled by core/SchemaRegistry.js
-    detectSchemaType(jsonData) {
-        if (jsonData.meta?.schema) {
-            return jsonData.meta.schema;
-        }
-
-        // Fallback detection based on structure
-        if (jsonData.id && jsonData.id.startsWith('mall-')) {
-            return 'mall-template.v1';
-        }
-
-        if (jsonData.id && jsonData.id.startsWith('gallery-') && jsonData.parentMallId) {
-            return 'gallery-template.v1';
-        }
-
-        if (jsonData.id && jsonData.id.startsWith('design-')) {
-            return 'unit-design.v1';
-        }
-
-        // Default to scene.v1 if has grid/tiles structure
-        if (jsonData.grid || jsonData.tiles) {
-            return 'scene.v1';
-        }
-
-        throw new Error('Unable to detect schema type from file structure');
-    }
 
     validateWithAJV(jsonData, schema) {
         // For now, we'll do basic structural validation
@@ -2028,52 +1781,6 @@ class FloorplanEditor {
         console.log(`✅ Schema validation passed: ${schema}`);
     }
 
-    // DEPRECATED: Mode setting now handled in new template loading logic
-    setModeFromSchema(schema, jsonData) {
-        const modeBadge = document.getElementById('mode-badge');
-        const modeBadgeText = document.getElementById('mode-badge-text');
-
-        if (!modeBadge || !modeBadgeText) return;
-
-        // Remove all mode classes
-        modeBadge.className = 'mode-badge';
-
-        switch (schema) {
-            case 'mall-template.v1':
-                modeBadge.classList.add('mall-mode');
-                modeBadgeText.textContent = 'Mall Template Mode';
-                this.editorMode = 'mall';
-                this.lockBaseStructure = true;
-                break;
-
-            case 'gallery-template.v1':
-                modeBadge.classList.add('gallery-mode');
-                modeBadgeText.textContent = 'Gallery Template Mode';
-                this.editorMode = 'gallery';
-                this.lockFootprint = true;
-                break;
-
-            case 'unit-design.v1':
-                modeBadge.classList.add('design-mode');
-                modeBadgeText.textContent = 'Unit Design Mode (Read-Only)';
-                this.editorMode = 'design';
-                this.isReadOnly = true;
-                break;
-
-            case 'scene.v1':
-            default:
-                modeBadge.classList.add('scene-mode');
-                modeBadgeText.textContent = 'Scene Mode';
-                this.editorMode = 'scene';
-                this.lockBaseStructure = false;
-                this.lockFootprint = false;
-                this.isReadOnly = false;
-                break;
-        }
-
-        modeBadge.style.display = 'block';
-        console.log(`Mode set to: ${this.editorMode}`);
-    }
 
     // MRU (Most Recently Used) System - Early Initialization
     initializeMRUSystem() {
@@ -2375,46 +2082,6 @@ class FloorplanEditor {
         console.log(`Template bounds violation at (${x},${y}) for ${editType}: ${message}`);
     }
 
-    // Template Overlay Setup
-    // DEPRECATED: Template overlay setup now handled in new template loading logic
-    setupTemplateOverlay(templateData, schema) {
-        switch (schema) {
-            case 'mall-template.v1':
-                if (templateData.units && Array.isArray(templateData.units)) {
-                    // Template boundaries are already stored in overlayModel - just enable display
-
-                    // Update toggle button text and show it
-                    const toggleBtn = document.getElementById('toggle-template-btn');
-                    if (toggleBtn) {
-                        toggleBtn.textContent = 'Hide Template';
-                        toggleBtn.style.display = 'inline-block';
-                    }
-
-                    console.log('Mall template boundaries ready for display:', templateData.id);
-                } else {
-                    console.warn('Mall template missing units array:', templateData);
-                }
-                break;
-
-            case 'gallery-template.v1':
-                if (templateData.rect) {
-                    // For gallery templates, set up the gallery overlay
-                    this.unitOverlay = templateData.rect;
-                    this.selectedUnit = templateData.id;
-
-                    console.log('Gallery template overlay enabled:', templateData);
-                }
-                break;
-
-            case 'unit-design.v1':
-                // Unit design templates might have their own overlay setup
-                console.log('Unit design template loaded:', templateData);
-                break;
-
-            default:
-                console.log('No specific overlay setup for schema:', schema);
-        }
-    }
 
     // Template hierarchy validation methods
     validateMallTemplate(mallTemplate) {
@@ -2708,14 +2375,16 @@ class FloorplanEditor {
             await this.loadFixture('mall');
             await this.sleep(500);
 
-            // Step 2: Export mall template
+            // Step 2: Test mall export using ExportBuilder
             statusEl.textContent = `[${testStep++}/${totalSteps}] Testing mall export...`;
-            const originalExport = this.exportAsMallTemplate;
-            let mallExported = false;
-            this.exportAsMallTemplate = () => { mallExported = true; };
-            this.handleExport();
-            this.exportAsMallTemplate = originalExport;
-            if (!mallExported) throw new Error('Mall export failed');
+            const mallTemplate = buildMallTemplate({
+                gridWidth: this.gridWidth,
+                gridHeight: this.gridHeight,
+                cellSize: this.cellSize,
+                units: [{ id: 'test-unit', rect: { x: 10, y: 10, w: 8, h: 6 } }]
+            });
+            console.assert(mallTemplate.meta.schema === 'mall-template.v1', 'Mall export schema mismatch');
+            console.assert(mallTemplate.meta.version === '1.0', 'Mall export version mismatch');
             await this.sleep(500);
 
             // Step 3: Load gallery fixture
@@ -2723,15 +2392,17 @@ class FloorplanEditor {
             await this.loadFixture('gallery');
             await this.sleep(500);
 
-            // Step 4: Export gallery template
+            // Step 4: Test gallery export using ExportBuilder
             statusEl.textContent = `[${testStep++}/${totalSteps}] Testing gallery export...`;
-            const originalGalleryExport = this.exportAsGalleryTemplate;
-            let galleryExported = false;
-            this.exportAsGalleryTemplate = () => { galleryExported = true; };
-            document.getElementById('export-type').value = 'gallery-template';
-            this.handleExport();
-            this.exportAsGalleryTemplate = originalGalleryExport;
-            if (!galleryExported) throw new Error('Gallery export failed');
+            const galleryTemplate = buildUnitTemplate({
+                id: 'test-gallery',
+                rect: { x: 5, y: 5, w: 10, h: 8 },
+                rooms: [],
+                parentMallId: 'test-mall'
+            });
+            console.assert(galleryTemplate.meta.schema === 'unit-template.v1', 'Gallery export schema mismatch');
+            console.assert(galleryTemplate.meta.version === '1.0', 'Gallery export version mismatch');
+            console.assert(galleryTemplate.meta.parent.schema === 'mall-template.v1', 'Gallery parent schema mismatch');
             await this.sleep(500);
 
             // Step 5: Load room fixture
@@ -2739,15 +2410,17 @@ class FloorplanEditor {
             await this.loadFixture('room');
             await this.sleep(500);
 
-            // Step 6: Export room template
+            // Step 6: Test room export using ExportBuilder
             statusEl.textContent = `[${testStep++}/${totalSteps}] Testing room export...`;
-            const originalRoomExport = this.exportAsRoomTemplate;
-            let roomExported = false;
-            this.exportAsRoomTemplate = () => { roomExported = true; };
-            document.getElementById('export-type').value = 'room-template';
-            this.handleExport();
-            this.exportAsRoomTemplate = originalRoomExport;
-            if (!roomExported) throw new Error('Room export failed');
+            const roomTemplate = buildRoomTemplate({
+                id: 'test-room',
+                rect: { x: 12, y: 12, w: 4, h: 3 },
+                zones: [],
+                parentUnitId: 'test-gallery'
+            });
+            console.assert(roomTemplate.meta.schema === 'room-template.v1', 'Room export schema mismatch');
+            console.assert(roomTemplate.meta.version === '1.0', 'Room export version mismatch');
+            console.assert(roomTemplate.meta.parent.schema === 'unit-template.v1', 'Room parent schema mismatch');
 
             // Success!
             statusEl.textContent = '✅ Smoke test passed!';
@@ -2789,6 +2462,39 @@ class FloorplanEditor {
         const displayName = typeNames[dto.type] || `${dto.type} Mode`;
         badgeText.textContent = displayName;
         badge.style.display = 'block';
+    }
+
+    showTemplateBoundsViolation(x, y, kind) {
+        // Convert grid coordinates to canvas pixels
+        const canvasX = x * this.cellSize;
+        const canvasY = y * this.cellSize;
+
+        // Create temporary overlay for visual feedback
+        const ctx = this.ctx;
+        const originalStroke = ctx.strokeStyle;
+        const originalLineWidth = ctx.lineWidth;
+
+        // Draw red crosshair
+        ctx.strokeStyle = '#ff0000';
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        // Horizontal line
+        ctx.moveTo(canvasX - this.cellSize/2, canvasY + this.cellSize/2);
+        ctx.lineTo(canvasX + this.cellSize + this.cellSize/2, canvasY + this.cellSize/2);
+        // Vertical line
+        ctx.moveTo(canvasX + this.cellSize/2, canvasY - this.cellSize/2);
+        ctx.lineTo(canvasX + this.cellSize/2, canvasY + this.cellSize + this.cellSize/2);
+        ctx.stroke();
+
+        // Restore original styles
+        ctx.strokeStyle = originalStroke;
+        ctx.lineWidth = originalLineWidth;
+
+        // Remove the crosshair after 250ms
+        setTimeout(() => {
+            this.render(); // Full re-render to clear the temporary overlay
+        }, 250);
     }
 }
 
