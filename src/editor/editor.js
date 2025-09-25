@@ -371,10 +371,8 @@ class FloorplanEditor {
     }
     
     renderTemplate() {
-        // Render actual template boundaries from overlayModel based on template type
-        if (!this.overlayModel.templateData) return;
-
-        const templateData = this.overlayModel.templateData;
+        const t = this.overlayModel.templateData;
+        if (!t) return;
 
         this.ctx.save();
         this.ctx.strokeStyle = '#8B3AF9'; // Purple constraint boundary color
@@ -382,9 +380,9 @@ class FloorplanEditor {
         this.ctx.globalAlpha = 0.6;
         this.ctx.setLineDash([8, 4]);
 
-        if (templateData.units && Array.isArray(templateData.units)) {
+        if (t.type === 'mall') {
             // Mall template: show unit boundaries
-            templateData.units.forEach(unit => {
+            t.units.forEach(unit => {
                 if (unit.rect) {
                     const { x, y, w, h } = unit.rect;
                     const pixelX = x * this.cellSize;
@@ -410,112 +408,76 @@ class FloorplanEditor {
             this.ctx.fillStyle = '#8B3AF9';
             this.ctx.globalAlpha = 0.8;
             this.ctx.font = '14px Arial';
-            this.ctx.fillText(`Template: ${templateData.id} (${templateData.units.length} units)`, 10, 25);
+            this.ctx.fillText(`Mall Template (${t.units.length} units)`, 10, 25);
             this.ctx.restore();
 
-        } else if (templateData.meta && templateData.meta.schema === "gallery-template.v1") {
-            // Gallery template: show the full gallery boundary (grid-relative coordinates)
-            const { w, h } = templateData.rect;
-            const pixelX = 0; // Start at grid origin
-            const pixelY = 0; // Start at grid origin
+        } else if (t.type === 'unit') { // gallery
+            // Unit/Gallery template: show the full unit boundary
+            const { x, y, w, h } = t.rect;
+            const pixelX = x * this.cellSize;
+            const pixelY = y * this.cellSize;
             const pixelW = w * this.cellSize;
             const pixelH = h * this.cellSize;
 
-            // Draw gallery boundary rectangle
+            // Draw unit boundary rectangle
             this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
-
-            // Draw gallery ID label
-            this.ctx.save();
-            this.ctx.fillStyle = '#8B3AF9';
-            this.ctx.globalAlpha = 0.8;
-            this.ctx.font = '12px Arial';
-            this.ctx.fillText(templateData.id, pixelX + 4, pixelY + 16);
-            this.ctx.restore();
 
             // Draw template info
             this.ctx.save();
             this.ctx.fillStyle = '#8B3AF9';
             this.ctx.globalAlpha = 0.8;
             this.ctx.font = '14px Arial';
-            const roomCount = templateData.rooms ? templateData.rooms.length : 0;
-            this.ctx.fillText(`Gallery: ${templateData.id} (${roomCount} rooms)`, 10, 25);
+            const roomCount = t.rooms ? t.rooms.length : 0;
+            this.ctx.fillText(`Unit Template (${roomCount} rooms)`, 10, 25);
             this.ctx.restore();
 
-        } else if (templateData.meta && templateData.meta.schema === "room-template.v1") {
-            // Room template: show room boundary and features (grid-relative coordinates)
-            const { w, h } = templateData.rect;
-            const pixelX = 0; // Start at grid origin
-            const pixelY = 0; // Start at grid origin
+        } else if (t.type === 'room') {
+            // Room template: show room boundary
+            const { x, y, w, h } = t.rect;
+            const pixelX = x * this.cellSize;
+            const pixelY = y * this.cellSize;
             const pixelW = w * this.cellSize;
             const pixelH = h * this.cellSize;
 
             // Draw room boundary rectangle
             this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
 
-            // Draw room features if available
-            if (templateData.features) {
-                // Draw floor zones if present
-                if (templateData.features.floorZones) {
-                    this.ctx.save();
-                    this.ctx.strokeStyle = '#4CAF50'; // Green for floor zones
-                    this.ctx.setLineDash([4, 2]);
+            // Draw zones if present
+            if (t.zones) {
+                this.ctx.save();
+                this.ctx.strokeStyle = '#4CAF50'; // Green for zones
+                this.ctx.setLineDash([4, 2]);
 
-                    templateData.features.floorZones.forEach(zone => {
-                        if (zone.bounds) {
-                            const { x: zx, y: zy, w: zw, h: zh } = zone.bounds;
-                            const zonePixelX = zx * this.cellSize;
-                            const zonePixelY = zy * this.cellSize;
-                            const zonePixelW = zw * this.cellSize;
-                            const zonePixelH = zh * this.cellSize;
+                t.zones.forEach(zone => {
+                    if (zone.rect) {
+                        const { x: zx, y: zy, w: zw, h: zh } = zone.rect;
+                        const zonePixelX = zx * this.cellSize;
+                        const zonePixelY = zy * this.cellSize;
+                        const zonePixelW = zw * this.cellSize;
+                        const zonePixelH = zh * this.cellSize;
 
-                            this.ctx.strokeRect(zonePixelX, zonePixelY, zonePixelW, zonePixelH);
+                        this.ctx.strokeRect(zonePixelX, zonePixelY, zonePixelW, zonePixelH);
 
-                            // Draw zone label
-                            this.ctx.save();
-                            this.ctx.fillStyle = '#4CAF50';
-                            this.ctx.globalAlpha = 0.7;
-                            this.ctx.font = '10px Arial';
-                            this.ctx.fillText(zone.id, zonePixelX + 2, zonePixelY + 12);
-                            this.ctx.restore();
-                        }
-                    });
+                        // Draw zone label
+                        this.ctx.save();
+                        this.ctx.fillStyle = '#4CAF50';
+                        this.ctx.globalAlpha = 0.7;
+                        this.ctx.font = '10px Arial';
+                        this.ctx.fillText(zone.id, zonePixelX + 2, zonePixelY + 12);
+                        this.ctx.restore();
+                    }
+                });
 
-                    this.ctx.restore();
-                }
-
-                // Draw wall features if present
-                if (templateData.features.walls && templateData.features.walls.length > 0) {
-                    this.ctx.save();
-                    this.ctx.fillStyle = '#FF5722'; // Red-orange for walls
-                    this.ctx.globalAlpha = 0.6;
-
-                    templateData.features.walls.forEach(wall => {
-                        const wallPixelX = wall.x * this.cellSize + this.cellSize / 4;
-                        const wallPixelY = wall.y * this.cellSize + this.cellSize / 4;
-                        const wallSize = this.cellSize / 2;
-
-                        this.ctx.fillRect(wallPixelX, wallPixelY, wallSize, wallSize);
-                    });
-
-                    this.ctx.restore();
-                }
+                this.ctx.restore();
             }
-
-            // Draw room ID label
-            this.ctx.save();
-            this.ctx.fillStyle = '#8B3AF9';
-            this.ctx.globalAlpha = 0.8;
-            this.ctx.font = '12px Arial';
-            this.ctx.fillText(templateData.id, pixelX + 4, pixelY + 16);
-            this.ctx.restore();
 
             // Draw template info
             this.ctx.save();
             this.ctx.fillStyle = '#8B3AF9';
             this.ctx.globalAlpha = 0.8;
             this.ctx.font = '14px Arial';
-            const featureCount = (templateData.features?.floorZones?.length || 0) + (templateData.features?.walls?.length || 0);
-            this.ctx.fillText(`Template: ${templateData.id} (room - ${featureCount} features)`, 10, 25);
+            const zoneCount = t.zones ? t.zones.length : 0;
+            this.ctx.fillText(`Room Template (${zoneCount} zones)`, 10, 25);
             this.ctx.restore();
         }
 
