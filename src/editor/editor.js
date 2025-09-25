@@ -173,6 +173,27 @@ class FloorplanEditor {
         document.getElementById('unit-select')?.addEventListener('change', (e) => {
             this.selectUnit(e.target.value);
         });
+
+        // Test Panel Event Handlers
+        document.getElementById('test-panel-toggle')?.addEventListener('click', () => {
+            this.toggleTestPanel();
+        });
+
+        document.getElementById('load-mall-fixture')?.addEventListener('click', () => {
+            this.loadFixture('mall');
+        });
+
+        document.getElementById('load-gallery-fixture')?.addEventListener('click', () => {
+            this.loadFixture('gallery');
+        });
+
+        document.getElementById('load-room-fixture')?.addEventListener('click', () => {
+            this.loadFixture('room');
+        });
+
+        document.getElementById('run-smoke-test')?.addEventListener('click', () => {
+            this.runSmokeTest();
+        });
     }
     
     handleMouseAction(e) {
@@ -514,6 +535,7 @@ class FloorplanEditor {
         this.showTemplate = false;
         this.templateType = null;
         this.templateContext = {};
+        this.updateModeBadge();
         this.render();
     }
 
@@ -1039,71 +1061,36 @@ class FloorplanEditor {
 
     // Export as Room Template format with parent relationship
     exportAsRoomTemplate() {
-        // Generate a unique room ID
-        const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-        const roomId = `room-${timestamp}`;
+        const dto = this.overlayModel?.templateData;
 
-        // Determine parent gallery ID
-        let parentGalleryId = 'gallery-unknown';
-
-        // Debug logging
-        console.log('Room export - Debug overlayModel:', this.overlayModel);
-        console.log('Room export - Debug templateContext:', this.templateContext);
-        console.log('Room export - Debug templateType:', this.templateType);
-
-        if (this.overlayModel.templateData && this.overlayModel.templateData.id) {
-            const templateId = this.overlayModel.templateData.id;
-            // Ensure the parent ID has the correct gallery- prefix for validation
-            parentGalleryId = templateId.startsWith('gallery-') ? templateId : `gallery-${templateId}`;
-            console.log('Room export - Using overlayModel.templateData.id:', templateId, '-> parentGalleryId:', parentGalleryId);
-        } else if (this.templateContext && this.templateContext.id) {
-            const templateId = this.templateContext.id;
-            // Ensure the parent ID has the correct gallery- prefix for validation
-            parentGalleryId = templateId.startsWith('gallery-') ? templateId : `gallery-${templateId}`;
-            console.log('Room export - Using templateContext.id:', templateId, '-> parentGalleryId:', parentGalleryId);
-        } else {
-            console.warn('Room export - No valid parent gallery ID found, using default:', parentGalleryId);
+        // Preconditions: overlayModel.templateData?.type === 'unit' (gallery authoring session)
+        if (!dto || dto.type !== 'unit') {
+            alert('Room template export requires an active unit/gallery template session');
+            return;
         }
 
-        // Calculate room boundaries based on current content or template
-        let roomRect = { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight };
-
-        // If we have template overlay, use it to constrain room bounds
-        if (this.templateOverlay) {
-            roomRect = {
-                x: 0,
-                y: 0,
-                w: Math.min(this.gridWidth, this.templateOverlay.width || this.gridWidth),
-                h: Math.min(this.gridHeight, this.templateOverlay.height || this.gridHeight)
-            };
-        }
-
-        // Convert current editor content to room features (walls, furniture zones, etc.)
-        const roomFeatures = this.generateRoomFeaturesFromCurrentContent();
-
-        const roomTemplate = {
+        const out = {
             meta: {
-                schema: "room-template.v1",
-                version: "1.0",
-                name: `Room Template ${roomId}`
+                schema: 'room-template.v1',
+                version: '1.0',
+                parent: { schema: 'unit-template.v1', id: dto.id || 'unit' }
             },
-            id: roomId,
-            parentGalleryId: parentGalleryId,
-            rect: roomRect,
-            features: roomFeatures,
-            created: new Date().toISOString()
+            id: dto.id ? `${dto.id}-room` : 'room',
+            rect: { ...dto.rect }, // required
+            zones: [] // optional array, default []
         };
 
-        const dataStr = JSON.stringify(roomTemplate, null, 2);
+        // DO NOT export instances/scene content here
+        const dataStr = JSON.stringify(out, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
-        link.download = `${roomId}.json`;
+        link.download = `${out.id}.room-template.v1.json`;
         link.click();
 
-        console.log('Exported room template:', roomTemplate);
-        alert(`Room template exported as ${roomId}.json\nParent: ${parentGalleryId}`);
+        console.log('Exported room template:', out);
+        alert(`Room template exported as ${out.id}.room-template.v1.json`);
     }
 
     // Generate room features from current editor content
@@ -1363,6 +1350,7 @@ class FloorplanEditor {
             this.overlayModel.templateData = jsonData;
             this.overlayModel.bounds = this.calculateTemplateBounds(jsonData);
             this.overlayModel.constraints = this.buildTemplateConstraints(jsonData);
+            this.updateModeBadge();
 
             // Set template context
             this.templateType = 'mall';
@@ -1409,6 +1397,7 @@ class FloorplanEditor {
             this.overlayModel.templateData = jsonData;
             this.overlayModel.bounds = this.calculateGalleryTemplateBounds(jsonData);
             this.overlayModel.constraints = this.buildGalleryTemplateConstraints(jsonData);
+            this.updateModeBadge();
 
             // Enable template display by default
             this.showTemplate = true;
@@ -1458,6 +1447,7 @@ class FloorplanEditor {
             this.overlayModel.templateData = jsonData;
             this.overlayModel.bounds = this.calculateRoomTemplateBounds(jsonData);
             this.overlayModel.constraints = this.buildRoomTemplateConstraints(jsonData);
+            this.updateModeBadge();
 
             // Enable template display by default
             this.showTemplate = true;
@@ -1552,6 +1542,7 @@ class FloorplanEditor {
             this.overlayModel.bounds = makeBounds(dto);
             this.showTemplate = dto.type !== 'scene';
             this.templateType = dto.type;
+            this.updateModeBadge();
 
             console.info('[TEMPLATE_IMPORT]', { type: dto.type, mode: this.mode });
             console.log('Loaded template/scene:', { dto, mode });
@@ -1816,6 +1807,7 @@ class FloorplanEditor {
         this.overlayModel.bounds = makeBounds(dto);
         this.showTemplate = dto.type !== 'scene';
         this.templateType = dto.type;
+        this.updateModeBadge();
 
         console.info('[TEMPLATE_IMPORT]', { type: dto.type, mode: this.mode });
         console.log('Loaded template/scene from file:', { dto, mode });
@@ -2648,6 +2640,155 @@ class FloorplanEditor {
 
         console.log(`✅ Template hierarchy validation passed: ${childTemplate.id} → ${parentTemplate.id}`);
         return true;
+    }
+
+    // Test Panel Methods
+    toggleTestPanel() {
+        const content = document.getElementById('test-panel-content');
+        const toggle = document.getElementById('test-panel-toggle');
+
+        if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+            toggle.textContent = 'Test Panel ▲';
+        } else {
+            content.style.display = 'none';
+            toggle.textContent = 'Test Panel ▼';
+        }
+    }
+
+    async loadFixture(type) {
+        const statusEl = document.getElementById('test-status');
+        statusEl.textContent = `Loading ${type} fixture...`;
+        statusEl.style.color = '#007bff';
+
+        try {
+            let filename;
+            switch (type) {
+                case 'mall':
+                    filename = 'mall-template.v1.json';
+                    break;
+                case 'gallery':
+                    filename = 'unit-template.v1.json';
+                    break;
+                case 'room':
+                    filename = 'room-template.v1.json';
+                    break;
+                default:
+                    throw new Error(`Unknown fixture type: ${type}`);
+            }
+
+            const response = await fetch(`./fixtures/${filename}`);
+            if (!response.ok) {
+                throw new Error(`Failed to load fixture: ${response.status}`);
+            }
+
+            const templateData = await response.json();
+            this.loadTemplateData(templateData);
+
+            statusEl.textContent = `✅ ${type} fixture loaded`;
+            statusEl.style.color = '#28a745';
+        } catch (error) {
+            console.error(`Failed to load ${type} fixture:`, error);
+            statusEl.textContent = `❌ Failed to load ${type} fixture`;
+            statusEl.style.color = '#dc3545';
+        }
+    }
+
+    async runSmokeTest() {
+        const statusEl = document.getElementById('test-status');
+        statusEl.textContent = '🧪 Running smoke test...';
+        statusEl.style.color = '#007bff';
+
+        try {
+            let testStep = 1;
+            const totalSteps = 6;
+
+            // Step 1: Load mall fixture
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Loading mall fixture...`;
+            await this.loadFixture('mall');
+            await this.sleep(500);
+
+            // Step 2: Export mall template
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing mall export...`;
+            const originalExport = this.exportAsMallTemplate;
+            let mallExported = false;
+            this.exportAsMallTemplate = () => { mallExported = true; };
+            this.handleExport();
+            this.exportAsMallTemplate = originalExport;
+            if (!mallExported) throw new Error('Mall export failed');
+            await this.sleep(500);
+
+            // Step 3: Load gallery fixture
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Loading gallery fixture...`;
+            await this.loadFixture('gallery');
+            await this.sleep(500);
+
+            // Step 4: Export gallery template
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing gallery export...`;
+            const originalGalleryExport = this.exportAsGalleryTemplate;
+            let galleryExported = false;
+            this.exportAsGalleryTemplate = () => { galleryExported = true; };
+            document.getElementById('export-type').value = 'gallery-template';
+            this.handleExport();
+            this.exportAsGalleryTemplate = originalGalleryExport;
+            if (!galleryExported) throw new Error('Gallery export failed');
+            await this.sleep(500);
+
+            // Step 5: Load room fixture
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Loading room fixture...`;
+            await this.loadFixture('room');
+            await this.sleep(500);
+
+            // Step 6: Export room template
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing room export...`;
+            const originalRoomExport = this.exportAsRoomTemplate;
+            let roomExported = false;
+            this.exportAsRoomTemplate = () => { roomExported = true; };
+            document.getElementById('export-type').value = 'room-template';
+            this.handleExport();
+            this.exportAsRoomTemplate = originalRoomExport;
+            if (!roomExported) throw new Error('Room export failed');
+
+            // Success!
+            statusEl.textContent = '✅ Smoke test passed!';
+            statusEl.style.color = '#28a745';
+
+            console.log('🎉 End-to-end smoke test completed successfully');
+
+        } catch (error) {
+            console.error('❌ Smoke test failed:', error);
+            statusEl.textContent = '❌ Smoke test failed';
+            statusEl.style.color = '#dc3545';
+        }
+    }
+
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    updateModeBadge() {
+        const badge = document.getElementById('mode-badge');
+        const badgeText = document.getElementById('mode-badge-text');
+
+        if (!badge || !badgeText) return;
+
+        const dto = this.overlayModel?.templateData;
+
+        if (!dto || !dto.type || dto.type === 'scene') {
+            badge.style.display = 'none';
+            return;
+        }
+
+        // Map template types to user-friendly names
+        const typeNames = {
+            'mall': 'Mall Mode',
+            'unit': 'Gallery Mode',
+            'room': 'Room Mode'
+        };
+
+        const displayName = typeNames[dto.type] || `${dto.type} Mode`;
+        badgeText.textContent = displayName;
+        badge.style.display = 'block';
     }
 }
 

@@ -1,0 +1,25 @@
+{
+  "meta": {
+    "schema": "mall-template.v1",
+    "version": "1.0",
+    "name": "Test Mall Template"
+  },
+  "id": "test-mall-001",
+  "grid": {
+    "width": 60,
+    "height": 40,
+    "cellSize": 20
+  },
+  "units": [
+    {
+      "id": "unit-001",
+      "rect": {
+        "x": 10,
+        "y": 10,
+        "w": 8,
+        "h": 6
+      }
+    }
+  ],
+  "created": "2025-09-25T12:00:00.000Z"
+}

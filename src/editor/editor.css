@@ -313,6 +313,47 @@ main {
     background-color: #f8f9fa;
 }
 
+/* Test Panel Styles */
+.test-panel-controls {
+    position: relative;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.test-panel-controls #test-panel-content {
+    width: 220px;
+}
+
+.test-panel-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.test-panel-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.test-panel-buttons button:hover {
+    background-color: #f0f0f0;
+}
+
+.test-status {
+    padding: 6px 8px;
+    font-size: 11px;
+    background-color: #f8f8f8;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    text-align: center;
+    color: #666;
+}
+
 .dropdown-separator {
     height: 1px;
     background-color: #eee;
