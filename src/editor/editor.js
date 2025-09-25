@@ -371,117 +371,124 @@ class FloorplanEditor {
     }
     
     renderTemplate() {
-        const t = this.overlayModel.templateData;
-        if (!t) return;
+        // Early exits
+        const dto = this.overlayModel?.templateData;
+        if (!this.showTemplate || !dto || dto.type === 'scene') return;
 
-        this.ctx.save();
-        this.ctx.strokeStyle = '#8B3AF9'; // Purple constraint boundary color
-        this.ctx.lineWidth = 2;
-        this.ctx.globalAlpha = 0.6;
-        this.ctx.setLineDash([8, 4]);
+        // Helper function to draw rectangles with consistent styling
+        const drawRect = (rect, options = {}) => {
+            if (!rect) return;
 
-        if (t.type === 'mall') {
-            // Mall template: show unit boundaries
-            t.units.forEach(unit => {
-                if (unit.rect) {
-                    const { x, y, w, h } = unit.rect;
-                    const pixelX = x * this.cellSize;
-                    const pixelY = y * this.cellSize;
-                    const pixelW = w * this.cellSize;
-                    const pixelH = h * this.cellSize;
-
-                    // Draw unit boundary rectangle
-                    this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
-
-                    // Draw unit ID label
-                    this.ctx.save();
-                    this.ctx.fillStyle = '#8B3AF9';
-                    this.ctx.globalAlpha = 0.8;
-                    this.ctx.font = '12px Arial';
-                    this.ctx.fillText(unit.id, pixelX + 4, pixelY + 16);
-                    this.ctx.restore();
-                }
-            });
-
-            // Draw template info
-            this.ctx.save();
-            this.ctx.fillStyle = '#8B3AF9';
-            this.ctx.globalAlpha = 0.8;
-            this.ctx.font = '14px Arial';
-            this.ctx.fillText(`Mall Template (${t.units.length} units)`, 10, 25);
-            this.ctx.restore();
-
-        } else if (t.type === 'unit') { // gallery
-            // Unit/Gallery template: show the full unit boundary
-            const { x, y, w, h } = t.rect;
+            const { x, y, w, h } = rect;
             const pixelX = x * this.cellSize;
             const pixelY = y * this.cellSize;
             const pixelW = w * this.cellSize;
             const pixelH = h * this.cellSize;
 
-            // Draw unit boundary rectangle
-            this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
-
-            // Draw template info
+            // Set styling
             this.ctx.save();
-            this.ctx.fillStyle = '#8B3AF9';
-            this.ctx.globalAlpha = 0.8;
-            this.ctx.font = '14px Arial';
-            const roomCount = t.rooms ? t.rooms.length : 0;
-            this.ctx.fillText(`Unit Template (${roomCount} rooms)`, 10, 25);
-            this.ctx.restore();
+            this.ctx.strokeStyle = options.colour || '#8B3AF9';
+            this.ctx.lineWidth = 2;
+            this.ctx.globalAlpha = 0.6;
+            if (options.dashed) {
+                this.ctx.setLineDash([8, 4]);
+            }
 
-        } else if (t.type === 'room') {
-            // Room template: show room boundary
-            const { x, y, w, h } = t.rect;
-            const pixelX = x * this.cellSize;
-            const pixelY = y * this.cellSize;
-            const pixelW = w * this.cellSize;
-            const pixelH = h * this.cellSize;
-
-            // Draw room boundary rectangle
+            // Draw rectangle
             this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
 
-            // Draw zones if present
-            if (t.zones) {
+            // Draw label if provided
+            if (options.label) {
                 this.ctx.save();
-                this.ctx.strokeStyle = '#4CAF50'; // Green for zones
-                this.ctx.setLineDash([4, 2]);
-
-                t.zones.forEach(zone => {
-                    if (zone.rect) {
-                        const { x: zx, y: zy, w: zw, h: zh } = zone.rect;
-                        const zonePixelX = zx * this.cellSize;
-                        const zonePixelY = zy * this.cellSize;
-                        const zonePixelW = zw * this.cellSize;
-                        const zonePixelH = zh * this.cellSize;
-
-                        this.ctx.strokeRect(zonePixelX, zonePixelY, zonePixelW, zonePixelH);
-
-                        // Draw zone label
-                        this.ctx.save();
-                        this.ctx.fillStyle = '#4CAF50';
-                        this.ctx.globalAlpha = 0.7;
-                        this.ctx.font = '10px Arial';
-                        this.ctx.fillText(zone.id, zonePixelX + 2, zonePixelY + 12);
-                        this.ctx.restore();
-                    }
-                });
-
+                this.ctx.fillStyle = options.colour || '#8B3AF9';
+                this.ctx.globalAlpha = 0.8;
+                this.ctx.font = '12px Arial';
+                this.ctx.fillText(options.label, pixelX + 4, pixelY + 16);
                 this.ctx.restore();
             }
 
-            // Draw template info
-            this.ctx.save();
-            this.ctx.fillStyle = '#8B3AF9';
-            this.ctx.globalAlpha = 0.8;
-            this.ctx.font = '14px Arial';
-            const zoneCount = t.zones ? t.zones.length : 0;
-            this.ctx.fillText(`Room Template (${zoneCount} zones)`, 10, 25);
             this.ctx.restore();
+        };
+
+        this.ctx.save();
+
+        // Switch on dto.type (NO meta/schema access anywhere)
+        switch (dto.type) {
+            case 'mall': {
+                // Draw each unit rect in dto.units
+                dto.units?.forEach(u => {
+                    drawRect(u.rect, {
+                        dashed: true,
+                        colour: '#FF6B6B', // Magenta-ish
+                        label: u.id || 'unit'
+                    });
+                });
+
+                // Draw template info
+                this.ctx.save();
+                this.ctx.fillStyle = '#FF6B6B';
+                this.ctx.globalAlpha = 0.8;
+                this.ctx.font = '14px Arial';
+                this.ctx.fillText(`Mall Template (${dto.units?.length || 0} units)`, 10, 25);
+                this.ctx.restore();
+                break;
+            }
+
+            case 'unit': { // gallery alias
+                // Draw dto.rect (single overlay)
+                drawRect(dto.rect, {
+                    dashed: true,
+                    colour: '#00BCD4', // Cyan
+                    label: 'gallery'
+                });
+
+                // Draw template info
+                this.ctx.save();
+                this.ctx.fillStyle = '#00BCD4';
+                this.ctx.globalAlpha = 0.8;
+                this.ctx.font = '14px Arial';
+                const roomCount = dto.rooms?.length || 0;
+                this.ctx.fillText(`Unit Template (${roomCount} rooms)`, 10, 25);
+                this.ctx.restore();
+                break;
+            }
+
+            case 'room': {
+                // Draw dto.rect
+                drawRect(dto.rect, {
+                    dashed: true,
+                    colour: '#4CAF50', // Green
+                    label: 'room'
+                });
+
+                // Draw each zone.rect if present
+                dto.zones?.forEach(z => {
+                    drawRect(z.rect, {
+                        dashed: true,
+                        colour: '#4CAF50', // Green
+                        label: z.id || 'zone'
+                    });
+                });
+
+                // Draw template info
+                this.ctx.save();
+                this.ctx.fillStyle = '#4CAF50';
+                this.ctx.globalAlpha = 0.8;
+                this.ctx.font = '14px Arial';
+                const zoneCount = dto.zones?.length || 0;
+                this.ctx.fillText(`Room Template (${zoneCount} zones)`, 10, 25);
+                this.ctx.restore();
+                break;
+            }
+
+            default:
+                this.ctx.restore();
+                return;
         }
 
         this.ctx.restore();
+
+        // Note: These overlay draws do NOT write to grid/edges
     }
     
     clearAll() {
