@@ -1,4 +1,5 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
+import { makeBounds } from './core/TemplateBounds.js';
 
 class FloorplanEditor {
     constructor() {
@@ -1591,16 +1592,17 @@ class FloorplanEditor {
             // Use new TemplateLoader to detect and normalize
             const { dto, mode } = loadTemplate(jsonData);
 
-            // Initialize overlayModel if needed
+            // Clear scene and set up overlay model
+            this.clearScene();
             this.overlayModel = this.overlayModel || {};
-
-            // Set overlay data for templates, but not for scenes
             this.overlayModel.templateData = dto;
+            this.overlayModel.bounds = makeBounds(dto);
             this.showTemplate = dto.type !== 'scene';
-            this.mode = mode;
+            this.templateType = dto.type;
 
             console.log('Loaded template/scene:', { dto, mode });
 
+            // Handle scene loading
             if (dto.type === 'scene') {
                 // Convert scene instances to internal grid as before
                 this.fromSceneV1({
@@ -1619,9 +1621,6 @@ class FloorplanEditor {
                 alert('Scene.v1 file imported successfully');
             } else {
                 // Template loaded as overlay only - no content conversion
-                // Clear current scene content to start fresh
-                this.clearScene();
-
                 // Update grid dimensions if template has size info
                 if (dto.rect) {
                     this.gridWidth = Math.max(dto.rect.w, this.gridWidth);
@@ -1632,7 +1631,6 @@ class FloorplanEditor {
                 }
 
                 // Update template context for legacy compatibility
-                this.templateType = dto.type;
                 this.templateContext = {
                     id: jsonData.id || `${dto.type}-${Date.now()}`,
                     originalData: jsonData,
@@ -1642,9 +1640,9 @@ class FloorplanEditor {
                 alert(`${dto.type.toUpperCase()} template loaded as overlay constraints. Create content within template boundaries.`);
             }
 
+            this.render();
             this.updateInfo();
             this.updateExportOptions();
-            this.render();
 
         } catch (error) {
             alert('Error reading JSON file: ' + error.message);
@@ -1857,16 +1855,17 @@ class FloorplanEditor {
         // Use new TemplateLoader to detect and normalize
         const { dto, mode } = loadTemplate(jsonData);
 
-        // Initialize overlayModel if needed
+        // Clear scene and set up overlay model
+        this.clearScene();
         this.overlayModel = this.overlayModel || {};
-
-        // Set overlay data for templates, but not for scenes
         this.overlayModel.templateData = dto;
+        this.overlayModel.bounds = makeBounds(dto);
         this.showTemplate = dto.type !== 'scene';
-        this.mode = mode;
+        this.templateType = dto.type;
 
         console.log('Loaded template/scene from file:', { dto, mode });
 
+        // Handle scene loading
         if (dto.type === 'scene') {
             // Convert scene instances to internal grid as before
             this.fromSceneV1({
@@ -1884,9 +1883,6 @@ class FloorplanEditor {
             });
         } else {
             // Template loaded as overlay only - no content conversion
-            // Clear current scene content to start fresh
-            this.clearScene();
-
             // Update grid dimensions if template has size info
             if (dto.rect) {
                 this.gridWidth = Math.max(dto.rect.w, this.gridWidth);
@@ -1897,28 +1893,25 @@ class FloorplanEditor {
             }
 
             // Update template context for legacy compatibility
-            this.templateType = dto.type;
             this.templateContext = {
                 id: jsonData.id || `${dto.type}-${Date.now()}`,
                 originalData: jsonData,
                 loadedAt: new Date().toISOString()
             };
         }
+        this.render();
         this.updateInfo();
         this.updateExportOptions();
-        this.render();
 
         // Add to MRU
-        this.addToMRU(file.name, jsonData.meta?.name || file.name, schema);
+        this.addToMRU(file.name, jsonData.meta?.name || file.name, mode);
 
         // Show success notification
-        const templateInfo = this.templateType ? ` (${this.templateType} template context)` : '';
-        if (sceneData.meta.convertedFrom) {
-            this.showToast('success', 'Template Loaded',
-                `File imported and converted from ${sceneData.meta.convertedFrom} format to scene.v1${templateInfo}`);
+        const templateInfo = this.templateType ? ` (${this.templateType} mode)` : '';
+        if (dto.type === 'scene') {
+            this.showToast('success', 'Scene Loaded', `Scene.v1 file imported successfully${templateInfo}`);
         } else {
-            this.showToast('success', 'Template Loaded',
-                `Scene.v1 file imported successfully${templateInfo}`);
+            this.showToast('success', 'Template Loaded', `${dto.type.toUpperCase()} template loaded as overlay constraints${templateInfo}`);
         }
 
         console.log('Template loaded from file:', jsonData);
