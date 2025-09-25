@@ -1,0 +1,21 @@
+{
+  "id": "unit-20250925T004110",
+  "parentMallId": "mall-unknown",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 60,
+    "h": 40
+  },
+  "rooms": [
+    {
+      "id": "room-1",
+      "gridRect": {
+        "x": 8,
+        "y": 4,
+        "w": 4,
+        "h": 4
+      }
+    }
+  ]
+}

@@ -1,3 +1,5 @@
+import { load as loadTemplate } from './core/TemplateLoader.js';
+
 class FloorplanEditor {
     constructor() {
         this.canvas = document.getElementById('grid-canvas');
@@ -82,7 +84,21 @@ class FloorplanEditor {
         }
         return edges;
     }
-    
+
+    clearScene() {
+        // Reset scene model to empty state
+        this.sceneModel.grid = this.createEmptyGrid();
+        this.sceneModel.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.sceneModel.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+
+        // Maintain compatibility with legacy grid references
+        this.grid = this.sceneModel.grid;
+        this.horizontalEdges = this.sceneModel.horizontalEdges;
+        this.verticalEdges = this.sceneModel.verticalEdges;
+
+        console.log('Scene cleared - ready for new content');
+    }
+
     setupEventListeners() {
         // Tool selection
         document.querySelectorAll('.tool-btn').forEach(btn => {
@@ -1377,6 +1393,7 @@ class FloorplanEditor {
     }
     
     // Detect format and convert to scene.v1
+    // DEPRECATED: This method is no longer used. Template loading now handled by core/TemplateLoader.js
     detectAndConvertFormat(jsonData) {
         // Check if it's already scene.v1
         if (jsonData.meta && jsonData.meta.schema === "scene.v1") {
@@ -1571,24 +1588,63 @@ class FloorplanEditor {
             const text = await file.text();
             const jsonData = JSON.parse(text);
 
-            // Detect format and convert to scene.v1
-            const sceneData = this.detectAndConvertFormat(jsonData);
+            // Use new TemplateLoader to detect and normalize
+            const { dto, mode } = loadTemplate(jsonData);
 
-            // Load the scene.v1 data
-            this.fromSceneV1(sceneData);
-            this.updateInfo(); // Update UI with new grid dimensions
-            this.updateExportOptions(); // Update export options based on template context
-            this.render();
+            // Initialize overlayModel if needed
+            this.overlayModel = this.overlayModel || {};
 
-            console.log('Imported and converted to scene.v1:', sceneData);
+            // Set overlay data for templates, but not for scenes
+            this.overlayModel.templateData = dto;
+            this.showTemplate = dto.type !== 'scene';
+            this.mode = mode;
 
-            // Show conversion info to user
-            const templateInfo = this.templateType ? ` (${this.templateType} template context)` : '';
-            if (sceneData.meta.convertedFrom) {
-                alert(`File imported and converted from ${sceneData.meta.convertedFrom} format to scene.v1${templateInfo}`);
+            console.log('Loaded template/scene:', { dto, mode });
+
+            if (dto.type === 'scene') {
+                // Convert scene instances to internal grid as before
+                this.fromSceneV1({
+                    meta: jsonData.meta || {
+                        schema: "scene.v1",
+                        version: "1.0"
+                    },
+                    grid: jsonData.grid || {
+                        width: this.gridWidth,
+                        height: this.gridHeight,
+                        cellSize: this.cellSize
+                    },
+                    tiles: jsonData.tiles || { floor: [] },
+                    edges: jsonData.edges || { horizontal: [], vertical: [] }
+                });
+                alert('Scene.v1 file imported successfully');
             } else {
-                alert(`Scene.v1 file imported successfully${templateInfo}`);
+                // Template loaded as overlay only - no content conversion
+                // Clear current scene content to start fresh
+                this.clearScene();
+
+                // Update grid dimensions if template has size info
+                if (dto.rect) {
+                    this.gridWidth = Math.max(dto.rect.w, this.gridWidth);
+                    this.gridHeight = Math.max(dto.rect.h, this.gridHeight);
+                } else if (dto.gridSize) {
+                    this.gridWidth = dto.gridSize.width || this.gridWidth;
+                    this.gridHeight = dto.gridSize.height || this.gridHeight;
+                }
+
+                // Update template context for legacy compatibility
+                this.templateType = dto.type;
+                this.templateContext = {
+                    id: jsonData.id || `${dto.type}-${Date.now()}`,
+                    originalData: jsonData,
+                    loadedAt: new Date().toISOString()
+                };
+
+                alert(`${dto.type.toUpperCase()} template loaded as overlay constraints. Create content within template boundaries.`);
             }
+
+            this.updateInfo();
+            this.updateExportOptions();
+            this.render();
 
         } catch (error) {
             alert('Error reading JSON file: ' + error.message);
@@ -1798,23 +1854,56 @@ class FloorplanEditor {
             jsonData = JSON.parse(text);
         }
 
-        // Validate with AJV based on schema
-        const schema = this.detectSchemaType(jsonData);
-        this.validateWithAJV(jsonData, schema);
+        // Use new TemplateLoader to detect and normalize
+        const { dto, mode } = loadTemplate(jsonData);
 
-        // Detect format and convert to scene.v1 (but handle self-generated templates specially)
-        const sceneData = this.detectAndConvertFormat(jsonData);
+        // Initialize overlayModel if needed
+        this.overlayModel = this.overlayModel || {};
 
-        // Set mode based on detected schema
-        this.setModeFromSchema(schema, jsonData);
+        // Set overlay data for templates, but not for scenes
+        this.overlayModel.templateData = dto;
+        this.showTemplate = dto.type !== 'scene';
+        this.mode = mode;
 
-        // Set up template overlay if this is a template (not a regular scene)
-        if (schema !== 'scene.v1') {
-            this.setupTemplateOverlay(jsonData, schema);
+        console.log('Loaded template/scene from file:', { dto, mode });
+
+        if (dto.type === 'scene') {
+            // Convert scene instances to internal grid as before
+            this.fromSceneV1({
+                meta: jsonData.meta || {
+                    schema: "scene.v1",
+                    version: "1.0"
+                },
+                grid: jsonData.grid || {
+                    width: this.gridWidth,
+                    height: this.gridHeight,
+                    cellSize: this.cellSize
+                },
+                tiles: jsonData.tiles || { floor: [] },
+                edges: jsonData.edges || { horizontal: [], vertical: [] }
+            });
+        } else {
+            // Template loaded as overlay only - no content conversion
+            // Clear current scene content to start fresh
+            this.clearScene();
+
+            // Update grid dimensions if template has size info
+            if (dto.rect) {
+                this.gridWidth = Math.max(dto.rect.w, this.gridWidth);
+                this.gridHeight = Math.max(dto.rect.h, this.gridHeight);
+            } else if (dto.gridSize) {
+                this.gridWidth = dto.gridSize.width || this.gridWidth;
+                this.gridHeight = dto.gridSize.height || this.gridHeight;
+            }
+
+            // Update template context for legacy compatibility
+            this.templateType = dto.type;
+            this.templateContext = {
+                id: jsonData.id || `${dto.type}-${Date.now()}`,
+                originalData: jsonData,
+                loadedAt: new Date().toISOString()
+            };
         }
-
-        // Load the scene.v1 data
-        this.fromSceneV1(sceneData);
         this.updateInfo();
         this.updateExportOptions();
         this.render();
@@ -1922,6 +2011,7 @@ class FloorplanEditor {
     }
 
     // Schema Detection and Validation
+    // DEPRECATED: Schema detection now handled by core/SchemaRegistry.js
     detectSchemaType(jsonData) {
         if (jsonData.meta?.schema) {
             return jsonData.meta.schema;
@@ -1998,6 +2088,7 @@ class FloorplanEditor {
         console.log(`✅ Schema validation passed: ${schema}`);
     }
 
+    // DEPRECATED: Mode setting now handled in new template loading logic
     setModeFromSchema(schema, jsonData) {
         const modeBadge = document.getElementById('mode-badge');
         const modeBadgeText = document.getElementById('mode-badge-text');
@@ -2347,6 +2438,7 @@ class FloorplanEditor {
     }
 
     // Template Overlay Setup
+    // DEPRECATED: Template overlay setup now handled in new template loading logic
     setupTemplateOverlay(templateData, schema) {
         switch (schema) {
             case 'mall-template.v1':
