@@ -33,7 +33,9 @@
       "Bash(git push:*)",
       "Bash(git merge:*)",
       "Bash(gh repo view:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(npm run test:load-template:*)",
+      "Bash(npm run test:export:*)"
     ],
     "deny": [],
     "ask": []
