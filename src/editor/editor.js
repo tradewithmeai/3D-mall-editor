@@ -150,8 +150,7 @@ class FloorplanEditor {
         });
 
         // Clear Template button
-        const clearTplBtn = document.getElementById('clear-template-btn');
-        if (clearTplBtn) clearTplBtn.addEventListener('click', () => this.clearTemplate());
+        document.getElementById('clear-template-btn')?.addEventListener('click', () => this.clearTemplate());
 
         // Template overlay controls - dropdown system
         this.setupLoadTemplateDropdown();
@@ -444,7 +443,7 @@ class FloorplanEditor {
                 drawRect(dto.rect, {
                     dashed: true,
                     colour: '#00BCD4', // Cyan
-                    label: 'gallery'
+                    label: dto.id || 'gallery'
                 });
 
                 // Draw template info
@@ -463,7 +462,7 @@ class FloorplanEditor {
                 drawRect(dto.rect, {
                     dashed: true,
                     colour: '#4CAF50', // Green
-                    label: 'room'
+                    label: dto.id || 'room'
                 });
 
                 // Draw each zone.rect if present
@@ -514,6 +513,7 @@ class FloorplanEditor {
         this.overlayModel = { templateData: null, bounds: null, constraints: null };
         this.showTemplate = false;
         this.templateType = null;
+        this.templateContext = {};
         this.render();
     }
 
@@ -1013,59 +1013,28 @@ class FloorplanEditor {
 
     // Export as Gallery Template format with parent relationship
     exportAsGalleryTemplate() {
-        // Generate a unique gallery ID
-        const timestamp = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
-        const galleryId = `gallery-${timestamp}`;
-
-        // Determine parent mall ID
-        let parentMallId = 'mall-unknown';
-        if (this.overlayModel.templateData && this.overlayModel.templateData.id) {
-            parentMallId = this.overlayModel.templateData.id;
-        } else if (this.templateContext && this.templateContext.id) {
-            parentMallId = this.templateContext.id;
-        }
-
-        // Get gallery boundaries from current template context
-        let galleryRect = { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight };
-
-        // If we have mall template context, get the specific unit boundaries
-        if (this.overlayModel.templateData && this.overlayModel.templateData.units) {
-            // For now, use first unit as example - in practice user would select which unit
-            const firstUnit = this.overlayModel.templateData.units[0];
-            if (firstUnit && firstUnit.rect) {
-                galleryRect = firstUnit.rect;
-            }
-        }
-
-        // Convert current editor content to room definitions
-        const rooms = this.generateRoomsFromCurrentContent();
-
-        const galleryTemplate = {
+        const dto = this.overlayModel?.templateData;
+        const out = {
             meta: {
-                schema: "unit-template.v1",
-                version: "1.0",
-                name: `Unit Template ${galleryId}`,
-                parent: parentMallId !== 'mall-unknown' ? {
-                    schema: 'mall-template.v1',
-                    id: parentMallId
-                } : undefined
+                schema: 'unit-template.v1',
+                version: '1.0',
+                parent: dto?.parentMallId ? { schema: 'mall-template.v1', id: dto.parentMallId } : undefined
             },
-            id: galleryId,
-            rect: galleryRect,
-            rooms: rooms || [],
-            created: new Date().toISOString()
+            id: dto?.id || 'unit',
+            rect: dto?.rect || { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
+            rooms: dto?.rooms || []
         };
 
-        const dataStr = JSON.stringify(galleryTemplate, null, 2);
+        const dataStr = JSON.stringify(out, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
-        link.download = `${galleryId}.json`;
+        link.download = `${out.id || 'unit'}.unit-template.v1.json`;
         link.click();
 
-        console.log('Exported gallery template:', galleryTemplate);
-        alert(`Gallery template exported as ${galleryId}.json\\nParent: ${parentMallId}`);
+        console.log('Exported gallery template:', out);
+        alert(`Gallery template exported as ${out.id || 'unit'}.unit-template.v1.json`);
     }
 
     // Export as Room Template format with parent relationship
