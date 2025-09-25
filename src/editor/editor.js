@@ -148,7 +148,11 @@ class FloorplanEditor {
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
         });
-        
+
+        // Clear Template button
+        const clearTplBtn = document.getElementById('clear-template-btn');
+        if (clearTplBtn) clearTplBtn.addEventListener('click', () => this.clearTemplate());
+
         // Template overlay controls - dropdown system
         this.setupLoadTemplateDropdown();
         
@@ -190,7 +194,7 @@ class FloorplanEditor {
 
         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
             // Check template bounds first
-            if (!this.isWithinTemplateBounds(x, y)) {
+            if (!this.isWithinTemplateBounds(x, y, 'tile')) {
                 this.showTemplateBoundsViolation(x, y, 'tile');
                 return;
             }
@@ -210,7 +214,8 @@ class FloorplanEditor {
         const { type, x, y } = edge;
 
         // Check template bounds for edge painting
-        if (!this.isWithinTemplateBounds(x, y)) {
+        const kind = (type === 'horizontal') ? 'edge-horizontal' : 'edge-vertical';
+        if (!this.isWithinTemplateBounds(x, y, kind)) {
             this.showTemplateBoundsViolation(x, y, 'edge');
             return;
         }
@@ -504,7 +509,14 @@ class FloorplanEditor {
 
         this.render();
     }
-    
+
+    clearTemplate() {
+        this.overlayModel = { templateData: null, bounds: null, constraints: null };
+        this.showTemplate = false;
+        this.templateType = null;
+        this.render();
+    }
+
     updateInfo() {
         document.getElementById('grid-size').textContent = `${this.gridWidth}x${this.gridHeight}`;
         document.getElementById('cell-size').textContent = `${this.cellSize}px`;
@@ -1030,14 +1042,17 @@ class FloorplanEditor {
 
         const galleryTemplate = {
             meta: {
-                schema: "gallery-template.v1",
+                schema: "unit-template.v1",
                 version: "1.0",
-                name: `Gallery Template ${galleryId}`
+                name: `Unit Template ${galleryId}`,
+                parent: parentMallId !== 'mall-unknown' ? {
+                    schema: 'mall-template.v1',
+                    id: parentMallId
+                } : undefined
             },
             id: galleryId,
-            parentMallId: parentMallId,
             rect: galleryRect,
-            rooms: rooms,
+            rooms: rooms || [],
             created: new Date().toISOString()
         };
 
@@ -1569,6 +1584,7 @@ class FloorplanEditor {
             this.showTemplate = dto.type !== 'scene';
             this.templateType = dto.type;
 
+            console.info('[TEMPLATE_IMPORT]', { type: dto.type, mode: this.mode });
             console.log('Loaded template/scene:', { dto, mode });
 
             // Handle scene loading
@@ -1832,6 +1848,7 @@ class FloorplanEditor {
         this.showTemplate = dto.type !== 'scene';
         this.templateType = dto.type;
 
+        console.info('[TEMPLATE_IMPORT]', { type: dto.type, mode: this.mode });
         console.log('Loaded template/scene from file:', { dto, mode });
 
         // Handle scene loading
@@ -2305,19 +2322,17 @@ class FloorplanEditor {
     }
 
     // Template Boundary Validation
-    isWithinTemplateBounds(x, y) {
-        // If no template is loaded, allow editing anywhere
-        if (!this.overlayModel.constraints || !this.overlayModel.constraints.allowedAreas) {
-            return true;
+    isWithinTemplateBounds(x, y, kind = 'tile') {
+        const b = this.overlayModel?.bounds;
+        if (!this.showTemplate || !b) return true; // no template -> unrestricted
+
+        if (kind === 'edge-horizontal') {
+            return b.isInside(x, y-1) || b.isInside(x, y);
         }
-
-        const allowedAreas = this.overlayModel.constraints.allowedAreas;
-
-        // Check if point is within any allowed area
-        return allowedAreas.some(area => {
-            const { x: ax, y: ay, w: aw, h: ah } = area;
-            return x >= ax && x < ax + aw && y >= ay && y < ay + ah;
-        });
+        if (kind === 'edge-vertical') {
+            return b.isInside(x-1, y) || b.isInside(x, y);
+        }
+        return b.isInside(x, y);
     }
 
     getTemplateBoundaryType(x, y) {
