@@ -20,10 +20,38 @@
                 </div>
                 <div class="file-controls">
                     <button id="import-btn">Import JSON</button>
-                    <button id="export-btn">Export JSON</button>
+                    <div class="export-controls">
+                        <select id="export-type">
+                            <option value="scene">Export Scene (v1)</option>
+                            <option value="mall-template">Export as Mall Template</option>
+                            <option value="gallery-template">Export as Gallery Template</option>
+                            <option value="room-template">Export as Room Template</option>
+                        </select>
+                        <button id="export-btn">Export</button>
+                    </div>
                     <button id="clear-btn">Clear Grid</button>
-                    <button id="load-template-btn">Load Template</button>
+                    <div class="load-template-controls">
+                        <button id="load-template-btn" class="dropdown-btn">
+                            Load Template ▼
+                        </button>
+                        <div id="load-template-dropdown" class="dropdown-content">
+                            <a href="#" id="open-from-disk">Open from disk...</a>
+                            <div class="dropdown-separator"></div>
+                            <div id="recent-files-section">
+                                <span class="dropdown-label">Recent files:</span>
+                                <div id="recent-files-list">
+                                    <span class="no-recent">No recent files</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <button id="toggle-template-btn" style="display: none;">Show Template</button>
+                    <div class="boundary-controls">
+                        <label>
+                            <input type="checkbox" id="show-unit-boundaries" checked>
+                            Show Unit Boundaries
+                        </label>
+                    </div>
                     <button id="load-units-btn">Load Units Index</button>
                     <select id="unit-select" style="display: none;">
                         <option value="">Select Unit...</option>
@@ -68,9 +96,27 @@
         </main>
     </div>
     
-    <!-- Hidden file input for JSON import -->
+    <!-- Hidden file inputs -->
     <input type="file" id="file-input" accept=".json" style="display: none;">
-    
+    <input type="file" id="template-file-input" accept=".json" style="display: none;">
+
+    <!-- Drag & Drop Overlay -->
+    <div id="drag-drop-overlay" class="drag-drop-overlay" style="display: none;">
+        <div class="drag-drop-content">
+            <div class="drag-drop-icon">📁</div>
+            <div class="drag-drop-text">Drop JSON file here</div>
+            <div class="drag-drop-subtext">Supports: scene.v1, mall-template.v1, unit-template.v1, unit-design.v1</div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Mode badge -->
+    <div id="mode-badge" class="mode-badge" style="display: none;">
+        <span id="mode-badge-text">Scene Mode</span>
+    </div>
+
     <script src="editor.js"></script>
 </body>
 </html>

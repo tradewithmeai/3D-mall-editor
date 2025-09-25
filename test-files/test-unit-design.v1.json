@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "schema": "unit-design.v1",
+    "version": "1.0",
+    "name": "Sample Unit Design"
+  },
+  "id": "design-sample-20250924",
+  "parentUnitId": "unit-sample-20250924",
+  "furniture": [
+    {
+      "id": "desk-1",
+      "type": "desk",
+      "position": { "x": 2, "y": 2 },
+      "rotation": 0
+    },
+    {
+      "id": "chair-1",
+      "type": "chair",
+      "position": { "x": 2, "y": 3 },
+      "rotation": 180
+    }
+  ],
+  "materials": {
+    "floor": "hardwood",
+    "walls": "painted"
+  }
+}
