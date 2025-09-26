@@ -29,6 +29,7 @@
                         </select>
                         <button id="export-btn">Export</button>
                     </div>
+                    <button id="export-selected-unit-btn" style="display: none;">Export Gallery Template (from Selected Unit)</button>
                     <button id="clear-btn">Clear Grid</button>
                     <button id="clear-template-btn" class="tool-btn">Clear Template</button>
                     <div class="load-template-controls">
@@ -51,6 +52,10 @@
                         <label>
                             <input type="checkbox" id="show-unit-boundaries" checked>
                             Show Unit Boundaries
+                        </label>
+                        <label id="limit-edits-label" style="display: none;">
+                            <input type="checkbox" id="limit-edits-to-active-unit">
+                            Limit edits to active unit
                         </label>
                     </div>
                     <button id="load-units-btn">Load Units Index</button>

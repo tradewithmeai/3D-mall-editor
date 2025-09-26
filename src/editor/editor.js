@@ -47,6 +47,11 @@ class FloorplanEditor {
         this.selectedUnit = null;
         this.unitOverlay = null;
 
+        // Unit selection for mall mode
+        this.activeUnit = null; // { id, rect }
+        this.limitToActiveUnit = false;
+        this.baseBounds = null; // Store original bounds before limiting
+
         // Initialize MRU system early to prevent crashes
         this.initializeMRUSystem();
 
@@ -145,6 +150,10 @@ class FloorplanEditor {
             const exportType = document.getElementById('export-type').value;
             this.handleExport(exportType);
         });
+
+        document.getElementById('export-selected-unit-btn').addEventListener('click', () => {
+            this.handleExportSelectedUnit();
+        });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
@@ -169,6 +178,13 @@ class FloorplanEditor {
         document.getElementById('show-unit-boundaries')?.addEventListener('change', (e) => {
             this.showUnitBoundaries = e.target.checked;
             console.log('Unit boundaries toggled:', this.showUnitBoundaries);
+        });
+
+        // Limit edits to active unit toggle
+        document.getElementById('limit-edits-to-active-unit')?.addEventListener('change', (e) => {
+            this.limitToActiveUnit = e.target.checked;
+            this.updateBoundsForActiveUnit();
+            console.log('Limit edits to active unit toggled:', this.limitToActiveUnit);
         });
         
         document.getElementById('unit-select')?.addEventListener('change', (e) => {
@@ -237,14 +253,112 @@ class FloorplanEditor {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
-        
+
+        // Handle unit selection in mall mode
+        if (this.handleUnitSelection(mouseX, mouseY)) {
+            return; // Unit was selected, skip painting
+        }
+
         if (this.currentTool === 'wall-edge' || this.currentTool === 'erase') {
             this.handleEdgePaint(mouseX, mouseY);
         } else {
             this.handleTilePaint(mouseX, mouseY);
         }
     }
-    
+
+    handleUnitSelection(mouseX, mouseY) {
+        // Only handle unit selection in mall mode
+        if (this.overlayModel?.templateData?.type !== 'mall') {
+            return false;
+        }
+
+        // Convert mouse coordinates to grid coordinates
+        const gridX = Math.floor(mouseX / this.cellSize);
+        const gridY = Math.floor(mouseY / this.cellSize);
+
+        // Check if click is within grid bounds
+        if (gridX < 0 || gridX >= this.gridWidth || gridY < 0 || gridY >= this.gridHeight) {
+            return false;
+        }
+
+        const { dto } = this.overlayModel.templateData;
+
+        // Find the first unit that contains this grid position
+        for (const unit of dto.units || []) {
+            const rect = unit.rect;
+            if (gridX >= rect.x &&
+                gridX < rect.x + rect.w &&
+                gridY >= rect.y &&
+                gridY < rect.y + rect.h) {
+
+                // Set active unit
+                this.activeUnit = {
+                    id: unit.id || 'unit',
+                    rect: { ...rect }
+                };
+
+                // Re-render to show selection
+                this.render();
+                this.updateExportButtonVisibility();
+                this.updateBoundsForActiveUnit();
+                return true; // Unit was selected, skip painting
+            }
+        }
+
+        // If no unit was clicked, clear selection
+        if (this.activeUnit) {
+            this.activeUnit = null;
+            this.render();
+            this.updateExportButtonVisibility();
+            this.updateBoundsForActiveUnit();
+        }
+
+        return false; // No unit selected, allow painting
+    }
+
+    updateExportButtonVisibility() {
+        const exportButton = document.getElementById('export-selected-unit-btn');
+        const limitEditsLabel = document.getElementById('limit-edits-label');
+
+        // Show button and checkbox only in mall mode with an active unit selected
+        const shouldShow = this.overlayModel?.templateData?.type === 'mall' && this.activeUnit;
+
+        if (exportButton) {
+            exportButton.style.display = shouldShow ? 'inline-block' : 'none';
+        }
+
+        if (limitEditsLabel) {
+            limitEditsLabel.style.display = shouldShow ? 'inline-block' : 'none';
+        }
+    }
+
+    updateBoundsForActiveUnit() {
+        if (!this.overlayModel?.templateData || this.overlayModel.templateData.type !== 'mall') {
+            return;
+        }
+
+        if (this.limitToActiveUnit && this.activeUnit) {
+            // Store original bounds if not already stored
+            if (!this.baseBounds) {
+                this.baseBounds = this.overlayModel.bounds;
+            }
+
+            // Create limited bounds for just the active unit
+            const limitedDto = {
+                type: 'unit',
+                rect: this.activeUnit.rect
+            };
+            this.overlayModel.bounds = makeBounds(limitedDto);
+            console.log('Bounds limited to active unit:', this.activeUnit.rect);
+        } else {
+            // Restore original bounds
+            if (this.baseBounds) {
+                this.overlayModel.bounds = this.baseBounds;
+                console.log('Bounds restored to original mall bounds');
+            }
+        }
+    }
+
     handleTilePaint(mouseX, mouseY) {
         const x = Math.floor(mouseX / this.cellSize);
         const y = Math.floor(mouseY / this.cellSize);
@@ -486,6 +600,31 @@ class FloorplanEditor {
                     });
                 });
 
+                // Draw active unit highlight if one is selected
+                if (this.activeUnit) {
+                    drawRect(this.activeUnit.rect, {
+                        dashed: true,
+                        colour: '#00BCD4', // Cyan
+                        label: `${this.activeUnit.id} (ACTIVE)`
+                    });
+
+                    // Override styling for thicker highlight
+                    this.ctx.save();
+                    this.ctx.strokeStyle = '#00BCD4';
+                    this.ctx.lineWidth = 3;
+                    this.ctx.globalAlpha = 0.8;
+                    this.ctx.setLineDash([8, 4]);
+
+                    const rect = this.activeUnit.rect;
+                    const pixelX = rect.x * this.cellSize;
+                    const pixelY = rect.y * this.cellSize;
+                    const pixelW = rect.w * this.cellSize;
+                    const pixelH = rect.h * this.cellSize;
+
+                    this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
+                    this.ctx.restore();
+                }
+
                 // Draw template info
                 this.ctx.save();
                 this.ctx.fillStyle = '#FF6B6B';
@@ -572,7 +711,13 @@ class FloorplanEditor {
         this.showTemplate = false;
         this.templateType = null;
         this.templateContext = {};
+        this.activeUnit = null; // Clear active unit when clearing template
+        this.baseBounds = null; // Clear stored bounds
+        this.limitToActiveUnit = false; // Reset limit checkbox
+        const limitCheckbox = document.getElementById('limit-edits-to-active-unit');
+        if (limitCheckbox) limitCheckbox.checked = false;
         this.updateModeBadge();
+        this.updateExportButtonVisibility();
         this.render();
     }
 
@@ -853,6 +998,37 @@ class FloorplanEditor {
             default:
                 this.exportAsScene();
         }
+    }
+
+    handleExportSelectedUnit() {
+        // Check if we're in mall mode with an active unit selected
+        if (this.overlayModel?.templateData?.type !== 'mall' || !this.activeUnit) {
+            this.showToast('Please select a unit in mall mode first', 'warning');
+            return;
+        }
+
+        const { dto } = this.overlayModel.templateData;
+        const selectedUnit = dto.units?.find(u =>
+            u.id === this.activeUnit.id ||
+            (u.rect.x === this.activeUnit.rect.x && u.rect.y === this.activeUnit.rect.y)
+        );
+
+        if (!selectedUnit) {
+            this.showToast('Selected unit not found in template data', 'error');
+            return;
+        }
+
+        // Use ExportBuilder to create unit template from the selected unit
+        const unitTemplate = buildUnitTemplate({
+            id: selectedUnit.id || 'unit',
+            rect: selectedUnit.rect,
+            rooms: selectedUnit.rooms || [],
+            parentMallId: dto.id
+        });
+
+        // Download the unit template
+        this.downloadJSON(unitTemplate, `${selectedUnit.id || 'unit'}-template.json`);
+        this.showToast(`Exported unit template: ${selectedUnit.id || 'unit'}`, 'success');
     }
 
     // Export as Mall Template format for unit splitting workflow
@@ -1659,6 +1835,7 @@ class FloorplanEditor {
         }
 
         console.log('Template loaded from file:', jsonData);
+        this.updateExportButtonVisibility();
     }
 
     // Drag and Drop System
@@ -2385,7 +2562,7 @@ class FloorplanEditor {
 
         try {
             let testStep = 1;
-            const totalSteps = 6;
+            const totalSteps = 8;
 
             // Step 1: Load mall fixture
             statusEl.textContent = `[${testStep++}/${totalSteps}] Loading mall fixture...`;
@@ -2404,12 +2581,42 @@ class FloorplanEditor {
             console.assert(mallTemplate.meta.version === '1.0', 'Mall export version mismatch');
             await this.sleep(500);
 
-            // Step 3: Load gallery fixture
+            // Step 3: Test mall→unit export workflow
+            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing mall→unit export...`;
+            // Simulate unit selection (first available unit from mall fixture)
+            if (this.overlayModel?.templateData?.dto?.units?.length > 0) {
+                const firstUnit = this.overlayModel.templateData.dto.units[0];
+                this.activeUnit = {
+                    id: firstUnit.id || 'unit-1',
+                    rect: { ...firstUnit.rect }
+                };
+                this.updateExportButtonVisibility();
+
+                // Test export selected unit functionality
+                const exportedUnit = buildUnitTemplate({
+                    id: this.activeUnit.id,
+                    rect: this.activeUnit.rect,
+                    rooms: firstUnit.rooms || [],
+                    parentMallId: this.overlayModel.templateData.dto.id
+                });
+
+                console.assert(exportedUnit.meta.schema === 'unit-template.v1', 'Mall→unit export schema mismatch');
+                console.assert(exportedUnit.id === this.activeUnit.id, 'Mall→unit export ID mismatch');
+                console.assert(exportedUnit.meta.parent, 'Mall→unit export should have parent reference');
+                console.log('✓ Mall→unit export test passed');
+
+                // Clear active unit for next test
+                this.activeUnit = null;
+                this.updateExportButtonVisibility();
+            }
+            await this.sleep(500);
+
+            // Step 4: Load gallery fixture
             statusEl.textContent = `[${testStep++}/${totalSteps}] Loading gallery fixture...`;
             await this.loadFixture('gallery');
             await this.sleep(500);
 
-            // Step 4: Test gallery export using ExportBuilder
+            // Step 5: Test gallery export using ExportBuilder
             statusEl.textContent = `[${testStep++}/${totalSteps}] Testing gallery export...`;
             const galleryTemplate = buildUnitTemplate({
                 id: 'test-gallery',
@@ -2422,12 +2629,12 @@ class FloorplanEditor {
             console.assert(galleryTemplate.meta.parent.schema === 'mall-template.v1', 'Gallery parent schema mismatch');
             await this.sleep(500);
 
-            // Step 5: Load room fixture
+            // Step 6: Load room fixture
             statusEl.textContent = `[${testStep++}/${totalSteps}] Loading room fixture...`;
             await this.loadFixture('room');
             await this.sleep(500);
 
-            // Step 6: Test room export using ExportBuilder
+            // Step 7: Test room export using ExportBuilder
             statusEl.textContent = `[${testStep++}/${totalSteps}] Testing room export...`;
             const roomTemplate = buildRoomTemplate({
                 id: 'test-room',
