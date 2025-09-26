@@ -155,9 +155,6 @@ class FloorplanEditor {
             this.handleExportSelectedUnit();
         });
 
-        document.getElementById('export-mall-template-btn')?.addEventListener('click', () => {
-            this.handleExportMallTemplate();
-        });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
@@ -323,7 +320,6 @@ class FloorplanEditor {
     updateExportButtonVisibility() {
         const exportButton = document.getElementById('export-selected-unit-btn');
         const limitEditsLabel = document.getElementById('limit-edits-label');
-        const mallExportButton = document.getElementById('export-mall-template-btn');
 
         // Show unit export button and checkbox only in mall mode with an active unit selected
         const shouldShowUnitExport = this.overlayModel?.templateData?.type === 'mall' && this.activeUnit;
@@ -336,11 +332,12 @@ class FloorplanEditor {
             limitEditsLabel.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
         }
 
-        // Show mall export button only in mall mode (regardless of unit selection)
-        const shouldShowMallExport = this.overlayModel?.templateData?.type === 'mall';
-
-        if (mallExportButton) {
-            mallExportButton.style.display = shouldShowMallExport ? 'inline-block' : 'none';
+        // Enable/disable the mall template dropdown option based on mode
+        const isMall = this.overlayModel?.templateData?.type === 'mall';
+        const exportMallItem = document.getElementById('export-mall-template-item');
+        if (exportMallItem) {
+            exportMallItem.classList.toggle('disabled', !isMall);
+            exportMallItem.setAttribute('aria-disabled', (!isMall).toString());
         }
     }
 
@@ -999,7 +996,7 @@ class FloorplanEditor {
                 this.exportAsScene();
                 break;
             case 'mall-template':
-                this.exportAsMallTemplate();
+                this.handleExportMallTemplate();
                 break;
             case 'gallery-template':
                 this.exportAsGalleryTemplate();

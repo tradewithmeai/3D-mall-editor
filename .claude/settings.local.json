@@ -36,7 +36,8 @@
       "Bash(npm run test:*)",
       "Bash(npm run test:load-template:*)",
       "Bash(npm run test:export:*)",
-      "Read(//d//**)"
+      "Read(//d//**)",
+      "Bash(npx http-server:*)"
     ],
     "deny": [],
     "ask": []
