@@ -1097,14 +1097,17 @@ class FloorplanEditor {
             units: galleries
         });
 
-        const name = `${out?.id || 'mall'}.mall-template.v1.json`;
+        // Compute safe filename
+        const safeId = String(out?.id || 'mall').trim().toLowerCase().replace(/[^a-z0-9-_]+/g, '-').replace(/^-+|-+$/g, '') || 'mall';
+        const filename = `${safeId}.mall-template.v1.json`;
+        console.info('[EXPORT:mall] file', filename);
 
         // Download JSON (using manual download like other export methods)
         const dataStr = JSON.stringify(out, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
-        link.download = name;
+        link.download = filename;
         link.click();
 
         // Log for diagnostics:
@@ -1553,35 +1556,16 @@ class FloorplanEditor {
             // Use new TemplateLoader to detect and normalize
             const { dto, mode } = loadTemplate(jsonData);
 
-            // Clear scene and set up overlay model
+            // Always apply DTO + bounds on import
             this.clearScene();
             this.overlayModel = this.overlayModel || {};
             this.overlayModel.templateData = dto;
-
-            // Validate DTO rects before enabling edits
-            if ((dto.type === 'unit' || dto.type === 'room')) {
-                if (!dto.rect || dto.rect.w <= 0 || dto.rect.h <= 0) {
-                    this.showToast('error', 'Template Invalid', 'Template rect invalid; editing disabled');
-                    this.showTemplate = false;
-                    this.overlayModel.bounds = null;
-                    console.warn('Invalid template rect, editing disabled:', dto.rect);
-                } else {
-                    this.overlayModel.bounds = makeBounds(dto);
-                    this.showTemplate = true;
-                }
-            } else if (dto.type === 'mall') {
-                if (!dto.units || dto.units.length === 0) {
-                    console.warn('Mall template has no units; allowing unrestricted editing');
-                }
-                this.overlayModel.bounds = makeBounds(dto);
-                this.showTemplate = true;
-            } else {
-                this.overlayModel.bounds = makeBounds(dto);
-                this.showTemplate = dto.type !== 'scene';
-            }
-
+            this.overlayModel.bounds = makeBounds(dto);
+            this.showTemplate = dto.type !== 'scene';
             this.templateType = dto.type;
-            this.updateModeBadge();
+            console.info('[IMPORT]', { type: dto.type, id: dto.id, units: Array.isArray(dto.units) ? dto.units.length : undefined });
+            console.info('[BOUNDS]', { active: !!this.overlayModel.bounds, type: this.templateType });
+            this.render();
 
             console.info('[TEMPLATE_IMPORT]', { type: dto.type, mode: this.mode });
             console.log('Loaded template/scene:', { dto, mode });
@@ -1839,35 +1823,16 @@ class FloorplanEditor {
         // Use new TemplateLoader to detect and normalize
         const { dto, mode } = loadTemplate(jsonData);
 
-        // Clear scene and set up overlay model
+        // Always apply DTO + bounds on import
         this.clearScene();
         this.overlayModel = this.overlayModel || {};
         this.overlayModel.templateData = dto;
-
-        // Validate DTO rects before enabling edits
-        if ((dto.type === 'unit' || dto.type === 'room')) {
-            if (!dto.rect || dto.rect.w <= 0 || dto.rect.h <= 0) {
-                this.showToast('error', 'Template Invalid', 'Template rect invalid; editing disabled');
-                this.showTemplate = false;
-                this.overlayModel.bounds = null;
-                console.warn('Invalid template rect, editing disabled:', dto.rect);
-            } else {
-                this.overlayModel.bounds = makeBounds(dto);
-                this.showTemplate = true;
-            }
-        } else if (dto.type === 'mall') {
-            if (!dto.units || dto.units.length === 0) {
-                console.warn('Mall template has no units; allowing unrestricted editing');
-            }
-            this.overlayModel.bounds = makeBounds(dto);
-            this.showTemplate = true;
-        } else {
-            this.overlayModel.bounds = makeBounds(dto);
-            this.showTemplate = dto.type !== 'scene';
-        }
-
+        this.overlayModel.bounds = makeBounds(dto);
+        this.showTemplate = dto.type !== 'scene';
         this.templateType = dto.type;
-        this.updateModeBadge();
+        console.info('[IMPORT]', { type: dto.type, id: dto.id, units: Array.isArray(dto.units) ? dto.units.length : undefined });
+        console.info('[BOUNDS]', { active: !!this.overlayModel.bounds, type: this.templateType });
+        this.render();
 
         console.info('[TEMPLATE_IMPORT]', { type: dto.type, mode: this.mode });
         console.log('Loaded template/scene from file:', { dto, mode });

@@ -51,35 +51,36 @@ export function load(json) {
  * @returns {Object} - Normalized mall DTO
  */
 function normalizeMallTemplate(json) {
+    // Extract grid size from multiple possible locations
+    const gridSize = json.gridSize || json.grid || null;
+
     const dto = {
         type: 'mall',
+        id: json.id || 'mall',
         units: [],
         gridSize: null
     };
 
-    // Extract units array
+    // Extract units array and filter out invalid ones
     if (Array.isArray(json.units)) {
         dto.units = json.units.map(unit => ({
             id: unit.id || `unit-${Math.random().toString(36).substr(2, 9)}`,
-            rect: normalizeRect(unit.rect || unit.bounds)
-        }));
+            rect: normalizeRect(unit.rect || unit.bounds || unit.gridRect)
+        })).filter(unit => unit.rect && unit.rect.w > 0 && unit.rect.h > 0);
     }
 
-    // Extract grid size from multiple possible locations
-    dto.gridSize = json.grid || json.gridSize || json.bounds;
-    if (dto.gridSize) {
-        // Ensure consistent format with width/height
-        if (dto.gridSize.w && dto.gridSize.h) {
-            dto.gridSize = {
-                width: dto.gridSize.w,
-                height: dto.gridSize.h
-            };
-        }
-    }
-
-    // If only gridSize given and no units, treat mall as full grid rect
-    if (dto.gridSize && dto.units.length === 0) {
-        // Leave units empty as per spec
+    // Set gridSize only if it has numeric width and height
+    if (gridSize &&
+        typeof gridSize === 'object' &&
+        Number.isFinite(gridSize.width) && Number.isFinite(gridSize.height)) {
+        dto.gridSize = gridSize;
+    } else if (gridSize &&
+               typeof gridSize === 'object' &&
+               Number.isFinite(gridSize.w) && Number.isFinite(gridSize.h)) {
+        dto.gridSize = {
+            width: gridSize.w,
+            height: gridSize.h
+        };
     }
 
     return dto;
