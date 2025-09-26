@@ -614,14 +614,24 @@ class FloorplanEditor {
         // Switch on dto.type (NO meta/schema access anywhere)
         switch (dto.type) {
             case 'mall': {
-                // Draw each unit rect in dto.units
-                dto.units?.forEach(u => {
-                    drawRect(u.rect, {
-                        dashed: true,
-                        colour: '#FF6B6B', // Magenta-ish
-                        label: u.id || 'unit'
+                // If mall has units, draw each unit rect
+                if (dto.units && dto.units.length > 0) {
+                    dto.units.forEach(u => {
+                        drawRect(u.rect, {
+                            dashed: true,
+                            colour: '#FF6B6B', // Magenta-ish
+                            label: u.id || 'unit'
+                        });
                     });
-                });
+                }
+                // If mall has no units but has a rect, draw the mall rect (zzz20)
+                else if (dto.rect) {
+                    drawRect(dto.rect, {
+                        dashed: true,
+                        colour: '#8B3AF9', // Purple
+                        label: 'Mall Area'
+                    });
+                }
 
                 // Draw active unit highlight if one is selected
                 if (this.activeUnit) {
