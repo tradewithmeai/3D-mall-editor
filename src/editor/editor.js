@@ -1050,8 +1050,14 @@ class FloorplanEditor {
         });
 
         // Download the unit template
-        this.downloadJSON(unitTemplate, `${selectedUnit.id || 'unit'}-template.json`);
-        this.showToast(`Exported gallery template: ${selectedUnit.id || 'gallery'}`, 'success');
+        const fileName = `${selectedUnit.id || 'unit'}-template.json`;
+        const dataStr = JSON.stringify(unitTemplate, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = fileName;
+        link.click();
+        this.showToast('success', 'Gallery Template Exported', `Exported gallery template: ${selectedUnit.id || 'gallery'}`);
     }
 
     handleExportMallTemplate() {
@@ -1093,8 +1099,13 @@ class FloorplanEditor {
 
         const name = `${out?.id || 'mall'}.mall-template.v1.json`;
 
-        // Download JSON (using existing download helper)
-        this.downloadJSON(out, name);
+        // Download JSON (using manual download like other export methods)
+        const dataStr = JSON.stringify(out, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = name;
+        link.click();
 
         // Log for diagnostics:
         console.info('[EXPORT:mall] built', {
