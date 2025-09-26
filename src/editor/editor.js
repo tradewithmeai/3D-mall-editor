@@ -281,7 +281,7 @@ class FloorplanEditor {
             return false;
         }
 
-        const { dto } = this.overlayModel.templateData;
+        const dto = this.overlayModel.templateData;
 
         // Find the first unit that contains this grid position
         for (const unit of dto.units || []) {
