@@ -346,23 +346,12 @@ class FloorplanEditor {
             limitEditsLabel.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
         }
 
-        // Enable/disable the mall template dropdown option based on mode and valid units
-        const dto = this.overlayModel?.templateData;
-        const isMall = dto?.type === 'mall';
-        const units = Array.isArray(dto?.units) ? dto.units.filter(u =>
-            u && u.rect &&
-            Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
-            Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
-            u.rect.w > 0 && u.rect.h > 0
-        ) : [];
-        const canExportMall = isMall && units.length > 0;
-
+        // Ensure Export → Mall Template is always enabled (no gating)
         const exportMallItem = document.getElementById('export-mall-template-item');
         if (exportMallItem) {
-            exportMallItem.classList.toggle('disabled', !canExportMall);
-            exportMallItem.setAttribute('aria-disabled', (!canExportMall).toString());
-            exportMallItem.title = canExportMall ? '' :
-                (isMall ? 'Add at least one valid unit to export' : 'Enter Mall mode to export');
+            exportMallItem.classList.remove('disabled');
+            exportMallItem.setAttribute('aria-disabled', 'false');
+            exportMallItem.title = '';
         }
     }
 
@@ -664,7 +653,7 @@ class FloorplanEditor {
                 this.ctx.fillStyle = '#FF6B6B';
                 this.ctx.globalAlpha = 0.8;
                 this.ctx.font = '14px Arial';
-                this.ctx.fillText(`Mall Template (${dto.units?.length || 0} units)`, 10, 25);
+                this.ctx.fillText(`Mall Template (${dto.units?.length || 0} galleries)`, 10, 25);
                 this.ctx.restore();
                 break;
             }
@@ -1037,7 +1026,7 @@ class FloorplanEditor {
     handleExportSelectedUnit() {
         // Check if we're in mall mode with an active unit selected
         if (this.overlayModel?.templateData?.type !== 'mall' || !this.activeUnit) {
-            this.showToast('Please select a unit in mall mode first', 'warning');
+            this.showToast('Please select a gallery in mall mode first', 'warning');
             return;
         }
 
@@ -1048,7 +1037,7 @@ class FloorplanEditor {
         );
 
         if (!selectedUnit) {
-            this.showToast('Selected unit not found in template data', 'error');
+            this.showToast('Selected gallery not found in template data', 'error');
             return;
         }
 
@@ -1062,7 +1051,7 @@ class FloorplanEditor {
 
         // Download the unit template
         this.downloadJSON(unitTemplate, `${selectedUnit.id || 'unit'}-template.json`);
-        this.showToast(`Exported unit template: ${selectedUnit.id || 'unit'}`, 'success');
+        this.showToast(`Exported gallery template: ${selectedUnit.id || 'gallery'}`, 'success');
     }
 
     handleExportMallTemplate() {
@@ -1072,54 +1061,34 @@ class FloorplanEditor {
             type: this.overlayModel?.templateData?.type
         });
 
-        const dto = this.overlayModel?.templateData;
-        if (!dto || dto.type !== 'mall') {
-            this.showToast('warning', 'Mall Export Unavailable', 'Mall export unavailable: not in Mall mode. Load/create a mall template first.');
-            return;
+        const dto = this.overlayModel?.templateData || null;
+        let gridSize = { width: this.gridWidth, height: this.gridHeight };
+        let id = 'mall';
+        let galleries = []; // a.k.a. "units" in schema
+
+        if (dto && dto.type === 'mall') {
+            id = dto.id || id;
+            gridSize = dto.gridSize || gridSize;
+            galleries = Array.isArray(dto.units)
+                ? dto.units.filter(u => u && u.rect &&
+                    Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
+                    Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
+                    u.rect.w > 0 && u.rect.h > 0)
+                : [];
         }
 
-        // Validate and filter units with detailed diagnostics
-        const allUnits = Array.isArray(dto.units) ? dto.units : [];
-        const invalidUnits = allUnits.filter(u =>
-            !u || !u.rect ||
-            !Number.isFinite(u.rect.x) || !Number.isFinite(u.rect.y) ||
-            !Number.isFinite(u.rect.w) || !Number.isFinite(u.rect.h) ||
-            u.rect.w <= 0 || u.rect.h <= 0
-        );
-
-        const units = allUnits.filter(u =>
-            u && u.rect &&
-            Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
-            Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
-            u.rect.w > 0 && u.rect.h > 0
-        );
-
-        if (invalidUnits.length > 0) {
-            this.showToast('error', 'Invalid Unit Rectangles', 'Mall export blocked: found invalid unit rects (need finite x,y,w,h and w/h > 0).');
-            console.warn('[EXPORT:mall] invalid units:', invalidUnits);
+        if (!Number.isFinite(gridSize.width) || !Number.isFinite(gridSize.height) ||
+            gridSize.width <= 0 || gridSize.height <= 0) {
+            this.showToast('error', 'Mall Export Failed', 'Invalid grid size');
             return;
         }
-
-        if (units.length === 0) {
-            this.showToast('error', 'No Valid Units', 'Mall export blocked: no valid unit rectangles in the current mall template.');
-            return;
-        }
-
-        const gridSize = dto.gridSize || { width: this.gridWidth, height: this.gridHeight };
-
-        // Pre-build logging
-        console.info('[EXPORT:mall] building', {
-            grid: gridSize,
-            units: units.length,
-            unitDetails: units.map(u => ({ id: u.id, rect: u.rect }))
-        });
 
         const out = buildMallTemplate({
-            id: dto.id || 'mall',
+            id,
             gridWidth: gridSize.width,
             gridHeight: gridSize.height,
             cellSize: this.cellSize || 1,
-            units
+            units: galleries
         });
 
         const name = `${out?.id || 'mall'}.mall-template.v1.json`;
@@ -1127,12 +1096,14 @@ class FloorplanEditor {
         // Download JSON (using existing download helper)
         this.downloadJSON(out, name);
 
-        // Success logging
-        console.info('[EXPORT:mall] done', {
-            filename: name,
-            schema: out.meta?.schema,
-            exported: { id: out.id, units: units.length }
+        // Log for diagnostics:
+        console.info('[EXPORT:mall] built', {
+            id: out.id,
+            grid: gridSize,
+            units: galleries.length,
+            fresh: !dto
         });
+
         this.showToast('success', 'Mall Template Exported', `Exported mall template: ${out.id}`);
     }
 
@@ -1165,7 +1136,7 @@ class FloorplanEditor {
         link.click();
 
         console.log('Exported mall template:', mallTemplate);
-        alert(`Mall template saved (${units.length} units detected)\\nReady for template loading workflow`);
+        alert(`Mall template saved (${units.length} galleries detected)\\nReady for template loading workflow`);
     }
 
 
