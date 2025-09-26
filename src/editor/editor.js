@@ -155,7 +155,21 @@ class FloorplanEditor {
             this.handleExportSelectedUnit();
         });
 
-        
+        // Safety handler for mall template dropdown option
+        const mallItem = document.getElementById('export-mall-template-item');
+        if (mallItem) {
+            mallItem.addEventListener('click', (e) => {
+                if (mallItem.classList.contains('disabled')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+                }
+                // The actual handling is done through the main export button
+                // but this provides a safety check for direct clicks
+            });
+        }
+
+
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
         });
@@ -332,12 +346,23 @@ class FloorplanEditor {
             limitEditsLabel.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
         }
 
-        // Enable/disable the mall template dropdown option based on mode
-        const isMall = this.overlayModel?.templateData?.type === 'mall';
+        // Enable/disable the mall template dropdown option based on mode and valid units
+        const dto = this.overlayModel?.templateData;
+        const isMall = dto?.type === 'mall';
+        const units = Array.isArray(dto?.units) ? dto.units.filter(u =>
+            u && u.rect &&
+            Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
+            Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
+            u.rect.w > 0 && u.rect.h > 0
+        ) : [];
+        const canExportMall = isMall && units.length > 0;
+
         const exportMallItem = document.getElementById('export-mall-template-item');
         if (exportMallItem) {
-            exportMallItem.classList.toggle('disabled', !isMall);
-            exportMallItem.setAttribute('aria-disabled', (!isMall).toString());
+            exportMallItem.classList.toggle('disabled', !canExportMall);
+            exportMallItem.setAttribute('aria-disabled', (!canExportMall).toString());
+            exportMallItem.title = canExportMall ? '' :
+                (isMall ? 'Add at least one valid unit to export' : 'Enter Mall mode to export');
         }
     }
 
@@ -1041,25 +1066,53 @@ class FloorplanEditor {
     }
 
     handleExportMallTemplate() {
+        // Entry logging
+        console.info('[EXPORT:mall] enter', {
+            mode: this.mode,
+            type: this.overlayModel?.templateData?.type
+        });
+
         const dto = this.overlayModel?.templateData;
         if (!dto || dto.type !== 'mall') {
-            this.showToast('Not in mall mode — load/create a mall template', 'warning');
+            this.showToast('warning', 'Mall Export Unavailable', 'Mall export unavailable: not in Mall mode. Load/create a mall template first.');
             return;
         }
 
-        const units = Array.isArray(dto.units) ? dto.units.filter(u =>
+        // Validate and filter units with detailed diagnostics
+        const allUnits = Array.isArray(dto.units) ? dto.units : [];
+        const invalidUnits = allUnits.filter(u =>
+            !u || !u.rect ||
+            !Number.isFinite(u.rect.x) || !Number.isFinite(u.rect.y) ||
+            !Number.isFinite(u.rect.w) || !Number.isFinite(u.rect.h) ||
+            u.rect.w <= 0 || u.rect.h <= 0
+        );
+
+        const units = allUnits.filter(u =>
             u && u.rect &&
             Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
             Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
             u.rect.w > 0 && u.rect.h > 0
-        ) : [];
+        );
+
+        if (invalidUnits.length > 0) {
+            this.showToast('error', 'Invalid Unit Rectangles', 'Mall export blocked: found invalid unit rects (need finite x,y,w,h and w/h > 0).');
+            console.warn('[EXPORT:mall] invalid units:', invalidUnits);
+            return;
+        }
 
         if (units.length === 0) {
-            this.showToast('No valid units found in mall template', 'error');
+            this.showToast('error', 'No Valid Units', 'Mall export blocked: no valid unit rectangles in the current mall template.');
             return;
         }
 
         const gridSize = dto.gridSize || { width: this.gridWidth, height: this.gridHeight };
+
+        // Pre-build logging
+        console.info('[EXPORT:mall] building', {
+            grid: gridSize,
+            units: units.length,
+            unitDetails: units.map(u => ({ id: u.id, rect: u.rect }))
+        });
 
         const out = buildMallTemplate({
             id: dto.id || 'mall',
@@ -1074,9 +1127,13 @@ class FloorplanEditor {
         // Download JSON (using existing download helper)
         this.downloadJSON(out, name);
 
-        // Optional logging
-        console.info('[EXPORT]', 'mall-template.v1', { id: out.id, units: units.length });
-        this.showToast(`Exported mall template: ${out.id}`, 'success');
+        // Success logging
+        console.info('[EXPORT:mall] done', {
+            filename: name,
+            schema: out.meta?.schema,
+            exported: { id: out.id, units: units.length }
+        });
+        this.showToast('success', 'Mall Template Exported', `Exported mall template: ${out.id}`);
     }
 
     // Export as Mall Template format for unit splitting workflow
@@ -1883,7 +1940,24 @@ class FloorplanEditor {
         }
 
         console.log('Template loaded from file:', jsonData);
+        console.info('[IMPORT]', {
+            type: dto.type,
+            units: Array.isArray(dto.units) ? dto.units.length : 0,
+            id: dto.id,
+            hasValidUnits: dto.type === 'mall' ? this.countValidUnits(dto) : 'N/A'
+        });
         this.updateExportButtonVisibility();
+    }
+
+    // Helper method to count valid units in a DTO
+    countValidUnits(dto) {
+        if (!Array.isArray(dto.units)) return 0;
+        return dto.units.filter(u =>
+            u && u.rect &&
+            Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
+            Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
+            u.rect.w > 0 && u.rect.h > 0
+        ).length;
     }
 
     // Drag and Drop System

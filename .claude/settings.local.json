@@ -37,7 +37,8 @@
       "Bash(npm run test:load-template:*)",
       "Bash(npm run test:export:*)",
       "Read(//d//**)",
-      "Bash(npx http-server:*)"
+      "Bash(npx http-server:*)",
+      "Bash(timeout 15 git push origin main)"
     ],
     "deny": [],
     "ask": []
