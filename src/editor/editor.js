@@ -136,11 +136,16 @@ class FloorplanEditor {
             console.log('Parsed template instances into ghosted layer:', templateData.instances.length);
         }
 
-        // For mall templates, check if they have scene content embedded
-        if (dto.type === 'mall' && templateData.sceneData && templateData.sceneData.instances) {
-            this.parseInstancesIntoTemplateLayer(templateData.sceneData.instances);
-            this.templateModel.hasContent = true;
-            console.log('Parsed mall scene data into ghosted layer');
+        // For mall templates, create ghosted boundary from mall rect or units
+        if (dto.type === 'mall') {
+            if (templateData.sceneData && templateData.sceneData.instances) {
+                this.parseInstancesIntoTemplateLayer(templateData.sceneData.instances);
+                this.templateModel.hasContent = true;
+                console.log('Parsed mall scene data into ghosted layer');
+            } else {
+                // Create ghosted boundary representation from mall structure
+                this.createGhostedMallBoundary(dto);
+            }
         }
 
         // For gallery/unit templates, check for embedded scene content
@@ -168,6 +173,60 @@ class FloorplanEditor {
                 }
             }
         });
+    }
+
+    // Create ghosted boundary representation for mall templates without scene content
+    createGhostedMallBoundary(dto) {
+        // If mall has units, create ghosted outlines for each unit
+        if (dto.units && dto.units.length > 0) {
+            dto.units.forEach(unit => {
+                if (unit.rect) {
+                    this.createGhostedRectOutline(unit.rect);
+                }
+            });
+            this.templateModel.hasContent = true;
+            console.log('Created ghosted unit boundaries for', dto.units.length, 'units');
+        }
+        // If mall has rect but no units, create ghosted outline for the mall area
+        else if (dto.rect) {
+            this.createGhostedRectOutline(dto.rect);
+            this.templateModel.hasContent = true;
+            console.log('Created ghosted mall boundary from rect:', dto.rect);
+        }
+    }
+
+    // Create a ghosted outline (border only) for a rectangle
+    createGhostedRectOutline(rect) {
+        const { x, y, w, h } = rect;
+
+        // Create border edges for the rectangle (not fill the interior)
+        // Top border
+        for (let i = 0; i < w && y >= 0 && y < this.gridHeight; i++) {
+            if (x + i >= 0 && x + i < this.gridWidth) {
+                this.templateModel.horizontalEdges[y][x + i] = true;
+            }
+        }
+
+        // Bottom border
+        for (let i = 0; i < w && y + h >= 0 && y + h < this.gridHeight; i++) {
+            if (x + i >= 0 && x + i < this.gridWidth) {
+                this.templateModel.horizontalEdges[y + h][x + i] = true;
+            }
+        }
+
+        // Left border
+        for (let i = 0; i < h && x >= 0 && x < this.gridWidth; i++) {
+            if (y + i >= 0 && y + i < this.gridHeight) {
+                this.templateModel.verticalEdges[y + i][x] = true;
+            }
+        }
+
+        // Right border
+        for (let i = 0; i < h && x + w >= 0 && x + w < this.gridWidth; i++) {
+            if (y + i >= 0 && y + i < this.gridHeight) {
+                this.templateModel.verticalEdges[y + i][x + w] = true;
+            }
+        }
     }
 
     setupEventListeners() {
