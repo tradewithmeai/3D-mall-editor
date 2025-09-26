@@ -1051,12 +1051,7 @@ class FloorplanEditor {
 
         // Download the unit template
         const fileName = `${selectedUnit.id || 'unit'}-template.json`;
-        const dataStr = JSON.stringify(unitTemplate, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = fileName;
-        link.click();
+        this.downloadJSON(fileName, unitTemplate);
         this.showToast('success', 'Gallery Template Exported', `Exported gallery template: ${selectedUnit.id || 'gallery'}`);
     }
 
@@ -1102,13 +1097,13 @@ class FloorplanEditor {
         const filename = `${safeId}.mall-template.v1.json`;
         console.info('[EXPORT:mall] file', filename);
 
-        // Download JSON (using manual download like other export methods)
-        const dataStr = JSON.stringify(out, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = filename;
-        link.click();
+        // Runtime assertions for mall export
+        console.assert(out?.meta?.schema === 'mall-template.v1', 'Mall export: wrong schema');
+        console.assert(Array.isArray(out?.units), 'Mall export: units must be array');
+        console.assert(out?.grid || out?.gridSize, 'Mall export: grid/gridSize missing');
+
+        // Download JSON using unified helper
+        this.downloadJSON(filename, out);
 
         // Log for diagnostics:
         console.info('[EXPORT:mall] built', {
@@ -1141,13 +1136,9 @@ class FloorplanEditor {
             units: units
         });
 
-        const dataStr = JSON.stringify(mallTemplate, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = `${mallId}.json`;
-        link.click();
+        const mallId = mallTemplate.id || 'mall';
+        const filename = `${mallId}.json`;
+        this.downloadJSON(filename, mallTemplate);
 
         console.log('Exported mall template:', mallTemplate);
         alert(`Mall template saved (${units.length} galleries detected)\\nReady for template loading workflow`);
@@ -1230,16 +1221,11 @@ class FloorplanEditor {
             parentMallId: dto?.parentMallId
         });
 
-        const dataStr = JSON.stringify(out, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = `${out.id || 'unit'}.unit-template.v1.json`;
-        link.click();
+        const filename = `${out.id || 'unit'}.unit-template.v1.json`;
+        this.downloadJSON(filename, out);
 
         console.log('Exported gallery template:', out);
-        alert(`Gallery template exported as ${out.id || 'unit'}.unit-template.v1.json`);
+        alert(`Gallery template exported as ${filename}`);
     }
 
     // Export as Room Template format with parent relationship
@@ -1261,13 +1247,8 @@ class FloorplanEditor {
         });
 
         // DO NOT export instances/scene content here
-        const dataStr = JSON.stringify(out, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = `${out.id}.room-template.v1.json`;
-        link.click();
+        const filename = `${out.id}.room-template.v1.json`;
+        this.downloadJSON(filename, out);
 
         console.log('Exported room template:', out);
         alert(`Room template exported as ${out.id}.room-template.v1.json`);
@@ -1502,13 +1483,7 @@ class FloorplanEditor {
             vEdges: vEdges
         });
 
-        const dataStr = JSON.stringify(sceneData, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(dataBlob);
-        link.download = 'scene.json';
-        link.click();
+        this.downloadJSON('scene.json', sceneData);
 
         console.log('Exported scene.v1:', sceneData);
     }
@@ -1560,6 +1535,12 @@ class FloorplanEditor {
             this.clearScene();
             this.overlayModel = this.overlayModel || {};
             this.overlayModel.templateData = dto;
+
+            // Runtime assertions for import
+            console.assert(!!dto?.type, 'Import: dto.type missing');
+            if (dto.type === 'mall') {
+                console.assert(Array.isArray(dto.units), 'Import: mall dto.units must be array');
+            }
             this.overlayModel.bounds = makeBounds(dto);
             this.showTemplate = dto.type !== 'scene';
             this.templateType = dto.type;
@@ -1827,6 +1808,12 @@ class FloorplanEditor {
         this.clearScene();
         this.overlayModel = this.overlayModel || {};
         this.overlayModel.templateData = dto;
+
+        // Runtime assertions for import
+        console.assert(!!dto?.type, 'Import: dto.type missing');
+        if (dto.type === 'mall') {
+            console.assert(Array.isArray(dto.units), 'Import: mall dto.units must be array');
+        }
         this.overlayModel.bounds = makeBounds(dto);
         this.showTemplate = dto.type !== 'scene';
         this.templateType = dto.type;
@@ -2206,6 +2193,17 @@ class FloorplanEditor {
                 `Failed to load file from URL: ${path}\n${error.message}`);
             console.error('URL load error:', error);
         }
+    }
+
+    // Unified download helper for all JSON exports
+    downloadJSON(filename, obj) {
+        console.info('[DOWNLOAD]', filename);
+        const dataStr = JSON.stringify(obj, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(dataBlob);
+        link.download = filename;
+        link.click();
     }
 
     // Toast Notification System

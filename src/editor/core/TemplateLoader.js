@@ -51,37 +51,22 @@ export function load(json) {
  * @returns {Object} - Normalized mall DTO
  */
 function normalizeMallTemplate(json) {
-    // Extract grid size from multiple possible locations
-    const gridSize = json.gridSize || json.grid || null;
+    // Extract grid size with explicit validation per zzz18 spec
+    const gridSize = (json.gridSize && typeof json.gridSize.width === 'number' && typeof json.gridSize.height === 'number')
+        ? json.gridSize
+        : (json.grid && typeof json.grid.width === 'number' && typeof json.grid.height === 'number')
+        ? json.grid
+        : null;
 
     const dto = {
         type: 'mall',
         id: json.id || 'mall',
-        units: [],
-        gridSize: null
+        units: (Array.isArray(json.units) ? json.units : []).map(u => ({
+            id: u?.id || 'gallery',
+            rect: normalizeRect(u?.rect || u?.bounds || u?.gridRect)
+        })).filter(x => x.rect),
+        gridSize // may be null
     };
-
-    // Extract units array and filter out invalid ones
-    if (Array.isArray(json.units)) {
-        dto.units = json.units.map(unit => ({
-            id: unit.id || `unit-${Math.random().toString(36).substr(2, 9)}`,
-            rect: normalizeRect(unit.rect || unit.bounds || unit.gridRect)
-        })).filter(unit => unit.rect && unit.rect.w > 0 && unit.rect.h > 0);
-    }
-
-    // Set gridSize only if it has numeric width and height
-    if (gridSize &&
-        typeof gridSize === 'object' &&
-        Number.isFinite(gridSize.width) && Number.isFinite(gridSize.height)) {
-        dto.gridSize = gridSize;
-    } else if (gridSize &&
-               typeof gridSize === 'object' &&
-               Number.isFinite(gridSize.w) && Number.isFinite(gridSize.h)) {
-        dto.gridSize = {
-            width: gridSize.w,
-            height: gridSize.h
-        };
-    }
 
     return dto;
 }
