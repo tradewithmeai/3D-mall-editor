@@ -25,6 +25,14 @@ class FloorplanEditor {
             constraints: null
         };
 
+        // Template content layer for ghosted rendering
+        this.templateModel = {
+            grid: this.createEmptyGrid(),
+            horizontalEdges: this.createEmptyEdgeSet(this.gridWidth, this.gridHeight),
+            verticalEdges: this.createEmptyEdgeSet(this.gridWidth, this.gridHeight),
+            hasContent: false
+        };
+
         // Legacy properties for backwards compatibility (proxy to sceneModel)
         this.grid = this.sceneModel.grid;
         this.horizontalEdges = this.sceneModel.horizontalEdges;
@@ -98,12 +106,68 @@ class FloorplanEditor {
         this.sceneModel.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
         this.sceneModel.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
 
+        // Clear template content layer
+        this.templateModel.grid = this.createEmptyGrid();
+        this.templateModel.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.templateModel.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.templateModel.hasContent = false;
+
         // Maintain compatibility with legacy grid references
         this.grid = this.sceneModel.grid;
         this.horizontalEdges = this.sceneModel.horizontalEdges;
         this.verticalEdges = this.sceneModel.verticalEdges;
 
         console.log('Scene cleared - ready for new content');
+    }
+
+    // Parse template content and populate template layer for ghosted rendering
+    parseTemplateContent(templateData, dto) {
+        // Clear previous template content
+        this.templateModel.grid = this.createEmptyGrid();
+        this.templateModel.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.templateModel.verticalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
+        this.templateModel.hasContent = false;
+
+        // Check if template has instances (scene content)
+        if (templateData.instances && Array.isArray(templateData.instances)) {
+            // Convert instances to grid representation
+            this.parseInstancesIntoTemplateLayer(templateData.instances);
+            this.templateModel.hasContent = true;
+            console.log('Parsed template instances into ghosted layer:', templateData.instances.length);
+        }
+
+        // For mall templates, check if they have scene content embedded
+        if (dto.type === 'mall' && templateData.sceneData && templateData.sceneData.instances) {
+            this.parseInstancesIntoTemplateLayer(templateData.sceneData.instances);
+            this.templateModel.hasContent = true;
+            console.log('Parsed mall scene data into ghosted layer');
+        }
+
+        // For gallery/unit templates, check for embedded scene content
+        if (dto.type === 'unit' && templateData.sceneData && templateData.sceneData.instances) {
+            this.parseInstancesIntoTemplateLayer(templateData.sceneData.instances);
+            this.templateModel.hasContent = true;
+            console.log('Parsed gallery scene data into ghosted layer');
+        }
+    }
+
+    // Convert scene instances to template grid representation
+    parseInstancesIntoTemplateLayer(instances) {
+        instances.forEach(instance => {
+            if (instance.position && instance.type) {
+                const [worldX, worldY, worldZ] = instance.position;
+                const gridX = Math.floor(worldX / 2);
+                const gridY = Math.floor(worldZ / 2);
+
+                if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
+                    if (instance.type === 'lobbyFloor') {
+                        this.templateModel.grid[gridY][gridX] = 'floor';
+                    }
+                    // Handle wall instances by adding edges
+                    // This is simplified - you might need more sophisticated wall detection
+                }
+            }
+        });
     }
 
     setupEventListeners() {
@@ -498,21 +562,78 @@ class FloorplanEditor {
         this.ctx.lineWidth = 1;
         this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
     }
-    
+
+    // Render template content as ghosted (faded) background
+    renderGhostedContent() {
+        if (!this.templateModel.hasContent) return;
+
+        this.ctx.save();
+        this.ctx.globalAlpha = 0.3; // Make it faded/ghosted
+
+        // Render template floor tiles
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.templateModel.grid[y][x] === 'floor') {
+                    // Render ghosted floor tile
+                    this.ctx.fillStyle = '#e8f4f8'; // Light blue-gray for ghosted floors
+                    this.ctx.fillRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+
+                    // Subtle grid lines for ghosted content
+                    this.ctx.strokeStyle = '#b0bec5';
+                    this.ctx.lineWidth = 1;
+                    this.ctx.strokeRect(x * this.cellSize, y * this.cellSize, this.cellSize, this.cellSize);
+                }
+            }
+        }
+
+        // Render template edges (walls)
+        this.ctx.strokeStyle = '#90a4ae'; // Darker gray for ghosted walls
+        this.ctx.lineWidth = 2;
+
+        // Horizontal edges
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.templateModel.horizontalEdges[y][x]) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x * this.cellSize, y * this.cellSize);
+                    this.ctx.lineTo((x + 1) * this.cellSize, y * this.cellSize);
+                    this.ctx.stroke();
+                }
+            }
+        }
+
+        // Vertical edges
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.templateModel.verticalEdges[y][x]) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x * this.cellSize, y * this.cellSize);
+                    this.ctx.lineTo(x * this.cellSize, (y + 1) * this.cellSize);
+                    this.ctx.stroke();
+                }
+            }
+        }
+
+        this.ctx.restore();
+    }
+
     render() {
         // Clear canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
+        // Render ghosted template content first (behind user content)
+        this.renderGhostedContent();
+
         // Render all cells (floors and wall tiles)
         for (let y = 0; y < this.gridHeight; y++) {
             for (let x = 0; x < this.gridWidth; x++) {
                 this.renderCell(x, y);
             }
         }
-        
+
         // Render edges
         this.renderEdges();
-        
+
         // Render template overlay
         this.renderTemplate();
 
@@ -614,24 +735,8 @@ class FloorplanEditor {
         // Switch on dto.type (NO meta/schema access anywhere)
         switch (dto.type) {
             case 'mall': {
-                // If mall has units, draw each unit rect
-                if (dto.units && dto.units.length > 0) {
-                    dto.units.forEach(u => {
-                        drawRect(u.rect, {
-                            dashed: true,
-                            colour: '#FF6B6B', // Magenta-ish
-                            label: u.id || 'unit'
-                        });
-                    });
-                }
-                // If mall has no units but has a rect, draw the mall rect (zzz20)
-                else if (dto.rect) {
-                    drawRect(dto.rect, {
-                        dashed: true,
-                        colour: '#8B3AF9', // Purple
-                        label: 'Mall Area'
-                    });
-                }
+                // No longer draw overlay boundaries - ghosted content defines the area
+                // Units and mall rect are now represented by the ghosted template content
 
                 // Draw active unit highlight if one is selected
                 if (this.activeUnit) {
@@ -669,12 +774,7 @@ class FloorplanEditor {
             }
 
             case 'unit': { // gallery alias
-                // Draw dto.rect (single overlay)
-                drawRect(dto.rect, {
-                    dashed: true,
-                    colour: '#00BCD4', // Cyan
-                    label: dto.id || 'gallery'
-                });
+                // No longer draw overlay boundaries - ghosted content defines the area
 
                 // Draw template info
                 this.ctx.save();
@@ -688,12 +788,7 @@ class FloorplanEditor {
             }
 
             case 'room': {
-                // Draw dto.rect
-                drawRect(dto.rect, {
-                    dashed: true,
-                    colour: '#4CAF50', // Green
-                    label: dto.id || 'room'
-                });
+                // No longer draw overlay boundaries - ghosted content defines the area
 
                 // Draw each zone.rect if present
                 dto.zones?.forEach(z => {
@@ -1665,6 +1760,9 @@ class FloorplanEditor {
             this.overlayModel = this.overlayModel || {};
             this.overlayModel.templateData = dto;
 
+            // Parse template content for ghosted rendering
+            this.parseTemplateContent(jsonData, dto);
+
             // Runtime assertions for import
             console.assert(!!dto?.type, 'Import: dto.type missing');
             if (dto.type === 'mall') {
@@ -1942,6 +2040,9 @@ class FloorplanEditor {
         this.clearScene();
         this.overlayModel = this.overlayModel || {};
         this.overlayModel.templateData = dto;
+
+        // Parse template content for ghosted rendering
+        this.parseTemplateContent(jsonData, dto);
 
         // Runtime assertions for import
         console.assert(!!dto?.type, 'Import: dto.type missing');
