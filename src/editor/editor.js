@@ -1007,7 +1007,7 @@ class FloorplanEditor {
             return;
         }
 
-        const { dto } = this.overlayModel.templateData;
+        const dto = this.overlayModel.templateData;
         const selectedUnit = dto.units?.find(u =>
             u.id === this.activeUnit.id ||
             (u.rect.x === this.activeUnit.rect.x && u.rect.y === this.activeUnit.rect.y)
