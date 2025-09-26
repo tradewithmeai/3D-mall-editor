@@ -154,6 +154,10 @@ class FloorplanEditor {
         document.getElementById('export-selected-unit-btn').addEventListener('click', () => {
             this.handleExportSelectedUnit();
         });
+
+        document.getElementById('export-mall-template-btn')?.addEventListener('click', () => {
+            this.handleExportMallTemplate();
+        });
         
         document.getElementById('clear-btn').addEventListener('click', () => {
             this.clearAll();
@@ -319,16 +323,24 @@ class FloorplanEditor {
     updateExportButtonVisibility() {
         const exportButton = document.getElementById('export-selected-unit-btn');
         const limitEditsLabel = document.getElementById('limit-edits-label');
+        const mallExportButton = document.getElementById('export-mall-template-btn');
 
-        // Show button and checkbox only in mall mode with an active unit selected
-        const shouldShow = this.overlayModel?.templateData?.type === 'mall' && this.activeUnit;
+        // Show unit export button and checkbox only in mall mode with an active unit selected
+        const shouldShowUnitExport = this.overlayModel?.templateData?.type === 'mall' && this.activeUnit;
 
         if (exportButton) {
-            exportButton.style.display = shouldShow ? 'inline-block' : 'none';
+            exportButton.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
         }
 
         if (limitEditsLabel) {
-            limitEditsLabel.style.display = shouldShow ? 'inline-block' : 'none';
+            limitEditsLabel.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
+        }
+
+        // Show mall export button only in mall mode (regardless of unit selection)
+        const shouldShowMallExport = this.overlayModel?.templateData?.type === 'mall';
+
+        if (mallExportButton) {
+            mallExportButton.style.display = shouldShowMallExport ? 'inline-block' : 'none';
         }
     }
 
@@ -1029,6 +1041,45 @@ class FloorplanEditor {
         // Download the unit template
         this.downloadJSON(unitTemplate, `${selectedUnit.id || 'unit'}-template.json`);
         this.showToast(`Exported unit template: ${selectedUnit.id || 'unit'}`, 'success');
+    }
+
+    handleExportMallTemplate() {
+        const dto = this.overlayModel?.templateData;
+        if (!dto || dto.type !== 'mall') {
+            this.showToast('Not in mall mode — load/create a mall template', 'warning');
+            return;
+        }
+
+        const units = Array.isArray(dto.units) ? dto.units.filter(u =>
+            u && u.rect &&
+            Number.isFinite(u.rect.x) && Number.isFinite(u.rect.y) &&
+            Number.isFinite(u.rect.w) && Number.isFinite(u.rect.h) &&
+            u.rect.w > 0 && u.rect.h > 0
+        ) : [];
+
+        if (units.length === 0) {
+            this.showToast('No valid units found in mall template', 'error');
+            return;
+        }
+
+        const gridSize = dto.gridSize || { width: this.gridWidth, height: this.gridHeight };
+
+        const out = buildMallTemplate({
+            id: dto.id || 'mall',
+            gridWidth: gridSize.width,
+            gridHeight: gridSize.height,
+            cellSize: this.cellSize || 1,
+            units
+        });
+
+        const name = `${out?.id || 'mall'}.mall-template.v1.json`;
+
+        // Download JSON (using existing download helper)
+        this.downloadJSON(out, name);
+
+        // Optional logging
+        console.info('[EXPORT]', 'mall-template.v1', { id: out.id, units: units.length });
+        this.showToast(`Exported mall template: ${out.id}`, 'success');
     }
 
     // Export as Mall Template format for unit splitting workflow
