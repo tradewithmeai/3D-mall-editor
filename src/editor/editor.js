@@ -1092,6 +1092,14 @@ class FloorplanEditor {
             units: galleries
         });
 
+        // Ensure rect is included when units are empty (zzz20)
+        if (out.units.length === 0) {
+            const grid = out.grid || out.gridSize;
+            if (grid && grid.width && grid.height) {
+                out.rect = { x: 0, y: 0, w: grid.width, h: grid.height };
+            }
+        }
+
         // Compute safe filename
         const safeId = String(out?.id || 'mall').trim().toLowerCase().replace(/[^a-z0-9-_]+/g, '-').replace(/^-+|-+$/g, '') || 'mall';
         const filename = `${safeId}.mall-template.v1.json`;
@@ -1213,19 +1221,130 @@ class FloorplanEditor {
     exportAsGalleryTemplate() {
         const dto = this.overlayModel?.templateData;
 
-        // Use ExportBuilder for consistent format
+        // Check if there's an active gallery overlay (existing path)
+        if (dto && dto.type === 'unit') {
+            // Use ExportBuilder for consistent format
+            const out = buildUnitTemplate({
+                id: dto?.id || 'unit',
+                rect: dto?.rect || { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
+                rooms: dto?.rooms || [],
+                parentMallId: dto?.parentMallId
+            });
+
+            const filename = `${out.id || 'unit'}.unit-template.v1.json`;
+            this.downloadJSON(filename, out);
+
+            console.log('Exported gallery template:', out);
+            alert(`Gallery template exported as ${filename}`);
+            return;
+        }
+
+        // New path: Export from current edits when no gallery overlay exists (zzz20)
+        if (!dto || dto.type !== 'unit') {
+            this.exportGalleryFromCurrentEdits();
+        }
+    }
+
+    exportGalleryFromCurrentEdits() {
+        const dto = this.overlayModel?.templateData;
+
+        // Must have a loaded mall template to get parent reference
+        if (!dto || dto.type !== 'mall') {
+            this.showToast('error', 'Gallery Export Failed', 'Load a mall template first to export galleries');
+            return;
+        }
+
+        // Compute bounding box of current scene edits
+        const bbox = this.computeSceneEditsBoundingBox();
+
+        if (!bbox) {
+            this.showToast('warning', 'Nothing to Export', 'Nothing to export — draw inside the mall area first');
+            return;
+        }
+
+        const rect = { x: bbox.minX, y: bbox.minY, w: (bbox.maxX - bbox.minX + 1), h: (bbox.maxY - bbox.minY + 1) };
+
+        // Validate rect is strictly inside the current bounds
+        if (this.overlayModel.bounds && !this.isRectInsideBounds(rect)) {
+            this.showToast('error', 'Export Failed', 'Selection exceeds mall bounds');
+            return;
+        }
+
+        // Build gallery template
+        const suggestedId = `gallery-${Date.now()}`;
         const out = buildUnitTemplate({
-            id: dto?.id || 'unit',
-            rect: dto?.rect || { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
-            rooms: dto?.rooms || [],
-            parentMallId: dto?.parentMallId
+            id: suggestedId,
+            rect: rect,
+            rooms: [],
+            parentMallId: dto.id || 'mall'
         });
 
-        const filename = `${out.id || 'unit'}.unit-template.v1.json`;
+        const filename = `${out.id}.unit-template.v1.json`;
         this.downloadJSON(filename, out);
 
-        console.log('Exported gallery template:', out);
-        alert(`Gallery template exported as ${filename}`);
+        console.info('[EXPORT:unit] bbox', { rect, parentMallId: dto.id || 'mall' });
+        this.showToast('success', 'Gallery Template Exported', `Exported gallery from current edits: ${filename}`);
+    }
+
+    computeSceneEditsBoundingBox() {
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        let hasContent = false;
+
+        // Check floor tiles
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.grid[y][x] === 'floor') {
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x);
+                    maxY = Math.max(maxY, y);
+                    hasContent = true;
+                }
+            }
+        }
+
+        // Check edges (horizontal edges affect the cell above them)
+        for (let y = 0; y < this.gridHeight; y++) {
+            for (let x = 0; x < this.gridWidth; x++) {
+                if (this.horizontalEdges[y] && this.horizontalEdges[y][x]) {
+                    // Include the cell above the edge if in bounds
+                    if (y - 1 >= 0) {
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y - 1);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y - 1);
+                        hasContent = true;
+                    }
+                }
+                if (this.verticalEdges[y] && this.verticalEdges[y][x]) {
+                    // Include the cell to the left of the edge if in bounds
+                    if (x - 1 >= 0) {
+                        minX = Math.min(minX, x - 1);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x - 1);
+                        maxY = Math.max(maxY, y);
+                        hasContent = true;
+                    }
+                }
+            }
+        }
+
+        return hasContent ? { minX, minY, maxX, maxY } : null;
+    }
+
+    isRectInsideBounds(rect) {
+        if (!this.overlayModel.bounds) return true;
+
+        // Check all four corners and a couple interior points
+        const points = [
+            [rect.x, rect.y], // top-left
+            [rect.x + rect.w - 1, rect.y], // top-right
+            [rect.x, rect.y + rect.h - 1], // bottom-left
+            [rect.x + rect.w - 1, rect.y + rect.h - 1], // bottom-right
+            [rect.x + Math.floor(rect.w / 2), rect.y + Math.floor(rect.h / 2)] // center
+        ];
+
+        return points.every(([x, y]) => this.overlayModel.bounds.isInside(x, y));
     }
 
     // Export as Room Template format with parent relationship
@@ -1544,7 +1663,12 @@ class FloorplanEditor {
             this.overlayModel.bounds = makeBounds(dto);
             this.showTemplate = dto.type !== 'scene';
             this.templateType = dto.type;
-            console.info('[IMPORT]', { type: dto.type, id: dto.id, units: Array.isArray(dto.units) ? dto.units.length : undefined });
+            console.info('[IMPORT]', {
+                type: dto.type,
+                id: dto.id,
+                units: Array.isArray(dto.units) ? dto.units.length : 0,
+                rect: dto.type === 'mall' && dto.rect ? true : undefined
+            });
             console.info('[BOUNDS]', { active: !!this.overlayModel.bounds, type: this.templateType });
             this.render();
 
@@ -1817,7 +1941,12 @@ class FloorplanEditor {
         this.overlayModel.bounds = makeBounds(dto);
         this.showTemplate = dto.type !== 'scene';
         this.templateType = dto.type;
-        console.info('[IMPORT]', { type: dto.type, id: dto.id, units: Array.isArray(dto.units) ? dto.units.length : undefined });
+        console.info('[IMPORT]', {
+            type: dto.type,
+            id: dto.id,
+            units: Array.isArray(dto.units) ? dto.units.length : 0,
+            rect: dto.type === 'mall' && dto.rect ? true : undefined
+        });
         console.info('[BOUNDS]', { active: !!this.overlayModel.bounds, type: this.templateType });
         this.render();
 

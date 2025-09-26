@@ -58,9 +58,13 @@ function normalizeMallTemplate(json) {
         ? json.grid
         : null;
 
+    // Extract mall rect if present (zzz20)
+    const mallRect = normalizeRect(json.rect || json.bounds || json.gridRect) || null;
+
     const dto = {
         type: 'mall',
         id: json.id || 'mall',
+        rect: mallRect, // NEW: optional mall-level rect
         units: (Array.isArray(json.units) ? json.units : []).map(u => ({
             id: u?.id || 'gallery',
             rect: normalizeRect(u?.rect || u?.bounds || u?.gridRect)

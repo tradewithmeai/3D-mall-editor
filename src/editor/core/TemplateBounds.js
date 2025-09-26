@@ -34,26 +34,45 @@ export function makeBounds(dto) {
 }
 
 /**
- * Create boundary checker for mall DTO (union of unit rectangles)
+ * Create boundary checker for mall DTO with precedence: rect → units → full grid
  * @param {Object} dto - Mall template DTO
  * @returns {Object} - { isInside(x, y): boolean }
  */
 function makeMallBounds(dto) {
-    if (!Array.isArray(dto.units) || dto.units.length === 0) {
-        // No units defined, allow everything
+    // 1. If dto.rect is present and valid, use that single rect
+    if (dto.rect && isValidRect(dto.rect)) {
+        return makeRectBounds(dto.rect);
+    }
+
+    // 2. Else if dto.units has valid rectangles, use union of units
+    if (Array.isArray(dto.units) && dto.units.length > 0) {
         return {
-            isInside: () => true
+            isInside: (x, y) => {
+                // Point is inside if it's within any unit rectangle
+                return dto.units.some(unit => {
+                    if (!unit.rect) return false;
+                    return isPointInRect(x, y, unit.rect);
+                });
+            }
         };
     }
 
+    // 3. Else if dto.gridSize has valid numeric width/height, use full grid bounds
+    if (dto.gridSize &&
+        typeof dto.gridSize.width === 'number' &&
+        typeof dto.gridSize.height === 'number' &&
+        dto.gridSize.width > 0 && dto.gridSize.height > 0) {
+        return makeRectBounds({
+            x: 0,
+            y: 0,
+            w: dto.gridSize.width,
+            h: dto.gridSize.height
+        });
+    }
+
+    // 4. Else return always-true (no constraints)
     return {
-        isInside: (x, y) => {
-            // Point is inside if it's within any unit rectangle
-            return dto.units.some(unit => {
-                if (!unit.rect) return false;
-                return isPointInRect(x, y, unit.rect);
-            });
-        }
+        isInside: () => true
     };
 }
 
