@@ -33,6 +33,11 @@ export function load(json) {
             mode = 'room-template';
             break;
 
+        case 'object':
+            dto = normalizeObjectTemplate(json);
+            mode = 'object-template';
+            break;
+
         case 'scene':
             dto = normalizeScene(json);
             mode = 'scene';
@@ -76,34 +81,107 @@ function normalizeMallTemplate(json) {
 }
 
 /**
+ * Unified normalizer for all child templates (unit/room/object)
+ * @param {Object} json - Template JSON data
+ * @param {Object} config - Template configuration
+ * @returns {Object} - Normalized template DTO
+ */
+function normalizeChildTemplate(json, config) {
+    const dto = {
+        type: config.type,
+        id: json.id || config.defaultId,
+        rect: { x: 0, y: 0, w: config.defaultSize.w, h: config.defaultSize.h },
+        children: [],
+        parentId: extractParentId(json, config.type)
+    };
+
+    // Extract main rect from multiple possible locations
+    dto.rect = normalizeRect(json.rect || json.bounds) || dto.rect;
+
+    // Get children array from various possible locations
+    let childrenArray = null;
+
+    // Try direct property (new format)
+    if (Array.isArray(json[config.childrenProperty])) {
+        childrenArray = json[config.childrenProperty];
+    }
+    // Try legacy property name (backwards compatibility)
+    else if (config.legacyChildrenProperty && Array.isArray(json[config.legacyChildrenProperty])) {
+        childrenArray = json[config.legacyChildrenProperty];
+    }
+    // Try legacy path like features.floorZones
+    else if (config.legacyChildrenPath) {
+        const pathParts = config.legacyChildrenPath.split('.');
+        let current = json;
+        for (const part of pathParts) {
+            current = current?.[part];
+            if (!current) break;
+        }
+        if (Array.isArray(current)) {
+            childrenArray = current;
+        }
+    }
+
+    // Process children array if found
+    if (childrenArray) {
+        dto.children = childrenArray.map(child => ({
+            id: child.id || `${config.childIdPrefix}-${Math.random().toString(36).substr(2, 9)}`,
+            rect: normalizeRect(child.rect || child.bounds || child.gridRect)
+        })).filter(child => child.rect); // Only include children with valid rects
+    }
+
+    // If no direct rect, try to get from first child as fallback
+    if (!normalizeRect(json.rect || json.bounds) && dto.children.length > 0) {
+        dto.rect = dto.children[0].rect;
+    }
+
+    return dto;
+}
+
+/**
+ * Extract parent ID from template JSON - standardized approach
+ * @param {Object} json - Template JSON data
+ * @param {string} templateType - Template type (unit/room/object)
+ * @returns {string|null} - Parent ID or null
+ */
+function extractParentId(json, templateType) {
+    // Check meta.parent first (standard format)
+    if (json.meta?.parent?.id) {
+        return json.meta.parent.id;
+    }
+
+    // Legacy fallback - but these should be migrated to meta.parent
+    const legacyProperties = {
+        'unit': ['parentMallId'],
+        'room': ['parentUnitId', 'parentGalleryId'], // parentUnitId is correct, parentGalleryId is legacy
+        'object': ['parentRoomId']
+    };
+
+    const properties = legacyProperties[templateType] || [];
+    for (const prop of properties) {
+        if (json[prop]) {
+            return json[prop];
+        }
+    }
+
+    return null;
+}
+
+/**
  * Normalize unit template to standard DTO format
  * @param {Object} json - Unit template JSON
  * @returns {Object} - Normalized unit DTO
  */
 function normalizeUnitTemplate(json) {
-    const dto = {
+    return normalizeChildTemplate(json, {
         type: 'unit',
-        rect: { x: 0, y: 0, w: 10, h: 10 }, // Default fallback
-        rooms: []
-    };
-
-    // Extract main rect from multiple possible locations
-    dto.rect = normalizeRect(json.rect || json.bounds);
-
-    // If no direct rect, try to get from first room as fallback
-    if (!dto.rect && Array.isArray(json.rooms) && json.rooms.length > 0) {
-        dto.rect = normalizeRect(json.rooms[0].rect || json.rooms[0].bounds);
-    }
-
-    // Extract rooms array
-    if (Array.isArray(json.rooms)) {
-        dto.rooms = json.rooms.map(room => ({
-            id: room.id || `room-${Math.random().toString(36).substr(2, 9)}`,
-            rect: normalizeRect(room.rect || room.bounds || room.gridRect)
-        }));
-    }
-
-    return dto;
+        defaultId: 'unit',
+        defaultSize: { w: 10, h: 10 },
+        childrenProperty: 'children',
+        childIdPrefix: 'room',
+        // Support legacy rooms property
+        legacyChildrenProperty: 'rooms'
+    });
 }
 
 /**
@@ -112,29 +190,32 @@ function normalizeUnitTemplate(json) {
  * @returns {Object} - Normalized room DTO
  */
 function normalizeRoomTemplate(json) {
-    const dto = {
+    return normalizeChildTemplate(json, {
         type: 'room',
-        rect: { x: 0, y: 0, w: 5, h: 5 }, // Default fallback
-        zones: []
-    };
+        defaultId: 'room',
+        defaultSize: { w: 5, h: 5 },
+        childrenProperty: 'children',
+        childIdPrefix: 'zone',
+        // Support legacy features.floorZones format
+        legacyChildrenPath: 'features.floorZones'
+    });
+}
 
-    // Extract main rect
-    dto.rect = normalizeRect(json.rect || json.bounds);
-
-    // If no direct rect, try to get from first zone as fallback
-    if (!dto.rect && json.features?.floorZones?.length > 0) {
-        dto.rect = normalizeRect(json.features.floorZones[0].bounds);
-    }
-
-    // Extract zones from features.floorZones
-    if (json.features?.floorZones) {
-        dto.zones = json.features.floorZones.map(zone => ({
-            id: zone.id || `zone-${Math.random().toString(36).substr(2, 9)}`,
-            rect: normalizeRect(zone.bounds || zone.rect)
-        }));
-    }
-
-    return dto;
+/**
+ * Normalize object template to standard DTO format
+ * @param {Object} json - Object template JSON
+ * @returns {Object} - Normalized object DTO
+ */
+function normalizeObjectTemplate(json) {
+    return normalizeChildTemplate(json, {
+        type: 'object',
+        defaultId: 'object',
+        defaultSize: { w: 3, h: 3 },
+        childrenProperty: 'children',
+        childIdPrefix: 'item',
+        // Support legacy items format
+        legacyChildrenProperty: 'items'
+    });
 }
 
 /**

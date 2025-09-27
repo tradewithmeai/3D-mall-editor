@@ -1,6 +1,6 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
-import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildSceneV1 } from './core/ExportBuilder.js';
+import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
 
 class FloorplanEditor {
@@ -440,6 +440,19 @@ class FloorplanEditor {
                 targetModel.hasContent = true;
             } else {
                 console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for room template in ${layer} layer`);
+            }
+        }
+        // For object templates, handle scene data or create boundary from rect
+        if (dto.type === 'object') {
+            console.log(`[DEBUG] parseTemplateIntoLayer: Processing object template in ${layer} layer`);
+            if (templateData.sceneData) {
+                this.parseSceneDataIntoLayer(templateData.sceneData, layer);
+            } else if (dto.rect) {
+                console.log(`[DEBUG] parseTemplateIntoLayer: Creating object boundary from rect in ${layer} layer:`, dto.rect);
+                this.createGhostedRectOutlineInLayer(dto.rect, layer);
+                targetModel.hasContent = true;
+            } else {
+                console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for object template in ${layer} layer`);
             }
         }
 
@@ -979,6 +992,7 @@ class FloorplanEditor {
             limitEditsLabel.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
         }
 
+
         // Ensure Export → Mall Template is always enabled (no gating)
         const exportMallItem = document.getElementById('export-mall-template-item');
         if (exportMallItem) {
@@ -1172,7 +1186,9 @@ class FloorplanEditor {
                 // Choose colors and opacity based on template type and position
                 if (isCurrentLevel) {
                     // Current template - higher opacity and distinct colors per type
-                    if (templateType === 'room') {
+                    if (templateType === 'object') {
+                        this.renderTemplateLayer(templateModel, '#ccddff', '#0066cc', 0.8); // Blue object
+                    } else if (templateType === 'room') {
                         this.renderTemplateLayer(templateModel, '#ccddff', '#0066cc', 0.8); // Blue room
                     } else if (templateType === 'unit') {
                         this.renderTemplateLayer(templateModel, '#ccffcc', '#00aa00', 0.8); // Green gallery/unit
@@ -1182,9 +1198,16 @@ class FloorplanEditor {
                         this.renderTemplateLayer(templateModel, '#ccffcc', '#00aa00', 0.8); // Default green
                     }
                 } else {
-                    // Parent/ancestor templates - grey with lower opacity
-                    const opacity = 0.3 + (index * 0.1); // Slightly more opacity for closer ancestors
-                    this.renderTemplateLayer(templateModel, '#cccccc', '#999999', opacity);
+                    // Parent/ancestor templates - progressive grey shades (darker = further back)
+                    const hierarchyDepth = layers.hierarchy.length - 1; // Index of current (last) template
+                    const distanceFromCurrent = hierarchyDepth - index; // How far back this template is
+
+                    // Progressive grey opacity: closer ancestors are lighter, farther ones darker
+                    // Level 0 (deepest): darkest grey (0.15)
+                    // Level 1: medium grey (0.25)
+                    // Level 2: light grey (0.35)
+                    const opacity = 0.15 + (distanceFromCurrent * 0.1);
+                    this.renderTemplateLayer(templateModel, '#cccccc', '#999999', opacity); // Progressive grey ancestors
                 }
             });
         }
@@ -1291,6 +1314,15 @@ class FloorplanEditor {
 
         // For room templates, handle scene data or create boundary from rect
         if (dto.type === 'room') {
+            if (templateData.sceneData) {
+                this.parseSceneDataIntoLegacyModel(templateData.sceneData, targetModel);
+            } else if (dto.rect) {
+                this.createGhostedRectOutlineInLegacyModel(dto.rect, targetModel);
+                targetModel.hasContent = true;
+            }
+        }
+        // For object templates, handle scene data or create boundary from rect
+        if (dto.type === 'object') {
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLegacyModel(templateData.sceneData, targetModel);
             } else if (dto.rect) {
@@ -1654,7 +1686,7 @@ class FloorplanEditor {
                 this.ctx.fillStyle = '#00BCD4';
                 this.ctx.globalAlpha = 0.8;
                 this.ctx.font = '14px Arial';
-                const roomCount = dto.rooms?.length || 0;
+                const roomCount = dto.children?.length || 0;
                 this.ctx.fillText(`Unit Template (${roomCount} rooms)`, 10, 25);
                 this.ctx.restore();
                 break;
@@ -1664,7 +1696,7 @@ class FloorplanEditor {
                 // No longer draw overlay boundaries - ghosted content defines the area
 
                 // Draw each zone.rect if present
-                dto.zones?.forEach(z => {
+                dto.children?.forEach(z => {
                     drawRect(z.rect, {
                         dashed: true,
                         colour: '#4CAF50', // Green
@@ -1677,7 +1709,7 @@ class FloorplanEditor {
                 this.ctx.fillStyle = '#4CAF50';
                 this.ctx.globalAlpha = 0.8;
                 this.ctx.font = '14px Arial';
-                const zoneCount = dto.zones?.length || 0;
+                const zoneCount = dto.children?.length || 0;
                 this.ctx.fillText(`Room Template (${zoneCount} zones)`, 10, 25);
                 this.ctx.restore();
                 break;
@@ -1712,6 +1744,64 @@ class FloorplanEditor {
         this.clearScene();
         this.clearTemplate();
         this.showToast('success', 'Cleared', 'All content and templates cleared');
+    }
+
+    /**
+     * Unified grid resizing for all template types
+     * @param {Object} dto - Template DTO
+     */
+    resizeGridForTemplate(dto) {
+        console.log('[DEBUG] resizeGridForTemplate:', { type: dto.type, rect: dto.rect, gridSize: dto.gridSize });
+
+        const oldGridWidth = this.gridWidth;
+        const oldGridHeight = this.gridHeight;
+
+        // Different resize behavior based on template type
+        switch (dto.type) {
+            case 'mall':
+                // Mall templates: ensure grid covers all units or use explicit gridSize
+                if (dto.gridSize) {
+                    this.gridWidth = dto.gridSize.width || this.gridWidth;
+                    this.gridHeight = dto.gridSize.height || this.gridHeight;
+                } else if (dto.rect) {
+                    // Use mall rect if available
+                    this.gridWidth = Math.max(dto.rect.x + dto.rect.w, this.gridWidth);
+                    this.gridHeight = Math.max(dto.rect.y + dto.rect.h, this.gridHeight);
+                }
+                break;
+
+            case 'unit':
+            case 'room':
+            case 'object':
+                // Child templates: resize grid to template dimensions for constrained editing
+                if (dto.rect && dto.rect.w > 0 && dto.rect.h > 0) {
+                    this.gridWidth = dto.rect.w;
+                    this.gridHeight = dto.rect.h;
+                    console.log('[DEBUG] Child template: resized grid to template dimensions');
+                } else {
+                    console.warn('[DEBUG] Child template has invalid rect, keeping current grid size');
+                }
+                break;
+
+            case 'scene':
+                // Scene: no resizing needed, keep current dimensions
+                break;
+
+            default:
+                console.warn('[DEBUG] Unknown template type for grid resize:', dto.type);
+        }
+
+        // Only resize arrays if dimensions actually changed
+        if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
+            console.log('[DEBUG] Grid dimensions changed:', {
+                from: { width: oldGridWidth, height: oldGridHeight },
+                to: { width: this.gridWidth, height: this.gridHeight }
+            });
+            this.resizeTemplateModels();
+            this.render();
+        } else {
+            console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
+        }
     }
 
     clearTemplate() {
@@ -1962,11 +2052,17 @@ class FloorplanEditor {
     // Convert scene.v1 format to editor state
     fromSceneV1(sceneData) {
         // Validate basic structure
+        const errors = [];
         if (!sceneData.meta || sceneData.meta.schema !== "scene.v1") {
-            throw new Error('Invalid scene.v1 format');
+            errors.push('Invalid scene.v1 format');
         }
         if (!sceneData.grid) {
-            throw new Error('Missing grid data in scene.v1');
+            errors.push('Missing grid data in scene.v1');
+        }
+
+        if (errors.length > 0) {
+            this.handleTemplateErrors(errors, 'loading', 'scene');
+            return;
         }
 
         // Update grid dimensions
@@ -2019,6 +2115,9 @@ class FloorplanEditor {
             case 'room-template':
                 this.exportAsRoomTemplate();
                 break;
+            case 'object-template':
+                this.exportAsObjectTemplate();
+                break;
             case 'clear-all':
                 this.clearAll();
                 break;
@@ -2055,7 +2154,7 @@ class FloorplanEditor {
         const unitTemplate = buildUnitTemplate({
             id: selectedUnit.id || 'unit',
             rect: selectedUnit.rect,
-            rooms: selectedUnit.rooms || [],
+            rooms: selectedUnit.children || [],
             parentMallId: dto.id
         });
 
@@ -2090,7 +2189,7 @@ class FloorplanEditor {
 
         if (!Number.isFinite(gridSize.width) || !Number.isFinite(gridSize.height) ||
             gridSize.width <= 0 || gridSize.height <= 0) {
-            this.showToast('error', 'Mall Export Failed', 'Invalid grid size');
+            this.handleTemplateErrors(['Invalid grid size'], 'export', 'mall');
             return;
         }
 
@@ -2158,7 +2257,7 @@ class FloorplanEditor {
 
         // Validate minimum unit requirement
         if (units.length === 0) {
-            alert('No units detected; draw floor tiles first.');
+            this.handleTemplateErrors(['No units detected; draw floor tiles first.'], 'export', 'mall');
             console.warn('Export blocked: No units found in current design');
             return;
         }
@@ -2176,7 +2275,7 @@ class FloorplanEditor {
         this.downloadJSON(filename, mallTemplate);
 
         console.log('Exported mall template:', mallTemplate);
-        alert(`Mall template saved (${units.length} galleries detected)\\nReady for template loading workflow`);
+        this.showToast('success', 'Mall Template Exported', `Mall template saved (${units.length} galleries detected). Ready for template loading workflow.`);
     }
 
 
@@ -2245,6 +2344,63 @@ class FloorplanEditor {
     }
 
     // Export as Gallery Template format with parent relationship
+    /**
+     * Unified export method for child templates (gallery, room, object)
+     * @param {Object} config - Export configuration
+     */
+    exportChildTemplate(config) {
+        const dto = this.overlayModel?.templateData;
+
+        // Validate parent template type is correct
+        if (!dto || dto.type !== config.requiredParentType) {
+            this.handleTemplateErrors(
+                [`Load a ${config.parentTypeName} template first to export ${config.templateName.toLowerCase()}s`],
+                `${config.templateName} Export`,
+                config.templateName.toLowerCase()
+            );
+            return;
+        }
+
+        // Get current template ID from relationship manager
+        const layers = this.templateRelationshipManager.getCurrentLayers();
+        const currentParentId = layers.current?.id || dto.id || config.fallbackParentId;
+        console.log(`[DEBUG] ${config.templateName} export - Parent template ID:`, currentParentId);
+
+        // Get the current scene content (what the user actually drew)
+        const sceneData = this.toSceneV1();
+
+        // Check if there's any content to export
+        if (!sceneData ||
+            (!sceneData.tiles?.floor?.length &&
+             !sceneData.edges?.horizontal?.length &&
+             !sceneData.edges?.vertical?.length)) {
+            this.handleTemplateErrors(
+                [`Nothing to export — draw inside the ${config.parentTypeName} area first`],
+                `${config.templateName} Export`,
+                config.templateName.toLowerCase()
+            );
+            return;
+        }
+
+        // Build template with actual scene content
+        const suggestedId = `${config.templateName.toLowerCase()}-${Date.now()}`;
+        const out = config.buildFunction({
+            id: suggestedId,
+            rect: { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
+            [config.childrenProperty]: [],
+            [config.parentIdProperty]: currentParentId
+        });
+
+        // Add the actual scene content so it renders exactly as drawn
+        out.sceneData = sceneData;
+
+        const filename = `${out.id}.${config.schemaName}.json`;
+        this.downloadJSON(filename, out);
+
+        console.log(`Exported ${config.templateName.toLowerCase()} template:`, out);
+        this.showToast('success', `${config.templateName} Exported`, `${config.templateName} template saved as ${filename}`);
+    }
+
     exportAsGalleryTemplate() {
         const dto = this.overlayModel?.templateData;
 
@@ -2254,7 +2410,7 @@ class FloorplanEditor {
             const out = buildUnitTemplate({
                 id: dto?.id || 'unit',
                 rect: dto?.rect || { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
-                rooms: dto?.rooms || [],
+                rooms: dto?.children || [],
                 parentMallId: dto?.parentMallId
             });
 
@@ -2262,7 +2418,7 @@ class FloorplanEditor {
             this.downloadJSON(filename, out);
 
             console.log('Exported gallery template:', out);
-            alert(`Gallery template exported as ${filename}`);
+            this.showToast('success', 'Gallery Template Exported', `Gallery template exported as ${filename}`);
             return;
         }
 
@@ -2277,7 +2433,7 @@ class FloorplanEditor {
 
         // Must have a loaded mall template to get parent reference
         if (!dto || dto.type !== 'mall') {
-            this.showToast('error', 'Gallery Export Failed', 'Load a mall template first to export galleries');
+            this.handleTemplateErrors(['Load a mall template first to export galleries'], 'export', 'gallery');
             return;
         }
 
@@ -2289,7 +2445,7 @@ class FloorplanEditor {
             (!sceneData.tiles?.floor?.length &&
              !sceneData.edges?.horizontal?.length &&
              !sceneData.edges?.vertical?.length)) {
-            this.showToast('warning', 'Nothing to Export', 'Nothing to export — draw inside the mall area first');
+            this.handleTemplateErrors(['Nothing to export — draw inside the mall area first'], 'export', 'gallery');
             return;
         }
 
@@ -2376,53 +2532,30 @@ class FloorplanEditor {
 
     // Export as Room Template format with parent relationship
     exportAsRoomTemplate() {
-        const dto = this.overlayModel?.templateData;
-
-        // Preconditions: overlayModel.templateData?.type === 'unit' (gallery authoring session)
-        if (!dto || dto.type !== 'unit') {
-            this.showToast('error', 'Room Export Failed', 'Load a gallery template first to export rooms');
-            return;
-        }
-
-        // Get current gallery template ID from relationship manager
-        const layers = this.templateRelationshipManager.getCurrentLayers();
-        const currentGalleryId = layers.current?.id || dto.id || 'gallery';
-        console.log('[DEBUG] Room export - Gallery template ID:', currentGalleryId);
-
-        // Get the current scene content (what the user actually drew)
-        const sceneData = this.toSceneV1();
-
-        // Check if there's any content to export
-        if (!sceneData ||
-            (!sceneData.tiles?.floor?.length &&
-             !sceneData.edges?.horizontal?.length &&
-             !sceneData.edges?.vertical?.length)) {
-            this.showToast('warning', 'Nothing to Export', 'Nothing to export — draw inside the gallery area first');
-            return;
-        }
-
-        // Build room template with actual scene content (no rect calculation needed)
-        const suggestedId = `room-${Date.now()}`;
-        const out = buildRoomTemplate({
-            id: suggestedId,
-            rect: { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight }, // Full grid size
-            zones: [],
-            parentUnitId: currentGalleryId // Use actual gallery template ID from relationship manager
+        this.exportChildTemplate({
+            requiredParentType: 'unit',
+            parentTypeName: 'gallery',
+            templateName: 'Room',
+            fallbackParentId: 'gallery',
+            buildFunction: buildRoomTemplate,
+            childrenProperty: 'zones',
+            parentIdProperty: 'parentUnitId', // ExportBuilder parameter name
+            schemaName: 'room-template.v1'
         });
+    }
 
-        // Add the actual scene content so it renders exactly as drawn
-        out.sceneData = sceneData;
-
-        const filename = `${out.id}.room-template.v1.json`;
-        this.downloadJSON(filename, out);
-
-        console.info('[EXPORT:room] Simple export with scene data', {
-            floorTiles: sceneData.tiles?.floor?.length || 0,
-            hEdges: sceneData.edges?.horizontal?.length || 0,
-            vEdges: sceneData.edges?.vertical?.length || 0,
-            parentGalleryId: currentGalleryId
+    // Export as Object Template format with parent relationship to room
+    exportAsObjectTemplate() {
+        this.exportChildTemplate({
+            requiredParentType: 'room',
+            parentTypeName: 'room',
+            templateName: 'Object',
+            fallbackParentId: 'room',
+            buildFunction: buildObjectTemplate,
+            childrenProperty: 'items',
+            parentIdProperty: 'parentRoomId',
+            schemaName: 'object-template.v1'
         });
-        this.showToast('success', 'Room Template Exported', `Exported room from current edits: ${filename}`);
     }
 
     // Generate room features from current editor content
@@ -2674,6 +2807,7 @@ class FloorplanEditor {
             <option value="mall-template">Export as Mall Template</option>
             <option value="gallery-template">Export as Gallery Template</option>
             <option value="room-template">Export as Room Template</option>
+            <option value="object-template" id="export-object-template-item">Export as Object Template</option>
             <option disabled>──────────</option>
             <option value="clear-all">Clear All</option>
             <option value="clear-grid">Clear Grid</option>
@@ -2767,44 +2901,11 @@ class FloorplanEditor {
                     tiles: jsonData.tiles || { floor: [] },
                     edges: jsonData.edges || { horizontal: [], vertical: [] }
                 });
-                alert('Scene.v1 file imported successfully');
+                this.showToast('success', 'Scene Loaded', 'Scene.v1 file imported successfully');
             } else {
                 // Template loaded as overlay only - no content conversion
-                // Update grid dimensions if template has size info
-                if (dto.rect) {
-                    // Template rect defines position and size, ensure grid covers the full extent
-                    const oldGridWidth = this.gridWidth;
-                    const oldGridHeight = this.gridHeight;
-                    this.gridWidth = Math.max(dto.rect.x + dto.rect.w, this.gridWidth);
-                    this.gridHeight = Math.max(dto.rect.y + dto.rect.h, this.gridHeight);
-                    console.log('[DEBUG] Updated grid dimensions for template rect:', {
-                        rect: dto.rect,
-                        oldGridWidth: oldGridWidth,
-                        oldGridHeight: oldGridHeight,
-                        newGridWidth: this.gridWidth,
-                        newGridHeight: this.gridHeight,
-                        dimensionsChanged: this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight
-                    });
-
-                    // Only resize template model arrays if dimensions actually changed
-                    if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
-                        console.log('[DEBUG] Grid dimensions changed, resizing template models');
-                        this.resizeTemplateModels();
-                    } else {
-                        console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
-                    }
-                } else if (dto.gridSize) {
-                    const oldGridWidth = this.gridWidth;
-                    const oldGridHeight = this.gridHeight;
-                    this.gridWidth = dto.gridSize.width || this.gridWidth;
-                    this.gridHeight = dto.gridSize.height || this.gridHeight;
-
-                    // Only resize template model arrays if dimensions actually changed
-                    if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
-                        console.log('[DEBUG] Grid size changed, resizing template models');
-                        this.resizeTemplateModels();
-                    }
-                }
+                // Use unified grid resizing method
+                this.resizeGridForTemplate(dto);
 
                 // Update template context for legacy compatibility
                 this.templateContext = {
@@ -2813,7 +2914,7 @@ class FloorplanEditor {
                     loadedAt: new Date().toISOString()
                 };
 
-                alert(`${dto.type.toUpperCase()} template loaded as overlay constraints. Create content within template boundaries.`);
+                this.showToast('success', 'Template Loaded', `${dto.type.toUpperCase()} template loaded as overlay constraints. Create content within template boundaries.`);
             }
 
             this.render();
@@ -2821,7 +2922,7 @@ class FloorplanEditor {
             this.updateExportOptions();
 
         } catch (error) {
-            alert('Error reading JSON file: ' + error.message);
+            this.handleTemplateErrors([error.message], 'loading', 'unknown');
             console.error('Import error:', error);
         }
     }
@@ -2856,10 +2957,18 @@ class FloorplanEditor {
                 // Update export dropdown default
                 this.updateExportOptions();
             } else {
-                alert('Invalid template format. Expected "grid" property.');
+                this.handleTemplateErrors(
+                    ['Invalid template format. Expected "grid" property.'],
+                    'Template Load',
+                    'template'
+                );
             }
         } catch (error) {
-            alert('Error loading template: ' + error.message);
+            this.handleTemplateErrors(
+                [error.message || 'Unknown error occurred'],
+                'Template Load',
+                'template'
+            );
             console.error('Template load error:', error);
         }
     }
@@ -2875,7 +2984,7 @@ class FloorplanEditor {
                 toggleBtn.textContent = this.showTemplate ? 'Hide Template' : 'Show Template';
             }
         } else {
-            alert('No template loaded. Load a template first.');
+            this.handleTemplateErrors(['No template loaded. Load a template first.'], 'export', 'unknown');
         }
     }
     
@@ -2905,10 +3014,18 @@ class FloorplanEditor {
                     unitSelect.style.display = 'inline-block';
                 }
             } else {
-                alert('Invalid units index format. Expected "units" array.');
+                this.handleTemplateErrors(
+                    ['Invalid units index format. Expected "units" array.'],
+                    'Units Index Load',
+                    'units'
+                );
             }
         } catch (error) {
-            alert('Error loading units index: ' + error.message);
+            this.handleTemplateErrors(
+                [error.message || 'Unknown error occurred'],
+                'Units Index Load',
+                'units'
+            );
             console.error('Units index load error:', error);
         }
     }
@@ -3031,6 +3148,13 @@ class FloorplanEditor {
         // Use new TemplateLoader to detect and normalize
         const { dto, mode } = loadTemplate(jsonData);
 
+        // Validate template using unified validation system
+        const validationErrors = this.validateTemplate(jsonData, dto.type);
+        if (validationErrors.length > 0) {
+            this.handleTemplateErrors(validationErrors, 'loading', dto.type);
+            return; // Abort loading if validation fails
+        }
+
         // Use Template Relationship Manager to handle parent-child relationships
         console.log('[DEBUG] Loading template through Template Relationship Manager');
         const relationshipResult = await this.templateRelationshipManager.loadTemplate(jsonData, dto);
@@ -3084,41 +3208,8 @@ class FloorplanEditor {
             });
         } else {
             // Template loaded as overlay only - no content conversion
-            // Update grid dimensions if template has size info
-            if (dto.rect) {
-                // Template rect defines position and size, ensure grid covers the full extent
-                const oldGridWidth = this.gridWidth;
-                const oldGridHeight = this.gridHeight;
-                this.gridWidth = Math.max(dto.rect.x + dto.rect.w, this.gridWidth);
-                this.gridHeight = Math.max(dto.rect.y + dto.rect.h, this.gridHeight);
-                console.log('[DEBUG] Updated grid dimensions for template rect:', {
-                    rect: dto.rect,
-                    oldGridWidth: oldGridWidth,
-                    oldGridHeight: oldGridHeight,
-                    newGridWidth: this.gridWidth,
-                    newGridHeight: this.gridHeight,
-                    dimensionsChanged: this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight
-                });
-
-                // Only resize template model arrays if dimensions actually changed
-                if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
-                    console.log('[DEBUG] Grid dimensions changed, resizing template models');
-                    this.resizeTemplateModels();
-                } else {
-                    console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
-                }
-            } else if (dto.gridSize) {
-                const oldGridWidth = this.gridWidth;
-                const oldGridHeight = this.gridHeight;
-                this.gridWidth = dto.gridSize.width || this.gridWidth;
-                this.gridHeight = dto.gridSize.height || this.gridHeight;
-
-                // Only resize template model arrays if dimensions actually changed
-                if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
-                    console.log('[DEBUG] Grid size changed, resizing template models');
-                    this.resizeTemplateModels();
-                }
-            }
+            // Use unified grid resizing method
+            this.resizeGridForTemplate(dto);
 
             // Update template context for legacy compatibility
             this.templateContext = {
@@ -3251,53 +3342,31 @@ class FloorplanEditor {
 
 
     validateWithAJV(jsonData, schema) {
-        // For now, we'll do basic structural validation
-        // In a full implementation, we would load the actual AJV schemas
-        const supportedSchemas = ['scene.v1', 'mall-template.v1', 'gallery-template.v1', 'room-template.v1', 'unit-design.v1'];
+        // Use unified validation system - extract template type from schema
+        const typeMapping = {
+            'scene.v1': 'scene',
+            'mall-template.v1': 'mall',
+            'gallery-template.v1': 'unit', // Note: UI shows "gallery" but schema uses unit
+            'unit-template.v1': 'unit',
+            'room-template.v1': 'room',
+            'object-template.v1': 'object',
+            'unit-design.v1': 'unit'
+        };
 
-        if (!supportedSchemas.includes(schema)) {
-            throw new Error(`Unsupported schema: ${schema}`);
+        const templateType = typeMapping[schema];
+        if (!templateType) {
+            this.handleTemplateErrors([`Unsupported schema: ${schema}`], 'validation', 'unknown');
+            return false;
         }
 
-        // Basic validation for each schema type
-        switch (schema) {
-            case 'scene.v1':
-                if (!jsonData.grid || !jsonData.tiles || !jsonData.edges) {
-                    throw new Error('Invalid scene.v1: missing required sections (grid, tiles, edges)');
-                }
-                break;
-
-            case 'mall-template.v1':
-                if (!jsonData.id || !jsonData.grid || !jsonData.units || !Array.isArray(jsonData.units)) {
-                    throw new Error('Invalid mall-template.v1: missing required fields (id, grid, units array)');
-                }
-                if (jsonData.units.length === 0) {
-                    throw new Error('Invalid mall-template.v1: units array cannot be empty');
-                }
-                // Validate each unit has required fields
-                jsonData.units.forEach((unit, index) => {
-                    if (!unit.id || !unit.rect || typeof unit.rect.x !== 'number' ||
-                        typeof unit.rect.y !== 'number' || typeof unit.rect.w !== 'number' ||
-                        typeof unit.rect.h !== 'number') {
-                        throw new Error(`Invalid mall-template.v1: unit[${index}] missing required rect fields (x, y, w, h)`);
-                    }
-                });
-                break;
-
-            case 'gallery-template.v1':
-                if (!jsonData.id || !jsonData.parentMallId || !jsonData.rect) {
-                    throw new Error('Invalid gallery-template.v1: missing required fields (id, parentMallId, rect)');
-                }
-                break;
-
-            case 'unit-design.v1':
-                if (!jsonData.id || !jsonData.parentUnitId) {
-                    throw new Error('Invalid unit-design.v1: missing required fields (id, parentUnitId)');
-                }
-                break;
+        const validationErrors = this.validateTemplate(jsonData, templateType);
+        if (validationErrors.length > 0) {
+            this.handleTemplateErrors(validationErrors, 'validation', templateType);
+            return false;
         }
 
         console.log(`✅ Schema validation passed: ${schema}`);
+        return true;
     }
 
 
@@ -3556,8 +3625,8 @@ class FloorplanEditor {
                 break;
 
             case 'unit':
-                if (templateData.rooms) {
-                    const room = templateData.rooms.find(room => {
+                if (templateData.children) {
+                    const room = templateData.children.find(room => {
                         if (room.gridRect) {
                             const { x: rx, y: ry, w: rw, h: rh } = room.gridRect;
                             return x >= rx && x < rx + rw && y >= ry && y < ry + rh;
@@ -3612,6 +3681,147 @@ class FloorplanEditor {
         console.log(`Template bounds violation at (${x},${y}) for ${editType}: ${message}`);
     }
 
+
+    /**
+     * Unified validation system for all template types
+     * @param {Object} template - Template to validate
+     * @param {string} expectedType - Expected template type (mall|unit|room|object)
+     * @returns {Array} - Array of error messages, empty if valid
+     */
+    validateTemplate(template, expectedType) {
+        const errors = [];
+
+        // Basic structure validation
+        if (!template || typeof template !== 'object') {
+            errors.push('Template must be a valid object');
+            return errors;
+        }
+
+        // Schema validation based on expected type
+        const schemaMap = {
+            'mall': 'mall-template.v1',
+            'unit': 'unit-template.v1',
+            'room': 'room-template.v1',
+            'object': 'object-template.v1'
+        };
+
+        const expectedSchema = schemaMap[expectedType];
+        if (expectedSchema && template.meta?.schema !== expectedSchema) {
+            errors.push(`Template must have meta.schema = "${expectedSchema}"`);
+        }
+
+        // Common required fields for all templates
+        if (!template.id || typeof template.id !== 'string') {
+            errors.push('Template must have a valid string ID');
+        }
+
+        // Type-specific validation
+        switch (expectedType) {
+            case 'mall':
+                this.validateMallSpecificFields(template, errors);
+                break;
+            case 'unit':
+            case 'room':
+            case 'object':
+                this.validateChildTemplateFields(template, expectedType, errors);
+                break;
+        }
+
+        return errors;
+    }
+
+    /**
+     * Validate mall-specific fields
+     * @param {Object} template - Mall template
+     * @param {Array} errors - Error array to populate
+     */
+    validateMallSpecificFields(template, errors) {
+        // Grid validation
+        if (!template.grid || typeof template.grid !== 'object') {
+            errors.push('Mall template must have a grid property');
+        } else {
+            if (typeof template.grid.width !== 'number' || template.grid.width <= 0) {
+                errors.push('Mall grid width must be a positive number');
+            }
+            if (typeof template.grid.height !== 'number' || template.grid.height <= 0) {
+                errors.push('Mall grid height must be a positive number');
+            }
+        }
+
+        // Units validation
+        if (!Array.isArray(template.units)) {
+            errors.push('Mall template must have a units array');
+        } else if (template.units.length > 0) {
+            // Only validate unit structure if units exist (empty arrays are allowed)
+            template.units.forEach((unit, index) => {
+                if (!unit.id) {
+                    errors.push(`Unit ${index} must have an ID`);
+                }
+                if (!unit.rect || !this.isValidRect(unit.rect)) {
+                    errors.push(`Unit ${index} must have a valid rect`);
+                }
+            });
+        }
+    }
+
+    /**
+     * Validate child template fields (unit/room/object)
+     * @param {Object} template - Child template
+     * @param {string} type - Template type
+     * @param {Array} errors - Error array to populate
+     */
+    validateChildTemplateFields(template, type, errors) {
+        // Rect validation
+        if (!template.rect || !this.isValidRect(template.rect)) {
+            errors.push(`${type} template must have a valid rect`);
+        }
+
+        // Parent relationship validation
+        if (!template.meta?.parent?.id) {
+            errors.push(`${type} template must have a parent reference (meta.parent.id)`);
+        }
+
+        // Children array validation (rooms/zones/items -> standardized to children)
+        const childrenProperty = 'children';
+        if (template[childrenProperty] && !Array.isArray(template[childrenProperty])) {
+            errors.push(`${type} template ${childrenProperty} must be an array if present`);
+        }
+    }
+
+    /**
+     * Validate rectangle object
+     * @param {Object} rect - Rectangle to validate
+     * @returns {boolean} - True if valid
+     */
+    isValidRect(rect) {
+        return rect &&
+               typeof rect.x === 'number' &&
+               typeof rect.y === 'number' &&
+               typeof rect.w === 'number' && rect.w > 0 &&
+               typeof rect.h === 'number' && rect.h > 0;
+    }
+
+    /**
+     * Unified error handling for template operations
+     * @param {Array} errors - Array of error messages
+     * @param {string} operation - Operation that failed (e.g., 'Template Load', 'Export')
+     * @param {string} templateType - Type of template
+     */
+    handleTemplateErrors(errors, operation, templateType = '') {
+        if (errors.length === 0) return;
+
+        const title = `${operation} Failed`;
+        const message = errors.length === 1
+            ? errors[0]
+            : `Multiple issues found:\n• ${errors.join('\n• ')}`;
+
+        this.showToast('error', title, message, {
+            duration: 5000,
+            allowHtml: true
+        });
+
+        console.error(`[VALIDATION] ${title}:`, errors);
+    }
 
     // Template hierarchy validation methods
     validateMallTemplate(mallTemplate) {
@@ -3684,11 +3894,11 @@ class FloorplanEditor {
             }
         }
 
-        // Validate rooms structure
-        if (!galleryTemplate.rooms || !Array.isArray(galleryTemplate.rooms)) {
-            errors.push('Gallery template must have a rooms array');
+        // Validate children structure
+        if (!galleryTemplate.children || !Array.isArray(galleryTemplate.children)) {
+            errors.push('Gallery template must have a children array');
         } else {
-            galleryTemplate.rooms.forEach((room, index) => {
+            galleryTemplate.children.forEach((room, index) => {
                 if (!room.id || typeof room.id !== 'string') {
                     errors.push(`Room ${index} must have a string ID`);
                 }
@@ -3871,12 +4081,14 @@ class FloorplanEditor {
                     filename = 'room-template.v1.json';
                     break;
                 default:
-                    throw new Error(`Unknown fixture type: ${type}`);
+                    this.handleTemplateErrors([`Unknown fixture type: ${type}`], 'loading', 'fixture');
+                    return;
             }
 
             const response = await fetch(`./fixtures/${filename}`);
             if (!response.ok) {
-                throw new Error(`Failed to load fixture: ${response.status}`);
+                this.handleTemplateErrors([`Failed to load fixture: ${response.status}`], 'loading', 'fixture');
+                return;
             }
 
             const templateData = await response.json();
@@ -3932,7 +4144,7 @@ class FloorplanEditor {
                 const exportedUnit = buildUnitTemplate({
                     id: this.activeUnit.id,
                     rect: this.activeUnit.rect,
-                    rooms: firstUnit.rooms || [],
+                    rooms: firstUnit.children || [],
                     parentMallId: this.overlayModel.templateData.dto.id
                 });
 

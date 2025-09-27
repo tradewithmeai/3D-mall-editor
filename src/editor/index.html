@@ -22,16 +22,18 @@
                     <button id="import-btn">Import JSON</button>
                     <div class="export-controls">
                         <select id="export-type">
-                            <option value="scene">Export Scene (v1)</option>
                             <option value="mall-template" id="export-mall-template-item">Export as Mall Template</option>
                             <option value="gallery-template">Export as Gallery Template</option>
                             <option value="room-template">Export as Room Template</option>
+                            <option value="object-template" id="export-object-template-item">Export as Object Template</option>
+                            <option disabled>──────────</option>
+                            <option value="clear-all">Clear All</option>
+                            <option value="clear-grid">Clear Grid</option>
+                            <option value="clear-template">Clear Template</option>
                         </select>
-                        <button id="export-btn">Export</button>
+                        <button id="export-btn">Action</button>
                     </div>
                     <button id="export-selected-unit-btn" style="display: none;">Export Gallery Template (from Selected Gallery)</button>
-                    <button id="clear-btn">Clear Grid</button>
-                    <button id="clear-template-btn" class="tool-btn">Clear Template</button>
                     <div class="load-template-controls">
                         <button id="load-template-btn" class="dropdown-btn">
                             Load Template ▼

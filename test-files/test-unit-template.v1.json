@@ -2,7 +2,11 @@
   "meta": {
     "schema": "unit-template.v1",
     "version": "1.0",
-    "name": "Sample Unit Template"
+    "name": "Sample Unit Template",
+    "parent": {
+      "id": "mall-sample-20250924",
+      "type": "mall"
+    }
   },
   "id": "unit-sample-20250924",
   "parentMallId": "mall-sample-20250924",

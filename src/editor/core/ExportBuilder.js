@@ -105,6 +105,38 @@ export function buildRoomTemplate({ id, rect, zones = [], parentUnitId }) {
 }
 
 /**
+ * Build object template JSON
+ * @param {Object} params - Object parameters
+ * @param {string} params.id - Object ID
+ * @param {Object} params.rect - Rectangle {x, y, w, h}
+ * @param {Array} [params.items] - Optional array of item objects
+ * @param {string} [params.parentRoomId] - Optional parent room ID
+ * @returns {Object} Object template JSON
+ */
+export function buildObjectTemplate({ id, rect, items = [], parentRoomId }) {
+    const template = {
+        meta: {
+            schema: 'object-template.v1',
+            version: '1.0'
+        },
+        id: id,
+        rect: { ...rect },
+        items: [...items],
+        created: new Date().toISOString()
+    };
+
+    // Add parent link if provided (same pattern as room templates)
+    if (parentRoomId) {
+        template.meta.parent = {
+            schema: 'room-template.v1',
+            id: parentRoomId
+        };
+    }
+
+    return template;
+}
+
+/**
  * Build scene.v1 JSON
  * @param {Object} params - Scene parameters
  * @param {number} params.gridWidth - Grid width

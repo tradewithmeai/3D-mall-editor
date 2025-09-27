@@ -1,0 +1,31 @@
+{
+  "meta": {
+    "schema": "object-template.v1",
+    "version": "1.0",
+    "name": "Sample Object Template",
+    "parent": {
+      "schema": "room-template.v1",
+      "id": "room-sample-20250925"
+    }
+  },
+  "id": "object-sample-20250927",
+  "rect": {
+    "x": 1,
+    "y": 1,
+    "w": 3,
+    "h": 3
+  },
+  "items": [
+    {
+      "id": "item-1",
+      "rect": { "x": 1, "y": 1, "w": 1, "h": 1 },
+      "type": "furniture"
+    },
+    {
+      "id": "item-2",
+      "rect": { "x": 2, "y": 2, "w": 1, "h": 1 },
+      "type": "decoration"
+    }
+  ],
+  "created": "2025-09-27T01:15:00.000Z"
+}

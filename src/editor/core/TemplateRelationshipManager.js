@@ -83,10 +83,14 @@ export class TemplateRelationshipManager {
 
         // Build hierarchy recursively from parents
         const buildParentChain = async (currentTemplateData, currentDto, currentId) => {
+            // Check for parent reference in template data (meta.parent)
             const parentMeta = currentTemplateData.meta?.parent;
 
+            // Also check DTO for parentId (normalized format)
+            const parentIdFromDto = currentDto.parentId;
+
             if (parentMeta) {
-                // Load parent template
+                // Load parent template using meta.parent
                 const parentTemplate = await this.ensureParentLoaded(parentMeta, currentId);
 
                 if (parentTemplate) {
@@ -99,6 +103,12 @@ export class TemplateRelationshipManager {
                     // Set up relationship tracking
                     this.parentRelationships.set(currentId, parentTemplate);
                 }
+            } else if (parentIdFromDto) {
+                console.warn('[TemplateRM] Found parentId in DTO but no meta.parent in template data:', {
+                    currentId,
+                    parentId: parentIdFromDto
+                });
+                // Could try to resolve parent by ID if we had a registry
             }
         };
 

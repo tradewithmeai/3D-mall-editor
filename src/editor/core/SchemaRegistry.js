@@ -57,6 +57,8 @@ export function detect(json) {
         kind = 'unit';
     } else if (schemaStr.startsWith('room')) {
         kind = 'room';
+    } else if (schemaStr.startsWith('object')) {
+        kind = 'object';
     } else if (schemaStr.startsWith('scene')) {
         kind = 'scene';
     }
