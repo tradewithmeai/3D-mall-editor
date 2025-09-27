@@ -93,7 +93,7 @@ export function buildRoomTemplate({ id, rect, zones = [], parentUnitId }) {
         created: new Date().toISOString()
     };
 
-    // Add parent link if provided
+    // Add parent link if provided (same pattern as gallery templates)
     if (parentUnitId) {
         template.meta.parent = {
             schema: 'unit-template.v1',

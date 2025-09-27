@@ -2,10 +2,14 @@
   "meta": {
     "schema": "room-template.v1",
     "version": "1.0",
-    "name": "Sample Room Template"
+    "name": "Sample Room Template",
+    "parent": {
+      "schema": "unit-template.v1",
+      "id": "unit-sample-20250924"
+    }
   },
   "id": "room-sample-20250925",
-  "parentGalleryId": "gallery-sample-20250925",
+  "parentGalleryId": "unit-sample-20250924",
   "rect": {
     "x": 2,
     "y": 2,
