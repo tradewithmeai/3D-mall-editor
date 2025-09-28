@@ -4,6 +4,7 @@ import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTem
 import { toScene3D } from './core/ExportBuilder3D.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
 import { SceneRules } from './core/SceneRules.js';
+import { validateScene3D } from './core/validateScene3D.js';
 
 // Debug logging control
 const DEBUG = false;
@@ -2723,7 +2724,7 @@ class FloorplanEditor {
     }
 
     // Export as Scene (3D Pipe) format per Interface Contract v1
-    exportAsScene3D() {
+    async exportAsScene3D() {
         // Generate a safe ID for the filename
         const baseName = this.overlayModel?.templateData?.meta?.name ||
                         this.overlayModel?.templateData?.id ||
@@ -2747,7 +2748,24 @@ class FloorplanEditor {
             units: scene3D.units
         });
 
-        // Export using existing warning system
+        // Validate against scene.3d.v1 schema
+        try {
+            const validation = await validateScene3D(scene3D);
+
+            // Log validation results
+            console.info('[VALIDATION]', { phase: 'export', errors: validation.count });
+
+            if (validation.count > 0) {
+                // Show validation errors modal
+                this.showValidationErrorsModal(validation.errors, filename, scene3D);
+                return;
+            }
+        } catch (error) {
+            console.error('[VALIDATION] Schema validation failed:', error);
+            this.showToast('error', 'Validation Error', 'Schema validation failed - exporting anyway');
+        }
+
+        // Export using existing warning system (valid or validation failed)
         this.exportWithWarnings(filename, scene3D, 'scene-3d');
 
         // Show success message
@@ -3842,6 +3860,110 @@ class FloorplanEditor {
 
             exportBtn.addEventListener('click', () => {
                 cleanup();
+                resolve(true);
+            });
+
+            // Close on overlay click
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    cleanup();
+                    resolve(false);
+                }
+            });
+        });
+    }
+
+    // Validation errors modal for schema violations
+    showValidationErrorsModal(errors, filename, scene3D) {
+        return new Promise((resolve) => {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'validation-modal-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+
+            // Create modal content
+            const modal = document.createElement('div');
+            modal.className = 'validation-modal';
+            modal.style.cssText = `
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                max-width: 600px;
+                max-height: 500px;
+                overflow-y: auto;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            `;
+
+            // Show first 5 errors as requested
+            const displayErrors = errors.slice(0, 5);
+            const hasMoreErrors = errors.length > 5;
+
+            // Modal content HTML
+            modal.innerHTML = `
+                <h3 style="margin: 0 0 15px 0; color: #dc2626;">❌ Schema Validation Errors</h3>
+                <p style="margin: 0 0 15px 0; color: #6b7280;">
+                    The generated scene.3d.v1 JSON has ${errors.length} validation error${errors.length === 1 ? '' : 's'}.
+                    You can still export, but the file may not be valid:
+                </p>
+                <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151; font-family: monospace; font-size: 12px;">
+                    ${displayErrors.map(err => `
+                        <li style="margin-bottom: 8px;">
+                            <strong>${err.path}</strong>: ${err.msg}
+                        </li>
+                    `).join('')}
+                    ${hasMoreErrors ? `<li style="margin-top: 10px; color: #6b7280;">... and ${errors.length - 5} more errors</li>` : ''}
+                </ul>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="cancel-validation" style="
+                        padding: 8px 16px;
+                        border: 1px solid #d1d5db;
+                        background: white;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Cancel</button>
+                    <button id="export-anyway-validation" style="
+                        padding: 8px 16px;
+                        border: 1px solid #dc2626;
+                        background: #dc2626;
+                        color: white;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Export Anyway</button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Handle button clicks
+            const cancelBtn = modal.querySelector('#cancel-validation');
+            const exportBtn = modal.querySelector('#export-anyway-validation');
+
+            const cleanup = () => {
+                document.body.removeChild(overlay);
+            };
+
+            cancelBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(false);
+            });
+
+            exportBtn.addEventListener('click', () => {
+                cleanup();
+                // Proceed with export using existing warning system
+                this.exportWithWarnings(filename, scene3D, 'scene-3d');
+                this.showToast('success', '3D Scene Exported', `Scene exported as ${filename} despite validation errors`);
                 resolve(true);
             });
 

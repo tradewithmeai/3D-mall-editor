@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/scene.3d.v1.schema.json",
+  "title": "Scene 3D v1",
+  "description": "Schema for scene.3d.v1 JSON format per 2D→3D Interface Contract v1",
+  "type": "object",
+  "required": ["meta", "units", "bounds", "tiles", "edges", "originOffset"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["schema", "version", "sourceSchema", "created", "name"],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "scene.3d.v1"
+        },
+        "version": {
+          "type": "string",
+          "const": "1.0"
+        },
+        "sourceSchema": {
+          "type": "string",
+          "const": "scene.v1"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "units": {
+      "type": "object",
+      "required": ["cellMeters", "wallHeightMeters", "wallThicknessMeters", "floorThicknessMeters", "lengthUnit", "coordinateSystem"],
+      "properties": {
+        "cellMeters": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "wallHeightMeters": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "wallThicknessMeters": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "floorThicknessMeters": {
+          "type": "number",
+          "minimum": 0,
+          "exclusiveMinimum": true
+        },
+        "lengthUnit": {
+          "type": "string",
+          "const": "meters"
+        },
+        "coordinateSystem": {
+          "type": "string",
+          "const": "right-handed-y-up"
+        }
+      },
+      "additionalProperties": false
+    },
+    "bounds": {
+      "type": "object",
+      "required": ["min", "max", "center"],
+      "properties": {
+        "min": {
+          "type": "object",
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "max": {
+          "type": "object",
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "center": {
+          "type": "object",
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "tiles": {
+      "type": "object",
+      "required": ["floor"],
+      "properties": {
+        "floor": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "edges": {
+      "type": "object",
+      "required": ["horizontal", "vertical"],
+      "properties": {
+        "horizontal": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "vertical": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "originOffset": {
+      "type": "object",
+      "required": ["x", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "z": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
