@@ -2,6 +2,7 @@ import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
 import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
+import { SceneRules } from './core/SceneRules.js';
 
 // Debug logging control
 const DEBUG = false;
@@ -2319,7 +2320,7 @@ class FloorplanEditor {
 
         // Download the unit template
         const fileName = `${selectedUnit.id || 'unit'}-template.json`;
-        this.downloadJSON(fileName, unitTemplate);
+        this.exportWithWarnings(fileName, unitTemplate, 'gallery-template');
         this.showToast('success', 'Gallery Template Exported', `Exported gallery template: ${selectedUnit.id || 'gallery'}`);
     }
 
@@ -2396,7 +2397,7 @@ class FloorplanEditor {
         console.assert(out?.grid || out?.gridSize, 'Mall export: grid/gridSize missing');
 
         // Download JSON using unified helper
-        this.downloadJSON(filename, out);
+        this.exportWithWarnings(filename, out, 'mall-template');
 
         // Log for diagnostics:
         console.info('[EXPORT:mall] built', {
@@ -2431,7 +2432,7 @@ class FloorplanEditor {
 
         const mallId = mallTemplate.id || 'mall';
         const filename = `${mallId}.json`;
-        this.downloadJSON(filename, mallTemplate);
+        this.exportWithWarnings(filename, mallTemplate, 'mall-template');
 
         console.log('Exported mall template:', mallTemplate);
         this.showToast('success', 'Mall Template Exported', `Mall template saved (${units.length} galleries detected). Ready for template loading workflow.`);
@@ -2554,7 +2555,7 @@ class FloorplanEditor {
         out.sceneData = sceneData;
 
         const filename = `${out.id}.${config.schemaName}.json`;
-        this.downloadJSON(filename, out);
+        this.exportWithWarnings(filename, out, 'object-template');
 
         console.log(`Exported ${config.templateName.toLowerCase()} template:`, out);
         this.showToast('success', `${config.templateName} Exported`, `${config.templateName} template saved as ${filename}`);
@@ -2574,7 +2575,7 @@ class FloorplanEditor {
             });
 
             const filename = `${out.id || 'unit'}.unit-template.v1.json`;
-            this.downloadJSON(filename, out);
+            this.exportWithWarnings(filename, out, 'gallery-template');
 
             console.log('Exported gallery template:', out);
             this.showToast('success', 'Gallery Template Exported', `Gallery template exported as ${filename}`);
@@ -2621,7 +2622,7 @@ class FloorplanEditor {
         out.sceneData = sceneData;
 
         const filename = `${out.id}.unit-template.v1.json`;
-        this.downloadJSON(filename, out);
+        this.exportWithWarnings(filename, out, 'gallery-template');
 
         console.info('[EXPORT:unit] Simple export with scene data', {
             floorTiles: sceneData.tiles?.floor?.length || 0,
@@ -2946,7 +2947,7 @@ class FloorplanEditor {
             vEdges: vEdges
         });
 
-        this.downloadJSON('scene.json', sceneData);
+        this.exportWithWarnings('scene.json', sceneData, 'scene');
 
         console.log('Exported scene.v1:', sceneData);
     }
@@ -3694,13 +3695,128 @@ class FloorplanEditor {
 
     // Unified download helper for all JSON exports
     downloadJSON(filename, obj) {
-        console.info('[DOWNLOAD]', filename);
+        console.info('[DOWNLOAD]', { filename });
         const dataStr = JSON.stringify(obj, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
         link.download = filename;
         link.click();
+    }
+
+    // Warning-aware export handler
+    async exportWithWarnings(filename, dto, exportType) {
+        // Collect validation warnings
+        const warnings = SceneRules.collectWarnings({
+            dto,
+            scene: this.sceneModel,
+            bounds: this.overlayModel?.bounds || null
+        });
+
+        // Log export attempt with warning count
+        console.info('[EXPORT]', { type: exportType, warnings: warnings.length });
+
+        // If warnings exist, show modal for user decision
+        if (warnings.length > 0) {
+            const proceed = await this.showWarningModal(warnings);
+            if (!proceed) {
+                return; // User cancelled
+            }
+        }
+
+        // Proceed with download
+        this.downloadJSON(filename, dto);
+    }
+
+    // Warning modal for export decisions
+    showWarningModal(warnings) {
+        return new Promise((resolve) => {
+            // Create modal overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'warning-modal-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+
+            // Create modal content
+            const modal = document.createElement('div');
+            modal.className = 'warning-modal';
+            modal.style.cssText = `
+                background: white;
+                border-radius: 8px;
+                padding: 20px;
+                max-width: 500px;
+                max-height: 400px;
+                overflow-y: auto;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            `;
+
+            // Modal content HTML
+            modal.innerHTML = `
+                <h3 style="margin: 0 0 15px 0; color: #d97706;">⚠️ Export Warnings</h3>
+                <p style="margin: 0 0 15px 0; color: #6b7280;">
+                    The following issues were detected. You can still export, but 3D conversion may have problems:
+                </p>
+                <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151;">
+                    ${warnings.map(w => `<li style="margin-bottom: 8px;">${w}</li>`).join('')}
+                </ul>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button id="cancel-export" style="
+                        padding: 8px 16px;
+                        border: 1px solid #d1d5db;
+                        background: white;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Cancel</button>
+                    <button id="export-anyway" style="
+                        padding: 8px 16px;
+                        border: 1px solid #d97706;
+                        background: #d97706;
+                        color: white;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    ">Export Anyway</button>
+                </div>
+            `;
+
+            overlay.appendChild(modal);
+            document.body.appendChild(overlay);
+
+            // Handle button clicks
+            const cancelBtn = modal.querySelector('#cancel-export');
+            const exportBtn = modal.querySelector('#export-anyway');
+
+            const cleanup = () => {
+                document.body.removeChild(overlay);
+            };
+
+            cancelBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(false);
+            });
+
+            exportBtn.addEventListener('click', () => {
+                cleanup();
+                resolve(true);
+            });
+
+            // Close on overlay click
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    cleanup();
+                    resolve(false);
+                }
+            });
+        });
     }
 
     // Toast Notification System

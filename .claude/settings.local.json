@@ -47,7 +47,9 @@
       "Bash(git fetch:*)",
       "Bash(git switch:*)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "WebFetch(domain:127.0.0.1)",
+      "Bash(TZ=UTC date '+%Y-%m-%d %H:%M:%S %Z')"
     ],
     "deny": [],
     "ask": []
