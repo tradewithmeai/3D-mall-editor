@@ -1,6 +1,7 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
 import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
+import { toScene3D } from './core/ExportBuilder3D.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
 import { SceneRules } from './core/SceneRules.js';
 
@@ -2278,6 +2279,9 @@ class FloorplanEditor {
             case 'object-template':
                 this.exportAsObjectTemplate();
                 break;
+            case 'scene-3d':
+                this.exportAsScene3D();
+                break;
             case 'clear-all':
                 this.clearAll();
                 break;
@@ -2716,6 +2720,38 @@ class FloorplanEditor {
             parentIdProperty: 'parentRoomId',
             schemaName: 'object-template.v1'
         });
+    }
+
+    // Export as Scene (3D Pipe) format per Interface Contract v1
+    exportAsScene3D() {
+        // Generate a safe ID for the filename
+        const baseName = this.overlayModel?.templateData?.meta?.name ||
+                        this.overlayModel?.templateData?.id ||
+                        'scene';
+        const safeId = String(baseName).trim().toLowerCase()
+                        .replace(/[^a-z0-9-_]+/g, '-')
+                        .replace(/^-+|-+$/g, '') || 'scene';
+
+        // Build scene.3d.v1 JSON using ExportBuilder3D
+        const scene3D = toScene3D(this.sceneModel, this.cellSize, safeId);
+
+        // Generate filename per Interface Contract v1
+        const filename = `${safeId}.scene.3d.v1.json`;
+
+        // Log export details
+        console.info('[EXPORT:3d]', {
+            filename,
+            tiles: scene3D.tiles.floor.length,
+            hEdges: scene3D.edges.horizontal.length,
+            vEdges: scene3D.edges.vertical.length,
+            units: scene3D.units
+        });
+
+        // Export using existing warning system
+        this.exportWithWarnings(filename, scene3D, 'scene-3d');
+
+        // Show success message
+        this.showToast('success', '3D Scene Exported', `Scene exported as ${filename} for 3D pipe`);
     }
 
     // Generate room features from current editor content
