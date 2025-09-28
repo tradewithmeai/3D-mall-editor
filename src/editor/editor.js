@@ -18,6 +18,11 @@ class FloorplanEditor {
         this.cellSize = 20;
         this.currentTool = 'empty';
         this.isDrawing = false;
+
+        // State for new tools
+        this.dragRectStart = null; // {x, y} grid coordinates for drag rect tool
+        this.wallSegmentStart = null; // {x, y} grid coordinates for first wall segment point
+        this.currentMouseGrid = null; // {x, y} grid coordinates of current mouse position
         
         // Hard data separation: sceneModel (user content) vs overlayModel (template constraints)
         this.sceneModel = {
@@ -644,23 +649,23 @@ class FloorplanEditor {
                 e.target.classList.add('active');
                 this.currentTool = e.target.dataset.tool;
                 document.getElementById('current-tool').textContent = this.currentTool;
+
+                // Clear tool states when switching tools
+                this.clearToolStates();
             });
         });
         
         // Canvas mouse events
         this.canvas.addEventListener('mousedown', (e) => {
-            this.isDrawing = true;
-            this.handleMouseAction(e);
+            this.handleMouseDown(e);
         });
-        
+
         this.canvas.addEventListener('mousemove', (e) => {
-            if (this.isDrawing) {
-                this.handleMouseAction(e);
-            }
+            this.handleMouseMove(e);
         });
-        
-        this.canvas.addEventListener('mouseup', () => {
-            this.isDrawing = false;
+
+        this.canvas.addEventListener('mouseup', (e) => {
+            this.handleMouseUp(e);
         });
         
         this.canvas.addEventListener('mouseleave', () => {
@@ -789,21 +794,225 @@ class FloorplanEditor {
         });
     }
     
+    handleMouseDown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const gridX = Math.floor(mouseX / this.cellSize);
+        const gridY = Math.floor(mouseY / this.cellSize);
+
+        // Handle unit selection in mall mode first
+        if (this.handleUnitSelection(mouseX, mouseY)) {
+            return; // Unit was selected, skip other actions
+        }
+
+        switch (this.currentTool) {
+            case 'dragRect':
+                // Start drag rectangle
+                this.dragRectStart = { x: gridX, y: gridY };
+                break;
+
+            case 'wallSegment':
+                if (this.wallSegmentStart === null) {
+                    // First click - store start point
+                    this.wallSegmentStart = { x: gridX, y: gridY };
+                    this.render(); // Re-render to show preview
+                } else {
+                    // Second click - complete wall segment
+                    this.completeWallSegment(gridX, gridY);
+                }
+                break;
+
+            default:
+                // Traditional tools - start drawing
+                this.isDrawing = true;
+                this.handleMouseAction(e);
+                break;
+        }
+    }
+
+    handleMouseMove(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
+        const gridX = Math.floor(mouseX / this.cellSize);
+        const gridY = Math.floor(mouseY / this.cellSize);
+
+        // Update current mouse position for previews
+        this.currentMouseGrid = { x: gridX, y: gridY };
+
+        switch (this.currentTool) {
+            case 'dragRect':
+                if (this.dragRectStart !== null) {
+                    // Show preview while dragging
+                    this.render();
+                }
+                break;
+
+            case 'wallSegment':
+                if (this.wallSegmentStart !== null) {
+                    // Show preview line
+                    this.render();
+                }
+                break;
+
+            default:
+                // Traditional tools - continue drawing if started
+                if (this.isDrawing) {
+                    this.handleMouseAction(e);
+                }
+                break;
+        }
+    }
+
+    handleMouseUp(e) {
+        switch (this.currentTool) {
+            case 'dragRect':
+                if (this.dragRectStart !== null) {
+                    const rect = this.canvas.getBoundingClientRect();
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
+                    const gridX = Math.floor(mouseX / this.cellSize);
+                    const gridY = Math.floor(mouseY / this.cellSize);
+
+                    this.completeDragRect(gridX, gridY);
+                }
+                break;
+
+            default:
+                // Traditional tools - stop drawing
+                this.isDrawing = false;
+                break;
+        }
+    }
+
+    // Legacy method for traditional tools
     handleMouseAction(e) {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
-
-        // Handle unit selection in mall mode
-        if (this.handleUnitSelection(mouseX, mouseY)) {
-            return; // Unit was selected, skip painting
-        }
 
         if (this.currentTool === 'wall-edge' || this.currentTool === 'erase') {
             this.handleEdgePaint(mouseX, mouseY);
         } else {
             this.handleTilePaint(mouseX, mouseY);
         }
+    }
+
+    completeDragRect(endX, endY) {
+        if (this.dragRectStart === null) return;
+
+        const startX = this.dragRectStart.x;
+        const startY = this.dragRectStart.y;
+
+        // Calculate bounds
+        const minX = Math.min(startX, endX);
+        const maxX = Math.max(startX, endX);
+        const minY = Math.min(startY, endY);
+        const maxY = Math.max(startY, endY);
+
+        let placed = 0;
+        let skipped = 0;
+
+        // Fill rectangle with floor tiles
+        for (let y = minY; y <= maxY; y++) {
+            for (let x = minX; x <= maxX; x++) {
+                if (this.isWithinTemplateBounds(x, y, 'tile')) {
+                    // Only place if different from current state
+                    if (this.sceneModel.grid[y] && this.sceneModel.grid[y][x] !== 'floor') {
+                        this.setGridCell(x, y, 'floor');
+                        placed++;
+                    }
+                } else {
+                    skipped++;
+                }
+            }
+        }
+
+        // Clear drag state
+        this.dragRectStart = null;
+
+        // Log bounds information
+        console.info('[BOUNDS]', { tool: 'rect', placed, skipped });
+
+        // Re-render
+        this.render();
+    }
+
+    completeWallSegment(endX, endY) {
+        if (this.wallSegmentStart === null) return;
+
+        const startX = this.wallSegmentStart.x;
+        const startY = this.wallSegmentStart.y;
+
+        // Check if it's a straight line (horizontal or vertical)
+        if (startX !== endX && startY !== endY) {
+            // Diagonal - show error and reject
+            this.showToast('warning', 'Invalid Wall', 'Walls must be straight');
+            this.wallSegmentStart = null;
+            this.render();
+            return;
+        }
+
+        let placed = 0;
+        let skipped = 0;
+
+        if (startX === endX) {
+            // Vertical wall
+            const minY = Math.min(startY, endY);
+            const maxY = Math.max(startY, endY);
+
+            for (let y = minY; y <= maxY; y++) {
+                if (this.isWithinTemplateBounds(startX, y, 'edge')) {
+                    // Check bounds for vertical edge
+                    if (startX >= 0 && startX < this.gridWidth && y >= 0 && y < this.gridHeight) {
+                        if (!this.sceneModel.verticalEdges[y][startX]) {
+                            this.sceneModel.verticalEdges[y][startX] = true;
+                            placed++;
+                        }
+                    }
+                } else {
+                    skipped++;
+                }
+            }
+        } else if (startY === endY) {
+            // Horizontal wall
+            const minX = Math.min(startX, endX);
+            const maxX = Math.max(startX, endX);
+
+            for (let x = minX; x <= maxX; x++) {
+                if (this.isWithinTemplateBounds(x, startY, 'edge')) {
+                    // Check bounds for horizontal edge
+                    if (x >= 0 && x < this.gridWidth && startY >= 0 && startY < this.gridHeight) {
+                        if (!this.sceneModel.horizontalEdges[startY][x]) {
+                            this.sceneModel.horizontalEdges[startY][x] = true;
+                            placed++;
+                        }
+                    }
+                } else {
+                    skipped++;
+                }
+            }
+        }
+
+        // Clear wall segment state
+        this.wallSegmentStart = null;
+
+        // Log bounds information
+        console.info('[BOUNDS]', { tool: 'wall-run', placed, skipped });
+
+        // Re-render
+        this.render();
+    }
+
+    clearToolStates() {
+        // Clear all tool-specific state
+        this.dragRectStart = null;
+        this.wallSegmentStart = null;
+        this.isDrawing = false;
+
+        // Re-render to clear any previews
+        this.render();
     }
 
     handleUnitSelection(mouseX, mouseY) {
@@ -1425,8 +1634,79 @@ class FloorplanEditor {
         if (!this.overlayModel.templateData) {
             this.renderUnitOverlay();
         }
+
+        // Render tool previews
+        this.renderToolPreviews();
     }
-    
+
+    renderToolPreviews() {
+        if (!this.currentMouseGrid) return;
+
+        // Preview for drag rectangle tool
+        if (this.currentTool === 'dragRect' && this.dragRectStart !== null) {
+            this.renderDragRectPreview(
+                this.dragRectStart.x,
+                this.dragRectStart.y,
+                this.currentMouseGrid.x,
+                this.currentMouseGrid.y
+            );
+        }
+
+        // Preview for wall segment tool
+        if (this.currentTool === 'wallSegment' && this.wallSegmentStart !== null) {
+            this.renderWallSegmentPreview(
+                this.wallSegmentStart.x,
+                this.wallSegmentStart.y,
+                this.currentMouseGrid.x,
+                this.currentMouseGrid.y
+            );
+        }
+    }
+
+    renderDragRectPreview(startX, startY, endX, endY) {
+        const minX = Math.min(startX, endX);
+        const maxX = Math.max(startX, endX);
+        const minY = Math.min(startY, endY);
+        const maxY = Math.max(startY, endY);
+
+        // Draw preview rectangle
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.8)'; // Brown outline
+        this.ctx.fillStyle = 'rgba(139, 69, 19, 0.3)'; // Semi-transparent brown fill
+        this.ctx.lineWidth = 2;
+
+        const pixelX = minX * this.cellSize;
+        const pixelY = minY * this.cellSize;
+        const pixelW = (maxX - minX + 1) * this.cellSize;
+        const pixelH = (maxY - minY + 1) * this.cellSize;
+
+        this.ctx.fillRect(pixelX, pixelY, pixelW, pixelH);
+        this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
+        this.ctx.restore();
+    }
+
+    renderWallSegmentPreview(startX, startY, endX, endY) {
+        // Only show preview for straight lines
+        if (startX !== endX && startY !== endY) {
+            return; // Don't preview diagonal lines
+        }
+
+        this.ctx.save();
+        this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // Red preview line
+        this.ctx.lineWidth = 3;
+
+        const startPixelX = startX * this.cellSize + this.cellSize / 2;
+        const startPixelY = startY * this.cellSize + this.cellSize / 2;
+        const endPixelX = endX * this.cellSize + this.cellSize / 2;
+        const endPixelY = endY * this.cellSize + this.cellSize / 2;
+
+        this.ctx.beginPath();
+        this.ctx.moveTo(startPixelX, startPixelY);
+        this.ctx.lineTo(endPixelX, endPixelY);
+        this.ctx.stroke();
+        this.ctx.restore();
+    }
+
     renderEdges() {
         // Render edges as thick black lines
         this.ctx.strokeStyle = '#000';
