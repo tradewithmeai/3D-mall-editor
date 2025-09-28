@@ -1,0 +1,20 @@
+{
+  "meta": {
+    "schema": "unit-template.v1",
+    "version": "1.0",
+    "name": "Unit Template gallery-1758938080775",
+    "parent": {
+      "schema": "mall-template.v1",
+      "id": "mall"
+    }
+  },
+  "id": "gallery-1758938080775",
+  "rect": {
+    "x": 12,
+    "y": 3,
+    "w": 2,
+    "h": 2
+  },
+  "rooms": [],
+  "created": "2025-09-27T01:54:40.775Z"
+}

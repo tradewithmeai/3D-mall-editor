@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "schema": "unit-template.v1",
+    "version": "1.0",
+    "name": "Unit Template gallery-1758938518044",
+    "parent": {
+      "schema": "mall-template.v1",
+      "id": "mall"
+    }
+  },
+  "id": "gallery-1758938518044",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 60,
+    "h": 40
+  },
+  "rooms": [],
+  "created": "2025-09-27T02:01:58.044Z",
+  "sceneData": {
+    "meta": {
+      "schema": "scene.v1",
+      "version": "1.0",
+      "created": "2025-09-27T02:01:58.044Z",
+      "modified": "2025-09-27T02:01:58.044Z"
+    },
+    "grid": {
+      "width": 60,
+      "height": 40,
+      "cellSize": 20
+    },
+    "tiles": {
+      "floor": []
+    },
+    "edges": {
+      "horizontal": [
+        [
+          11,
+          3
+        ],
+        [
+          11,
+          4
+        ]
+      ],
+      "vertical": [
+        [
+          11,
+          3
+        ],
+        [
+          12,
+          3
+        ]
+      ]
+    }
+  }
+}

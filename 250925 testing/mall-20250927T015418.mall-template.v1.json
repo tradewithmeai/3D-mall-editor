@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "schema": "mall-template.v1",
+    "version": "1.0",
+    "name": "Generated Mall Template"
+  },
+  "id": "mall",
+  "grid": {
+    "width": 60,
+    "height": 40,
+    "cellSize": 20
+  },
+  "units": [],
+  "created": "2025-09-27T01:54:18.868Z",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 60,
+    "h": 40
+  },
+  "sceneData": {
+    "meta": {
+      "schema": "scene.v1",
+      "version": "1.0",
+      "created": "2025-09-27T01:54:18.868Z",
+      "modified": "2025-09-27T01:54:18.868Z"
+    },
+    "grid": {
+      "width": 60,
+      "height": 40,
+      "cellSize": 20
+    },
+    "tiles": {
+      "floor": [
+        [
+          12,
+          3
+        ],
+        [
+          13,
+          3
+        ],
+        [
+          14,
+          3
+        ],
+        [
+          15,
+          3
+        ],
+        [
+          12,
+          4
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          12,
+          5
+        ],
+        [
+          13,
+          5
+        ],
+        [
+          14,
+          5
+        ],
+        [
+          15,
+          5
+        ]
+      ]
+    },
+    "edges": {
+      "horizontal": [],
+      "vertical": []
+    }
+  }
+}

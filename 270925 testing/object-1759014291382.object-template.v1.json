@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "schema": "object-template.v1",
+    "version": "1.0",
+    "parent": {
+      "schema": "room-template.v1",
+      "id": "room-1759014260923"
+    }
+  },
+  "id": "object-1759014291382",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 60,
+    "h": 40
+  },
+  "items": [],
+  "created": "2025-09-27T23:04:51.382Z",
+  "sceneData": {
+    "meta": {
+      "schema": "scene.v1",
+      "version": "1.0",
+      "created": "2025-09-27T23:04:51.382Z",
+      "modified": "2025-09-27T23:04:51.382Z"
+    },
+    "grid": {
+      "width": 60,
+      "height": 40,
+      "cellSize": 20
+    },
+    "tiles": {
+      "floor": [
+        [
+          12,
+          4
+        ],
+        [
+          13,
+          4
+        ],
+        [
+          14,
+          4
+        ],
+        [
+          15,
+          4
+        ],
+        [
+          12,
+          5
+        ],
+        [
+          13,
+          5
+        ],
+        [
+          14,
+          5
+        ],
+        [
+          15,
+          5
+        ],
+        [
+          12,
+          6
+        ],
+        [
+          13,
+          6
+        ],
+        [
+          14,
+          6
+        ],
+        [
+          15,
+          6
+        ]
+      ]
+    },
+    "edges": {
+      "horizontal": [],
+      "vertical": []
+    }
+  }
+}

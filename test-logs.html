@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Log Output</title>
+</head>
+<body>
+    <h1>Testing Log Output</h1>
+    <p>Open console to check logs...</p>
+    <script>
+        // Test loading templates to verify log behavior
+        async function testLogs() {
+            try {
+                // Load the editor
+                const response = await fetch('./test-files/test-mall-template.v1.json');
+                const template = await response.json();
+                console.log('Template loaded:', template.id);
+
+                // Check what logs appear
+                console.log('[BOUNDS] Test boundary');
+                console.log('[IMPORT] Test import');
+                console.log('[EXPORT:mall] Test export');
+                console.log('[DOWNLOAD] Test download');
+                console.log('[DEBUG] This should be hidden');
+
+            } catch (error) {
+                console.error('Test failed:', error);
+            }
+        }
+
+        // Run test
+        testLogs();
+    </script>
+</body>
+</html>

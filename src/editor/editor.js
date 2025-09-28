@@ -3,6 +3,12 @@ import { makeBounds } from './core/TemplateBounds.js';
 import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
 
+// Debug logging control
+const DEBUG = false;
+function debug(...args) {
+    if (DEBUG) console.log(...args);
+}
+
 class FloorplanEditor {
     constructor() {
         this.canvas = document.getElementById('grid-canvas');
@@ -117,7 +123,7 @@ class FloorplanEditor {
     }
 
     resizeTemplateModels() {
-        console.log('[DEBUG] resizeTemplateModels: Resizing template arrays to match grid:', this.gridWidth, 'x', this.gridHeight);
+        debug('[DEBUG] resizeTemplateModels: Resizing template arrays to match grid:', this.gridWidth, 'x', this.gridHeight);
 
         // Resize scene model arrays
         this.sceneModel.grid = this.createEmptyGrid();
@@ -217,7 +223,7 @@ class FloorplanEditor {
         this.horizontalEdges = this.sceneModel.horizontalEdges;
         this.verticalEdges = this.sceneModel.verticalEdges;
 
-        console.log('[DEBUG] resizeTemplateModels: Completed resizing');
+        debug('[DEBUG] resizeTemplateModels: Completed resizing');
     }
 
     clearScene() {
@@ -242,7 +248,7 @@ class FloorplanEditor {
 
     // Parse template content and populate template layer for ghosted rendering
     parseTemplateContent(templateData, dto) {
-        console.log('[DEBUG] parseTemplateContent: Entry:', {
+        debug('[DEBUG] parseTemplateContent: Entry:', {
             templateDataKeys: Object.keys(templateData),
             dtoType: dto.type,
             hasSceneData: !!templateData.sceneData,
@@ -256,7 +262,7 @@ class FloorplanEditor {
         if (hasParent) {
             // This is a child template - move current template to parent layer if it exists
             if (this.currentTemplateModel.hasContent) {
-                console.log('[DEBUG] parseTemplateContent: Moving current template to parent layer');
+                debug('[DEBUG] parseTemplateContent: Moving current template to parent layer');
                 // Deep copy current template to parent layer
                 this.parentTemplateModel.grid = this.currentTemplateModel.grid.map(row => [...row]);
                 this.parentTemplateModel.horizontalEdges = this.currentTemplateModel.horizontalEdges.map(row => [...row]);
@@ -290,20 +296,20 @@ class FloorplanEditor {
 
         // For mall templates, check for embedded scene content
         if (dto.type === 'mall') {
-            console.log('[DEBUG] parseTemplateContent: Processing mall template');
+            debug('[DEBUG] parseTemplateContent: Processing mall template');
             if (templateData.sceneData) {
-                console.log('[DEBUG] parseTemplateContent: Found sceneData, parsing...');
+                debug('[DEBUG] parseTemplateContent: Found sceneData, parsing...');
                 // Parse scene data (tiles and edges) into template layer
                 this.parseSceneDataIntoTemplateLayer(templateData.sceneData);
-                console.log('[DEBUG] parseTemplateContent: Parsed mall scene data into ghosted layer');
+                debug('[DEBUG] parseTemplateContent: Parsed mall scene data into ghosted layer');
             } else if (templateData.instances && Array.isArray(templateData.instances)) {
-                console.log('[DEBUG] parseTemplateContent: Found instances, parsing...');
+                debug('[DEBUG] parseTemplateContent: Found instances, parsing...');
                 // Legacy: handle instances format
                 this.parseInstancesIntoTemplateLayer(templateData.instances);
                 this.templateModel.hasContent = true;
-                console.log('[DEBUG] parseTemplateContent: Parsed mall instances into ghosted layer');
+                debug('[DEBUG] parseTemplateContent: Parsed mall instances into ghosted layer');
             } else {
-                console.log('[DEBUG] parseTemplateContent: No scene data or instances, creating boundary');
+                debug('[DEBUG] parseTemplateContent: No scene data or instances, creating boundary');
                 // Create ghosted boundary representation from mall structure
                 this.createGhostedMallBoundary(dto);
             }
@@ -311,33 +317,33 @@ class FloorplanEditor {
 
         // For gallery/unit templates, handle scene data or create boundary from rect
         if (dto.type === 'unit') {
-            console.log('[DEBUG] parseTemplateContent: Processing gallery/unit template');
+            debug('[DEBUG] parseTemplateContent: Processing gallery/unit template');
             if (templateData.sceneData) {
                 // Parse scene data if available
                 this.parseSceneDataIntoTemplateLayer(templateData.sceneData);
-                console.log('[DEBUG] parseTemplateContent: Parsed gallery scene data into ghosted layer');
+                debug('[DEBUG] parseTemplateContent: Parsed gallery scene data into ghosted layer');
             } else if (dto.rect) {
-                console.log('[DEBUG] parseTemplateContent: Creating gallery boundary from rect:', dto.rect);
-                console.log('[DEBUG] parseTemplateContent: Grid dimensions before boundary creation:', this.gridWidth, 'x', this.gridHeight);
+                debug('[DEBUG] parseTemplateContent: Creating gallery boundary from rect:', dto.rect);
+                debug('[DEBUG] parseTemplateContent: Grid dimensions before boundary creation:', this.gridWidth, 'x', this.gridHeight);
 
                 // Create ghosted boundary from gallery rect
                 this.createGhostedRectOutline(dto.rect);
                 this.currentTemplateModel.hasContent = true;
 
-                console.log('[DEBUG] parseTemplateContent: Gallery boundary created, currentTemplateModel.hasContent:', this.currentTemplateModel.hasContent);
-                console.log('[DEBUG] parseTemplateContent: Template states after gallery boundary:', {
+                debug('[DEBUG] parseTemplateContent: Gallery boundary created, currentTemplateModel.hasContent:', this.currentTemplateModel.hasContent);
+                debug('[DEBUG] parseTemplateContent: Template states after gallery boundary:', {
                     parentHasContent: this.parentTemplateModel.hasContent,
                     currentHasContent: this.currentTemplateModel.hasContent
                 });
             } else {
-                console.log('[DEBUG] parseTemplateContent: No sceneData or rect found for gallery template');
+                debug('[DEBUG] parseTemplateContent: No sceneData or rect found for gallery template');
             }
         }
     }
 
     // Parse template content using Template Relationship Manager result
     parseTemplateContentWithRelationships(relationshipResult) {
-        console.log('[DEBUG] parseTemplateContentWithRelationships: Entry:', relationshipResult);
+        debug('[DEBUG] parseTemplateContentWithRelationships: Entry:', relationshipResult);
 
         // Clear existing template layers
         this.parentTemplateModel.grid = this.createEmptyGrid();
@@ -352,27 +358,27 @@ class FloorplanEditor {
 
         // Process parent template if it exists
         if (relationshipResult.hasParent && relationshipResult.parent) {
-            console.log('[DEBUG] parseTemplateContentWithRelationships: Processing parent template');
+            debug('[DEBUG] parseTemplateContentWithRelationships: Processing parent template');
             const parentData = relationshipResult.parent.templateData;
             const parentDto = relationshipResult.parent.dto;
 
             // Parse parent template content into parent layer
             this.parseTemplateIntoLayer(parentData, parentDto, 'parent');
-            console.log('[DEBUG] parseTemplateContentWithRelationships: Parent template parsed');
+            debug('[DEBUG] parseTemplateContentWithRelationships: Parent template parsed');
         }
 
         // Process current template
         if (relationshipResult.current) {
-            console.log('[DEBUG] parseTemplateContentWithRelationships: Processing current template');
+            debug('[DEBUG] parseTemplateContentWithRelationships: Processing current template');
             const currentData = relationshipResult.current.templateData;
             const currentDto = relationshipResult.current.dto;
 
             // Parse current template content into current layer
             this.parseTemplateIntoLayer(currentData, currentDto, 'current');
-            console.log('[DEBUG] parseTemplateContentWithRelationships: Current template parsed');
+            debug('[DEBUG] parseTemplateContentWithRelationships: Current template parsed');
         }
 
-        console.log('[DEBUG] parseTemplateContentWithRelationships: Complete. Template states:', {
+        debug('[DEBUG] parseTemplateContentWithRelationships: Complete. Template states:', {
             parentHasContent: this.parentTemplateModel.hasContent,
             currentHasContent: this.currentTemplateModel.hasContent
         });
@@ -610,151 +616,24 @@ class FloorplanEditor {
         console.log(`[DEBUG] createGhostedRectOutlineInLayer: Created ${edgesAdded} edges in ${layer} layer`);
     }
 
-    // Convert scene instances to template grid representation
+    // Convert scene instances to template grid representation (legacy wrapper)
     parseInstancesIntoTemplateLayer(instances) {
-        instances.forEach(instance => {
-            if (instance.position && instance.type) {
-                const [worldX, worldY, worldZ] = instance.position;
-                const gridX = Math.floor(worldX / 2);
-                const gridY = Math.floor(worldZ / 2);
-
-                if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
-                    if (instance.type === 'lobbyFloor') {
-                        this.templateModel.grid[gridY][gridX] = 'floor';
-                    }
-                    // Handle wall instances by adding edges
-                    // This is simplified - you might need more sophisticated wall detection
-                }
-            }
-        });
+        this.parseInstancesIntoLayer(instances, 'current');
     }
 
-    // Convert scene data (tiles and edges) to template grid representation
+    // Convert scene data (tiles and edges) to template grid representation (legacy wrapper)
     parseSceneDataIntoTemplateLayer(sceneData) {
-        console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Entry with sceneData:', sceneData);
-
-        let floorsAdded = 0;
-        let hEdgesAdded = 0;
-        let vEdgesAdded = 0;
-
-        // Parse floor tiles
-        if (sceneData.tiles && sceneData.tiles.floor) {
-            console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Processing', sceneData.tiles.floor.length, 'floor tiles');
-            sceneData.tiles.floor.forEach(([x, y]) => {
-                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
-                    this.currentTemplateModel.grid[y][x] = 'floor';
-                    floorsAdded++;
-                } else {
-                    console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Floor tile out of bounds:', [x, y]);
-                }
-            });
-        }
-
-        // Parse horizontal edges
-        if (sceneData.edges && sceneData.edges.horizontal) {
-            console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Processing', sceneData.edges.horizontal.length, 'horizontal edges');
-            sceneData.edges.horizontal.forEach(([x, y]) => {
-                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
-                    this.currentTemplateModel.horizontalEdges[y][x] = true;
-                    hEdgesAdded++;
-                } else {
-                    console.log('[DEBUG] parseSceneDataIntoTemplateLayer: H-edge out of bounds:', [x, y]);
-                }
-            });
-        }
-
-        // Parse vertical edges
-        if (sceneData.edges && sceneData.edges.vertical) {
-            console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Processing', sceneData.edges.vertical.length, 'vertical edges');
-            sceneData.edges.vertical.forEach(([x, y]) => {
-                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
-                    this.currentTemplateModel.verticalEdges[y][x] = true;
-                    vEdgesAdded++;
-                } else {
-                    console.log('[DEBUG] parseSceneDataIntoTemplateLayer: V-edge out of bounds:', [x, y]);
-                }
-            });
-        }
-
-        // Set hasContent flag if we actually added anything
-        if (floorsAdded > 0 || hEdgesAdded > 0 || vEdgesAdded > 0) {
-            this.currentTemplateModel.hasContent = true;
-        }
-
-        console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Conversion complete:', {
-            floorsAdded,
-            hEdgesAdded,
-            vEdgesAdded,
-            currentTemplateHasContent: this.currentTemplateModel.hasContent
-        });
+        this.parseSceneDataIntoLayer(sceneData, 'current');
     }
 
-    // Create ghosted boundary representation for mall templates without scene content
+    // Create ghosted boundary representation for mall templates without scene content (legacy wrapper)
     createGhostedMallBoundary(dto) {
-        // If mall has units, create ghosted outlines for each unit
-        if (dto.units && dto.units.length > 0) {
-            dto.units.forEach(unit => {
-                if (unit.rect) {
-                    this.createGhostedRectOutline(unit.rect);
-                }
-            });
-            this.currentTemplateModel.hasContent = true;
-            console.log('Created ghosted unit boundaries for', dto.units.length, 'units');
-        }
-        // If mall has rect but no units, create ghosted outline for the mall area
-        else if (dto.rect) {
-            this.createGhostedRectOutline(dto.rect);
-            this.currentTemplateModel.hasContent = true;
-            console.log('Created ghosted mall boundary from rect:', dto.rect);
-        }
+        this.createGhostedMallBoundaryInLayer(dto, 'current');
     }
 
-    // Create a ghosted outline (border only) for a rectangle
+    // Create a ghosted outline (border only) for a rectangle (legacy wrapper)
     createGhostedRectOutline(rect) {
-        const { x, y, w, h } = rect;
-        let edgesAdded = 0;
-
-        console.log('[DEBUG] createGhostedRectOutline: Creating boundary for rect:', rect);
-        console.log('[DEBUG] createGhostedRectOutline: Grid bounds check:', {
-            gridWidth: this.gridWidth,
-            gridHeight: this.gridHeight,
-            rectBounds: { left: x, top: y, right: x + w, bottom: y + h }
-        });
-
-        // Create border edges for the rectangle (not fill the interior)
-        // Top border
-        for (let i = 0; i < w && y >= 0 && y < this.gridHeight; i++) {
-            if (x + i >= 0 && x + i < this.gridWidth) {
-                this.currentTemplateModel.horizontalEdges[y][x + i] = true;
-                edgesAdded++;
-            }
-        }
-
-        // Bottom border
-        for (let i = 0; i < w && y + h >= 0 && y + h < this.gridHeight; i++) {
-            if (x + i >= 0 && x + i < this.gridWidth) {
-                this.currentTemplateModel.horizontalEdges[y + h][x + i] = true;
-                edgesAdded++;
-            }
-        }
-
-        // Left border
-        for (let i = 0; i < h && x >= 0 && x < this.gridWidth; i++) {
-            if (y + i >= 0 && y + i < this.gridHeight) {
-                this.currentTemplateModel.verticalEdges[y + i][x] = true;
-                edgesAdded++;
-            }
-        }
-
-        // Right border
-        for (let i = 0; i < h && x + w >= 0 && x + w < this.gridWidth; i++) {
-            if (y + i >= 0 && y + i < this.gridHeight) {
-                this.currentTemplateModel.verticalEdges[y + i][x + w] = true;
-                edgesAdded++;
-            }
-        }
-
-        console.log('[DEBUG] createGhostedRectOutline: Created', edgesAdded, 'boundary edges');
+        this.createGhostedRectOutlineInLayer(rect, 'current');
     }
 
     setupEventListeners() {
@@ -1161,7 +1040,7 @@ class FloorplanEditor {
         // Get current template layers from relationship manager
         const layers = this.templateRelationshipManager.getCurrentLayers();
 
-        console.log('[DEBUG] renderGhostedContent: Using template layers from relationship manager:', {
+        debug('[DEBUG] renderGhostedContent: Using template layers from relationship manager:', {
             hasParent: layers.hasParent,
             hierarchy: layers.hierarchy?.length || 0,
             levels: layers.levels || 0
@@ -1169,7 +1048,7 @@ class FloorplanEditor {
 
         // Render multi-level hierarchy if available
         if (layers.hierarchy && layers.hierarchy.length > 0) {
-            console.log('[DEBUG] renderGhostedContent: Rendering multi-level hierarchy:',
+            debug('[DEBUG] renderGhostedContent: Rendering multi-level hierarchy:',
                 layers.hierarchy.map(t => t.dto.type));
 
             // Render each level in the hierarchy
@@ -1214,18 +1093,18 @@ class FloorplanEditor {
 
         // Fallback to legacy models if relationship manager doesn't have data
         if (!layers.hierarchy || layers.hierarchy.length === 0) {
-            console.log('[DEBUG] renderGhostedContent: No hierarchy data, falling back to legacy models');
+            debug('[DEBUG] renderGhostedContent: No hierarchy data, falling back to legacy models');
 
             // Render parent template layer (grey, lower opacity)
             if (this.parentTemplateModel.hasContent) {
-                console.log('[DEBUG] renderGhostedContent: Rendering legacy parent template layer (grey)');
+                debug('[DEBUG] renderGhostedContent: Rendering legacy parent template layer (grey)');
                 this.renderTemplateLayer(this.parentTemplateModel, '#cccccc', '#999999', 0.4); // Grey parent
             }
 
             // Render current template layer with type-specific colors
             if (this.currentTemplateModel.hasContent) {
                 const templateType = this.currentDto?.type || 'unknown';
-                console.log('[DEBUG] renderGhostedContent: Rendering legacy current template layer:', templateType);
+                debug('[DEBUG] renderGhostedContent: Rendering legacy current template layer:', templateType);
 
                 // Use type-specific colors
                 if (templateType === 'room') {
@@ -1241,7 +1120,7 @@ class FloorplanEditor {
         }
 
         // Debug: Log template states
-        console.log('[DEBUG] renderGhostedContent: Template states:', {
+        debug('[DEBUG] renderGhostedContent: Template states:', {
             relationshipManager: {
                 hasParent: layers.hasParent,
                 parentHasContent: layers.parent ? true : false,
@@ -1278,7 +1157,7 @@ class FloorplanEditor {
 
     // Parse template content into a legacy model structure
     parseTemplateContentIntoLegacyModel(templateData, dto, targetModel) {
-        console.log('[DEBUG] parseTemplateContentIntoLegacyModel: Processing:', {
+        debug('[DEBUG] parseTemplateContentIntoLegacyModel: Processing:', {
             templateType: dto.type,
             hasSceneData: !!templateData.sceneData,
             hasInstances: !!templateData.instances
@@ -1500,7 +1379,7 @@ class FloorplanEditor {
             }
         }
 
-        console.log('[DEBUG] renderTemplateLayer: Rendered', {
+        debug('[DEBUG] renderTemplateLayer: Rendered', {
             floors: floorsRendered,
             hEdges: hEdgesRendered,
             vEdges: vEdgesRendered,
@@ -1513,10 +1392,10 @@ class FloorplanEditor {
     }
 
     render() {
-        console.log('[DEBUG] render: Starting render cycle');
-        console.log('[DEBUG] render: Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
-        console.log('[DEBUG] render: Grid dimensions:', this.gridWidth, 'x', this.gridHeight);
-        console.log('[DEBUG] render: Template states:', {
+        debug('[DEBUG] render: Starting render cycle');
+        debug('[DEBUG] render: Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
+        debug('[DEBUG] render: Grid dimensions:', this.gridWidth, 'x', this.gridHeight);
+        debug('[DEBUG] render: Template states:', {
             parentHasContent: this.parentTemplateModel?.hasContent,
             currentHasContent: this.currentTemplateModel?.hasContent,
             showTemplate: this.showTemplate,
@@ -1751,7 +1630,7 @@ class FloorplanEditor {
      * @param {Object} dto - Template DTO
      */
     resizeGridForTemplate(dto) {
-        console.log('[DEBUG] resizeGridForTemplate:', { type: dto.type, rect: dto.rect, gridSize: dto.gridSize });
+        debug('[DEBUG] resizeGridForTemplate:', { type: dto.type, rect: dto.rect, gridSize: dto.gridSize });
 
         const oldGridWidth = this.gridWidth;
         const oldGridHeight = this.gridHeight;
@@ -1777,7 +1656,7 @@ class FloorplanEditor {
                 if (dto.rect && dto.rect.w > 0 && dto.rect.h > 0) {
                     this.gridWidth = dto.rect.w;
                     this.gridHeight = dto.rect.h;
-                    console.log('[DEBUG] Child template: resized grid to template dimensions');
+                    debug('[DEBUG] Child template: resized grid to template dimensions');
                 } else {
                     console.warn('[DEBUG] Child template has invalid rect, keeping current grid size');
                 }
@@ -1793,14 +1672,14 @@ class FloorplanEditor {
 
         // Only resize arrays if dimensions actually changed
         if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
-            console.log('[DEBUG] Grid dimensions changed:', {
+            debug('[DEBUG] Grid dimensions changed:', {
                 from: { width: oldGridWidth, height: oldGridHeight },
                 to: { width: this.gridWidth, height: this.gridHeight }
             });
             this.resizeTemplateModels();
             this.render();
         } else {
-            console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
+            debug('[DEBUG] Grid dimensions unchanged, skipping resize');
         }
     }
 
@@ -1814,7 +1693,7 @@ class FloorplanEditor {
         this.limitToActiveUnit = false; // Reset limit checkbox
 
         // Clear Template Relationship Manager
-        console.log('[DEBUG] clearTemplate: Clearing Template Relationship Manager');
+        debug('[DEBUG] clearTemplate: Clearing Template Relationship Manager');
         this.templateRelationshipManager.clearAll();
 
         // Clear both template layers
@@ -2211,18 +2090,18 @@ class FloorplanEditor {
 
         // Add current scene content for ghosted rendering when template is loaded back
         const sceneData = this.toSceneV1();
-        console.log('[DEBUG] Export: toSceneV1() returned:', sceneData);
+        debug('[DEBUG] Export: toSceneV1() returned:', sceneData);
         if (sceneData && (sceneData.tiles?.floor?.length > 0 ||
                           sceneData.edges?.horizontal?.length > 0 ||
                           sceneData.edges?.vertical?.length > 0)) {
             out.sceneData = sceneData;
-            console.log('[DEBUG] Export: Added scene data to mall template:', {
+            debug('[DEBUG] Export: Added scene data to mall template:', {
                 floors: sceneData.tiles?.floor?.length || 0,
                 hEdges: sceneData.edges?.horizontal?.length || 0,
                 vEdges: sceneData.edges?.vertical?.length || 0
             });
         } else {
-            console.log('[DEBUG] Export: No scene data to add - scene is empty');
+            debug('[DEBUG] Export: No scene data to add - scene is empty');
         }
 
         // Compute safe filename with timestamp
@@ -2844,10 +2723,10 @@ class FloorplanEditor {
 
             // Only clear scene for parent templates, preserve template data for child templates
             if (!hasParent) {
-                console.log('[DEBUG] Parent template - clearing scene');
+                debug('[DEBUG] Parent template - clearing scene');
                 this.clearScene();
             } else {
-                console.log('[DEBUG] Child template - preserving parent data, only clearing scene grid');
+                debug('[DEBUG] Child template - preserving parent data, only clearing scene grid');
                 // Only clear scene grid, preserve template models for parent-child relationship
                 this.sceneModel.grid = this.createEmptyGrid();
                 this.sceneModel.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
@@ -3156,7 +3035,7 @@ class FloorplanEditor {
         }
 
         // Use Template Relationship Manager to handle parent-child relationships
-        console.log('[DEBUG] Loading template through Template Relationship Manager');
+        debug('[DEBUG] Loading template through Template Relationship Manager');
         const relationshipResult = await this.templateRelationshipManager.loadTemplate(jsonData, dto);
 
         // Clear scene data (user content)
@@ -3167,7 +3046,7 @@ class FloorplanEditor {
         this.overlayModel.templateData = dto;
 
         // Parse template content for ghosted rendering using relationship manager result
-        console.log('[DEBUG] Template relationship result:', relationshipResult);
+        debug('[DEBUG] Template relationship result:', relationshipResult);
         this.parseTemplateContentWithRelationships(relationshipResult);
 
         // Runtime assertions for import

@@ -38,7 +38,16 @@
       "Bash(npm run test:export:*)",
       "Read(//d//**)",
       "Bash(npx http-server:*)",
-      "Bash(timeout 15 git push origin main)"
+      "Bash(timeout 15 git push origin main)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(git fetch:*)",
+      "Bash(git switch:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
