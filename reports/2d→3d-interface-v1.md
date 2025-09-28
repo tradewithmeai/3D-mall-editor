@@ -5,6 +5,8 @@
 **Scope**: Maps scene.v1 (2D) to 3D construction API
 **Status**: Locked specification
 
+**See addendum**: [2d→3d-interface-addendum.md](./2d→3d-interface-addendum.md) - Engine unit mapping clarifications
+
 ---
 
 ## Quick Reference
