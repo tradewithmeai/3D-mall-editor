@@ -386,7 +386,7 @@ class FloorplanEditor {
 
     // Parse template data into a specific layer (parent or current)
     parseTemplateIntoLayer(templateData, dto, layer) {
-        console.log(`[DEBUG] parseTemplateIntoLayer: Processing ${layer} layer:`, {
+        debug(`[DEBUG] parseTemplateIntoLayer: Processing ${layer} layer:`, {
             templateType: dto.type,
             hasSceneData: !!templateData.sceneData,
             hasInstances: !!templateData.instances
@@ -400,69 +400,69 @@ class FloorplanEditor {
 
         // Check if template has instances (scene content)
         if (templateData.instances && Array.isArray(templateData.instances)) {
-            console.log(`[DEBUG] parseTemplateIntoLayer: Parsing ${templateData.instances.length} instances into ${layer} layer`);
+            debug(`[DEBUG] parseTemplateIntoLayer: Parsing ${templateData.instances.length} instances into ${layer} layer`);
             this.parseInstancesIntoLayer(templateData.instances, layer);
             targetModel.hasContent = true;
         }
 
         // For mall templates, check for embedded scene content
         if (dto.type === 'mall') {
-            console.log(`[DEBUG] parseTemplateIntoLayer: Processing mall template in ${layer} layer`);
+            debug(`[DEBUG] parseTemplateIntoLayer: Processing mall template in ${layer} layer`);
             if (templateData.sceneData) {
-                console.log(`[DEBUG] parseTemplateIntoLayer: Found sceneData, parsing into ${layer} layer`);
+                debug(`[DEBUG] parseTemplateIntoLayer: Found sceneData, parsing into ${layer} layer`);
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (templateData.instances && Array.isArray(templateData.instances)) {
-                console.log(`[DEBUG] parseTemplateIntoLayer: Found instances, parsing into ${layer} layer`);
+                debug(`[DEBUG] parseTemplateIntoLayer: Found instances, parsing into ${layer} layer`);
                 this.parseInstancesIntoLayer(templateData.instances, layer);
                 targetModel.hasContent = true;
             } else {
-                console.log(`[DEBUG] parseTemplateIntoLayer: No scene data or instances, creating boundary in ${layer} layer`);
+                debug(`[DEBUG] parseTemplateIntoLayer: No scene data or instances, creating boundary in ${layer} layer`);
                 this.createGhostedMallBoundaryInLayer(dto, layer);
             }
         }
 
         // For gallery/unit templates, handle scene data or create boundary from rect
         if (dto.type === 'unit') {
-            console.log(`[DEBUG] parseTemplateIntoLayer: Processing gallery/unit template in ${layer} layer`);
+            debug(`[DEBUG] parseTemplateIntoLayer: Processing gallery/unit template in ${layer} layer`);
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (dto.rect) {
-                console.log(`[DEBUG] parseTemplateIntoLayer: Creating gallery boundary from rect in ${layer} layer:`, dto.rect);
+                debug(`[DEBUG] parseTemplateIntoLayer: Creating gallery boundary from rect in ${layer} layer:`, dto.rect);
                 this.createGhostedRectOutlineInLayer(dto.rect, layer);
                 targetModel.hasContent = true;
             } else {
-                console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for gallery template in ${layer} layer`);
+                debug(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for gallery template in ${layer} layer`);
             }
         }
 
         // For room templates, handle scene data or create boundary from rect
         if (dto.type === 'room') {
-            console.log(`[DEBUG] parseTemplateIntoLayer: Processing room template in ${layer} layer`);
+            debug(`[DEBUG] parseTemplateIntoLayer: Processing room template in ${layer} layer`);
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (dto.rect) {
-                console.log(`[DEBUG] parseTemplateIntoLayer: Creating room boundary from rect in ${layer} layer:`, dto.rect);
+                debug(`[DEBUG] parseTemplateIntoLayer: Creating room boundary from rect in ${layer} layer:`, dto.rect);
                 this.createGhostedRectOutlineInLayer(dto.rect, layer);
                 targetModel.hasContent = true;
             } else {
-                console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for room template in ${layer} layer`);
+                debug(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for room template in ${layer} layer`);
             }
         }
         // For object templates, handle scene data or create boundary from rect
         if (dto.type === 'object') {
-            console.log(`[DEBUG] parseTemplateIntoLayer: Processing object template in ${layer} layer`);
+            debug(`[DEBUG] parseTemplateIntoLayer: Processing object template in ${layer} layer`);
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (dto.rect) {
-                console.log(`[DEBUG] parseTemplateIntoLayer: Creating object boundary from rect in ${layer} layer:`, dto.rect);
+                debug(`[DEBUG] parseTemplateIntoLayer: Creating object boundary from rect in ${layer} layer:`, dto.rect);
                 this.createGhostedRectOutlineInLayer(dto.rect, layer);
                 targetModel.hasContent = true;
             } else {
-                console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for object template in ${layer} layer`);
+                debug(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for object template in ${layer} layer`);
             }
         }
 
-        console.log(`[DEBUG] parseTemplateIntoLayer: Completed ${layer} layer processing. hasContent:`, targetModel.hasContent);
+        debug(`[DEBUG] parseTemplateIntoLayer: Completed ${layer} layer processing. hasContent:`, targetModel.hasContent);
     }
 
     // Convert scene instances to template grid representation (layer-aware)
@@ -488,7 +488,7 @@ class FloorplanEditor {
 
     // Convert scene data (tiles and edges) to template grid representation (layer-aware)
     parseSceneDataIntoLayer(sceneData, layer = 'current') {
-        console.log(`[DEBUG] parseSceneDataIntoLayer: Entry with sceneData in ${layer} layer:`, sceneData);
+        debug(`[DEBUG] parseSceneDataIntoLayer: Entry with sceneData in ${layer} layer:`, sceneData);
 
         const targetModel = layer === 'parent' ? this.parentTemplateModel : this.currentTemplateModel;
         let floorsAdded = 0;
@@ -497,39 +497,39 @@ class FloorplanEditor {
 
         // Parse floor tiles
         if (sceneData.tiles && sceneData.tiles.floor) {
-            console.log(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.tiles.floor.length} floor tiles in ${layer} layer`);
+            debug(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.tiles.floor.length} floor tiles in ${layer} layer`);
             sceneData.tiles.floor.forEach(([x, y]) => {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                     targetModel.grid[y][x] = 'floor';
                     floorsAdded++;
                 } else {
-                    console.log(`[DEBUG] parseSceneDataIntoLayer: Floor tile out of bounds in ${layer} layer:`, [x, y]);
+                    debug(`[DEBUG] parseSceneDataIntoLayer: Floor tile out of bounds in ${layer} layer:`, [x, y]);
                 }
             });
         }
 
         // Parse horizontal edges
         if (sceneData.edges && sceneData.edges.horizontal) {
-            console.log(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.horizontal.length} horizontal edges in ${layer} layer`);
+            debug(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.horizontal.length} horizontal edges in ${layer} layer`);
             sceneData.edges.horizontal.forEach(([x, y]) => {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                     targetModel.horizontalEdges[y][x] = true;
                     hEdgesAdded++;
                 } else {
-                    console.log(`[DEBUG] parseSceneDataIntoLayer: H-edge out of bounds in ${layer} layer:`, [x, y]);
+                    debug(`[DEBUG] parseSceneDataIntoLayer: H-edge out of bounds in ${layer} layer:`, [x, y]);
                 }
             });
         }
 
         // Parse vertical edges
         if (sceneData.edges && sceneData.edges.vertical) {
-            console.log(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.vertical.length} vertical edges in ${layer} layer`);
+            debug(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.vertical.length} vertical edges in ${layer} layer`);
             sceneData.edges.vertical.forEach(([x, y]) => {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                     targetModel.verticalEdges[y][x] = true;
                     vEdgesAdded++;
                 } else {
-                    console.log(`[DEBUG] parseSceneDataIntoLayer: V-edge out of bounds in ${layer} layer:`, [x, y]);
+                    debug(`[DEBUG] parseSceneDataIntoLayer: V-edge out of bounds in ${layer} layer:`, [x, y]);
                 }
             });
         }
@@ -539,7 +539,7 @@ class FloorplanEditor {
             targetModel.hasContent = true;
         }
 
-        console.log(`[DEBUG] parseSceneDataIntoLayer: Conversion complete for ${layer} layer:`, {
+        debug(`[DEBUG] parseSceneDataIntoLayer: Conversion complete for ${layer} layer:`, {
             floorsAdded,
             hEdgesAdded,
             vEdgesAdded,
@@ -575,7 +575,7 @@ class FloorplanEditor {
         const { x, y, w, h } = rect;
         let edgesAdded = 0;
 
-        console.log(`[DEBUG] createGhostedRectOutlineInLayer: Creating outline for rect ${JSON.stringify(rect)} in ${layer} layer`);
+        debug(`[DEBUG] createGhostedRectOutlineInLayer: Creating outline for rect ${JSON.stringify(rect)} in ${layer} layer`);
 
         // Top edge
         for (let i = 0; i < w; i++) {
@@ -613,7 +613,7 @@ class FloorplanEditor {
             targetModel.hasContent = true;
         }
 
-        console.log(`[DEBUG] createGhostedRectOutlineInLayer: Created ${edgesAdded} edges in ${layer} layer`);
+        debug(`[DEBUG] createGhostedRectOutlineInLayer: Created ${edgesAdded} edges in ${layer} layer`);
     }
 
     // Convert scene instances to template grid representation (legacy wrapper)
@@ -1056,7 +1056,7 @@ class FloorplanEditor {
                 const templateType = template.dto?.type || 'unknown';
                 const isCurrentLevel = index === layers.hierarchy.length - 1;
 
-                console.log(`[DEBUG] renderGhostedContent: Rendering hierarchy level ${index}: ${templateType}`,
+                debug(`[DEBUG] renderGhostedContent: Rendering hierarchy level ${index}: ${templateType}`,
                     isCurrentLevel ? '(current)' : '(parent)');
 
                 // Convert to legacy template model format for rendering
@@ -2243,7 +2243,7 @@ class FloorplanEditor {
         // Get current template ID from relationship manager
         const layers = this.templateRelationshipManager.getCurrentLayers();
         const currentParentId = layers.current?.id || dto.id || config.fallbackParentId;
-        console.log(`[DEBUG] ${config.templateName} export - Parent template ID:`, currentParentId);
+        debug(`[DEBUG] ${config.templateName} export - Parent template ID:`, currentParentId);
 
         // Get the current scene content (what the user actually drew)
         const sceneData = this.toSceneV1();
