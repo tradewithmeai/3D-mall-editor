@@ -958,7 +958,7 @@ class FloorplanEditor {
                 const y1 = Math.max(this.wallStart.y, this.wallCurr.y);
 
                 let placed = 0, skipped = 0;
-                if (dy === 0) { // horizontal run along y0
+                if (dy === 0) { // horizontal run along y0 - create edge lines
                     // horizontal edge at (gx, y0) spans from (gx,y0) to (gx+1,y0)
                     for (let gx = x0; gx <= x1 - 1; gx++) {
                         if (this.isWithinTemplateBounds(gx, y0, 'edge-horizontal')) {
@@ -968,11 +968,11 @@ class FloorplanEditor {
                             skipped++;
                         }
                     }
-                } else { // vertical run along x0
-                    // vertical edge at (x0, gy) spans from (x0,gy) to (x0,gy+1)
-                    for (let gy = y0; gy <= y1 - 1; gy++) {
-                        if (this.isWithinTemplateBounds(x0, gy, 'edge-vertical')) {
-                            this.addVerticalEdge(x0, gy);
+                } else { // vertical run along x0 - create wall tiles
+                    // wall tile at each grid cell along the vertical line
+                    for (let gy = y0; gy <= y1; gy++) {
+                        if (this.isWithinTemplateBounds(x0, gy, 'tile')) {
+                            this.placeWallAt(x0, gy);
                             placed++;
                         } else {
                             skipped++;
@@ -980,7 +980,8 @@ class FloorplanEditor {
                     }
                 }
 
-                console.info('[BOUNDS]', { tool: 'wall-segment', mode: 'edge', x0, y0, x1, y1, placed, skipped });
+                const mode = (dy === 0) ? 'edge' : 'tile';
+                console.info('[BOUNDS]', { tool: 'wall-segment', mode, x0, y0, x1, y1, placed, skipped });
                 this.wallActive = false;
                 this.wallStart = this.wallCurr = null;
                 this.render();
@@ -1709,20 +1710,18 @@ class FloorplanEditor {
                     this.ctx.stroke();
                 }
             } else { // vertical run along x0
-                // Draw individual line segments for each edge that will be placed
-                for (let gy = y0; gy <= y1 - 1; gy++) {
+                // Draw filled cells for each wall tile that will be placed
+                this.ctx.globalAlpha = 0.4;
+                this.ctx.fillStyle = '#000000'; // Black wall tiles
+                for (let gy = y0; gy <= y1; gy++) {
                     // Same bounds predicate as commit
-                    if (!this.isWithinTemplateBounds(x0, gy, 'edge-vertical')) continue;
+                    if (!this.isWithinTemplateBounds(x0, gy, 'tile')) continue;
 
-                    const px = Math.round(x0 * this.cellSize) + 0.5; // crisp vertical line
-                    const startY = gy * this.cellSize;
-                    const endY = (gy + 1) * this.cellSize;
-
-                    this.ctx.beginPath();
-                    this.ctx.moveTo(px, startY);
-                    this.ctx.lineTo(px, endY);
-                    this.ctx.stroke();
+                    const px = x0 * this.cellSize;
+                    const py = gy * this.cellSize;
+                    this.ctx.fillRect(px, py, this.cellSize, this.cellSize);
                 }
+                this.ctx.globalAlpha = 1.0;
             }
         }
     }
