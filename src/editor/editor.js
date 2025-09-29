@@ -20,6 +20,11 @@ class FloorplanEditor {
         this.rectActive = false;
         this.rectStart = null;
         this.rectCurr = null;
+
+        // Wall segment tool state
+        this.wallActive = false;
+        this.wallStart = null;
+        this.wallCurr = null;
         
         // Hard data separation: sceneModel (user content) vs overlayModel (template constraints)
         this.sceneModel = {
@@ -62,7 +67,8 @@ class FloorplanEditor {
         // Colors for different elements
         this.colors = {
             empty: '#f0f0f0',
-            floor: '#8B4513'
+            floor: '#8B4513',
+            wall: '#000000'
         };
         
         // Template overlay state
@@ -924,6 +930,60 @@ class FloorplanEditor {
             this.rectCurr = { x, y };
             this.rectActive = true;
             e.preventDefault();
+        } else if (this.currentTool === 'wallSegment') {
+            const { x, y } = this.clientToGrid(e);
+            if (!this.wallActive) {
+                // First click: start wall segment
+                this.wallStart = { x, y };
+                this.wallCurr = { x, y };
+                this.wallActive = true;
+                this.render();
+            } else {
+                // Second click: attempt commit
+                this.wallCurr = { x, y };
+                const dx = this.wallCurr.x - this.wallStart.x;
+                const dy = this.wallCurr.y - this.wallStart.y;
+
+                if (!(dx === 0 || dy === 0)) {
+                    this.showToast('warning', 'Invalid Wall', 'Walls must be straight');
+                    this.wallActive = false;
+                    this.wallStart = this.wallCurr = null;
+                    this.render();
+                    return;
+                }
+
+                const x0 = Math.min(this.wallStart.x, this.wallCurr.x);
+                const x1 = Math.max(this.wallStart.x, this.wallCurr.x);
+                const y0 = Math.min(this.wallStart.y, this.wallCurr.y);
+                const y1 = Math.max(this.wallStart.y, this.wallCurr.y);
+
+                let placed = 0, skipped = 0;
+                if (dy === 0) { // horizontal run along y0
+                    for (let gx = x0; gx <= x1; gx++) {
+                        if (this.isWithinTemplateBounds(gx, y0, 'tile')) {
+                            this.placeWallAt(gx, y0);
+                            placed++;
+                        } else {
+                            skipped++;
+                        }
+                    }
+                } else { // vertical run along x0
+                    for (let gy = y0; gy <= y1; gy++) {
+                        if (this.isWithinTemplateBounds(x0, gy, 'tile')) {
+                            this.placeWallAt(x0, gy);
+                            placed++;
+                        } else {
+                            skipped++;
+                        }
+                    }
+                }
+
+                console.info('[BOUNDS]', { tool: 'wall-segment', x0, y0, x1, y1, placed, skipped });
+                this.wallActive = false;
+                this.wallStart = this.wallCurr = null;
+                this.render();
+            }
+            e.preventDefault();
         } else {
             this.isDrawing = true;
             this.handleMouseAction(e);
@@ -934,6 +994,10 @@ class FloorplanEditor {
         if (this.currentTool === 'dragRect' && this.rectActive) {
             const { x, y } = this.clientToGrid(e);
             this.rectCurr = { x, y };
+            this.render(); // Update preview
+        } else if (this.currentTool === 'wallSegment' && this.wallActive) {
+            const { x, y } = this.clientToGrid(e);
+            this.wallCurr = { x, y };
             this.render(); // Update preview
         } else if (this.isDrawing) {
             this.handleMouseAction(e);
@@ -1572,6 +1636,9 @@ class FloorplanEditor {
         // Render rectangle preview if active
         this.renderRectanglePreview();
 
+        // Render wall segment preview if active
+        this.renderWallSegmentPreview();
+
         // Only render unit overlay if we don't have a template overlay active
         if (!this.overlayModel.templateData) {
             this.renderUnitOverlay();
@@ -1604,6 +1671,47 @@ class FloorplanEditor {
                 (x1 - x0 + 1) * this.cellSize,
                 (y1 - y0 + 1) * this.cellSize
             );
+        }
+    }
+
+    renderWallSegmentPreview() {
+        if (this.currentTool === 'wallSegment' && this.wallActive && this.wallStart && this.wallCurr) {
+            const dx = this.wallCurr.x - this.wallStart.x;
+            const dy = this.wallCurr.y - this.wallStart.y;
+
+            // Only draw preview for straight lines
+            if (dx === 0 || dy === 0) {
+                const x0 = Math.min(this.wallStart.x, this.wallCurr.x);
+                const x1 = Math.max(this.wallStart.x, this.wallCurr.x);
+                const y0 = Math.min(this.wallStart.y, this.wallCurr.y);
+                const y1 = Math.max(this.wallStart.y, this.wallCurr.y);
+
+                // Draw semi-transparent overlay over the cells that will be painted
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // Black with 40% opacity
+                if (dy === 0) { // horizontal run along y0
+                    for (let gx = x0; gx <= x1; gx++) {
+                        const pixelX = gx * this.cellSize;
+                        const pixelY = y0 * this.cellSize;
+                        this.ctx.fillRect(pixelX, pixelY, this.cellSize, this.cellSize);
+                    }
+                } else { // vertical run along x0
+                    for (let gy = y0; gy <= y1; gy++) {
+                        const pixelX = x0 * this.cellSize;
+                        const pixelY = gy * this.cellSize;
+                        this.ctx.fillRect(pixelX, pixelY, this.cellSize, this.cellSize);
+                    }
+                }
+
+                // Draw border around the selection
+                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)'; // Black with 80% opacity
+                this.ctx.lineWidth = 2;
+                this.ctx.strokeRect(
+                    x0 * this.cellSize,
+                    y0 * this.cellSize,
+                    (x1 - x0 + 1) * this.cellSize,
+                    (y1 - y0 + 1) * this.cellSize
+                );
+            }
         }
     }
 
@@ -2291,6 +2399,13 @@ class FloorplanEditor {
     placeFloorAt(x, y) {
         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
             this.grid[y][x] = 'floor';
+        }
+    }
+
+    // Helper for consistent wall placement (used by wall segment tool)
+    placeWallAt(x, y) {
+        if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+            this.grid[y][x] = 'wall';
         }
     }
 
