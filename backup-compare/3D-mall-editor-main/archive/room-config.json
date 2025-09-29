@@ -1,0 +1,172 @@
+{
+  "roomId": "lobby-foundation",
+  "name": "3D Base Template Lobby",
+  "description": "Corner-based coordinate system lobby with debug tools",
+  
+  "dimensions": {
+    "width": 40,
+    "depth": 30, 
+    "height": 8,
+    "coordinateSystem": "corner-based",
+    "origin": "southwest-corner"
+  },
+  
+  "surfaces": {
+    "floor": {
+      "type": "plane",
+      "dimensions": [40, 30],
+      "position": [20, 0, 15],
+      "rotation": [-1.5707963267948966, 0, 0],
+      "material": {
+        "color": "#90EE90",
+        "type": "MeshStandardMaterial",
+        "roughness": 0.6,
+        "metalness": 0.1
+      },
+      "properties": {
+        "receiveShadow": true
+      }
+    },
+    
+    "ceiling": {
+      "type": "plane", 
+      "dimensions": [40, 30],
+      "position": [20, 8, 15],
+      "rotation": [1.5707963267948966, 0, 0],
+      "material": {
+        "color": "#d3d3d3",
+        "type": "MeshStandardMaterial",
+        "roughness": 0.8,
+        "metalness": 0.1
+      }
+    },
+    
+    "walls": {
+      "north": {
+        "type": "plane",
+        "dimensions": [40, 8],
+        "position": [20, 4, 30],
+        "rotation": [0, 3.141592653589793, 0],
+        "material": {
+          "color": "#f8f8f8",
+          "type": "MeshStandardMaterial", 
+          "roughness": 0.9
+        },
+        "compass": "north"
+      },
+      
+      "south": {
+        "type": "plane",
+        "dimensions": [40, 8], 
+        "position": [20, 4, 0],
+        "rotation": [0, 0, 0],
+        "material": {
+          "color": "#f8f8f8",
+          "type": "MeshStandardMaterial",
+          "roughness": 0.9
+        },
+        "compass": "south"
+      },
+      
+      "east": {
+        "type": "plane",
+        "dimensions": [30, 8],
+        "position": [40, 4, 15],
+        "rotation": [0, -1.5707963267948966, 0],
+        "material": {
+          "color": "#f8f8f8", 
+          "type": "MeshStandardMaterial",
+          "roughness": 0.9
+        },
+        "compass": "east"
+      },
+      
+      "west": {
+        "type": "plane",
+        "dimensions": [30, 8],
+        "position": [0, 4, 15],
+        "rotation": [0, 1.5707963267948966, 0],
+        "material": {
+          "color": "#f8f8f8",
+          "type": "MeshStandardMaterial", 
+          "roughness": 0.9
+        },
+        "compass": "west"
+      }
+    }
+  },
+  
+  "debug": {
+    "referencePole": {
+      "type": "cylinder",
+      "dimensions": [0.1, 0.1, 1, 8],
+      "position": [0, 0.5, 0],
+      "material": {
+        "color": "#000000",
+        "type": "MeshBasicMaterial"
+      },
+      "description": "Southwest corner origin marker"
+    },
+    
+    "debugBall": {
+      "type": "sphere", 
+      "dimensions": [0.2, 12, 12],
+      "position": [35, 1.5, 15],
+      "material": {
+        "color": "#44ff44",
+        "type": "MeshStandardMaterial",
+        "roughness": 0.3,
+        "metalness": 0.2,
+        "transparent": true,
+        "opacity": 0.8,
+        "emissive": "#114411",
+        "emissiveIntensity": 0.2
+      },
+      "physics": {
+        "velocity": [0.05, 0, 0.02],
+        "gravity": -0.012,
+        "bounce": 0.75,
+        "friction": 0.98,
+        "radius": 0.2
+      }
+    }
+  },
+  
+  "player": {
+    "startPosition": [20, 1.6, 15],
+    "movement": {
+      "baseSpeed": 0.05,
+      "maxSpeed": 0.2,
+      "accelerationTime": 2.0,
+      "boundaries": {
+        "x": {"min": 0.5, "max": 39.5},
+        "z": {"min": 0.5, "max": 29.5}
+      }
+    }
+  },
+  
+  "lighting": {
+    "ambient": {
+      "color": "#f0f8ff",
+      "intensity": 0.4
+    },
+    "directional": {
+      "color": "#ffffff", 
+      "intensity": 0.6,
+      "position": [10, 15, 10],
+      "shadows": true
+    },
+    "accent": [
+      {"color": "#00ff88", "intensity": 0.6, "distance": 15, "position": [-15, 8, -15]},
+      {"color": "#ff4488", "intensity": 0.6, "distance": 15, "position": [15, 8, -15]},
+      {"color": "#4488ff", "intensity": 0.6, "distance": 15, "position": [0, 8, 15]}
+    ],
+    "mood": {
+      "color": "#6366f1",
+      "intensity": 0.3,
+      "distance": 25,
+      "position": [0, 12, 0],
+      "animated": true
+    }
+  }
+}

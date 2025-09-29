@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Office Simulator - Progressive Build</title>
+    <meta name="description" content="Experience an immersive 3D office environment featuring AI-powered characters, art gallery, and interactive workspace. Built with Three.js for modern browsers.">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            max-width: 300px;
+        }
+        
+        #status {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #0f0;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .key-binding {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container">
+        <div id="ui-overlay">
+            <h2>🏢 3D Office Simulator</h2>
+            <p><span class="key-binding">WASD</span> Move • <span class="key-binding">Mouse</span> Look Around</p>
+            <p><span class="key-binding">Space</span> Dance • <span class="key-binding">D</span> Diana AI (Coming Soon)</p>
+            <p><span class="key-binding">Green Ball</span> Kick to toggle debug grid</p>
+        </div>
+        
+        <div id="status">
+            <strong>🔧 Progressive Build Status:</strong><br>
+            <div id="log"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================================================
+        // LOGGING SYSTEM
+        // ============================================================================
+        const log = document.getElementById('log');
+        
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.style.color = type === 'error' ? '#f44' : type === 'success' ? '#4f4' : '#0f0';
+            div.innerHTML = `[${timestamp}] ${message}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+            console.log(`[PROGRESSIVE] ${message}`);
+        }
+        
+        // ============================================================================
+        // EMBEDDED JSON CONFIGURATIONS (Proven working)
+        // ============================================================================
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    }
+                },
+                "debugBall": {
+                    "model": "sphere",
+                    "size": [0.5, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#44ff44",
+                        "roughness": 0.3,
+                        "metalness": 0.1,
+                        "emissive": "#114411",
+                        "emissiveIntensity": 0.3
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [40, 30],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    }
+                },
+                "wall": {
+                    "model": "plane",
+                    "size": [40, 8],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#ffffff",
+                        "roughness": 0.8,
+                        "metalness": 0.0
+                    }
+                }
+            }
+        };
+
+        const EMBEDDED_LAYOUT = {
+            "metadata": {
+                "dimensions": { "width": 40, "depth": 30, "height": 8 }
+            },
+            "player": {
+                "startPosition": [20, 1.6, 15],
+                "movement": { "baseSpeed": 0.15, "maxSpeed": 0.6 }
+            },
+            "objects": [
+                { "type": "referencePole", "id": "origin-pole", "position": [0, 0.5, 0] },
+                { "type": "debugBall", "id": "debug-ball", "position": [35, 1.0, 25] },
+                { "type": "floor", "id": "main-floor", "position": [20, 0, 15] },
+                { "type": "wall", "id": "north-wall", "position": [20, 4, 30], "rotation": [0, 0, 0], "size": [40, 8] },
+                { "type": "wall", "id": "south-wall", "position": [20, 4, 0], "rotation": [0, Math.PI, 0], "size": [40, 8] },
+                { "type": "wall", "id": "east-wall", "position": [40, 4, 15], "rotation": [0, -Math.PI/2, 0], "size": [30, 8] },
+                { "type": "wall", "id": "west-wall", "position": [0, 4, 15], "rotation": [0, Math.PI/2, 0], "size": [30, 8] }
+            ]
+        };
+
+        // ============================================================================
+        // COMPONENT FACTORY SYSTEM (Proven working)
+        // ============================================================================
+        class ComponentFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map();
+                this.objectCounter = 0;
+                logMessage('ComponentFactory initialized', 'success');
+            }
+            
+            createMaterial(materialConfig) {
+                const MaterialClass = materialConfig.type === 'MeshBasicMaterial' ? 
+                    THREE.MeshBasicMaterial : THREE.MeshStandardMaterial;
+                
+                const params = {};
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color') {
+                        params[key] = new THREE.Color(value);
+                        logMessage(`Material color set: ${value} -> ${params[key].getHexString()}`, 'info');
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                const material = new MaterialClass(params);
+                logMessage(`Created ${materialConfig.type} with params: ${JSON.stringify(Object.keys(params))}`, 'info');
+                return material;
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'box': return new THREE.BoxGeometry(...dimensions);
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) {
+                    logMessage(`Unknown component: ${componentType}`, 'error');
+                    return null;
+                }
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                
+                const materialConfig = config.material || componentDef.material;
+                const material = this.createMaterial(materialConfig);
+                
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                // Apply positioning and rotation
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                // Set metadata
+                const uniqueId = config.id || `${componentType}-${++this.objectCounter}`;
+                mesh.userData = {
+                    componentType: componentType,
+                    id: uniqueId,
+                    isFactoryCreated: true
+                };
+                
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                
+                // Debug material info for walls
+                if (componentType === 'wall') {
+                    logMessage(`WALL ${uniqueId}: color=#${mesh.material.color.getHexString()}, rough=${mesh.material.roughness}, metal=${mesh.material.metalness}`, 'info');
+                }
+                
+                logMessage(`Created ${componentType} (${uniqueId})`, 'success');
+                return mesh;
+            }
+            
+            buildRoomFromLayout(layout, scene) {
+                logMessage('Building room from layout...', 'info');
+                
+                // Set global dimensions
+                window.LOBBY_WIDTH = layout.metadata.dimensions.width;
+                window.LOBBY_DEPTH = layout.metadata.dimensions.depth;
+                window.LOBBY_HEIGHT = layout.metadata.dimensions.height;
+                
+                // Create objects one by one
+                let created = 0;
+                layout.objects.forEach(obj => {
+                    const mesh = this.createComponent(obj.type, obj, scene);
+                    if (mesh) created++;
+                });
+                
+                logMessage(`Room complete: ${created}/${layout.objects.length} objects created`, 'success');
+                return true;
+            }
+            
+            findObject(identifier) {
+                return this.createdObjects.get(identifier) || null;
+            }
+        }
+
+        // ============================================================================
+        // SCENE AND PLAYER SYSTEM
+        // ============================================================================
+        let scene, camera, renderer;
+        let componentFactory;
+        let animationId;
+        
+        // Player system (simplified)
+        const player = {
+            position: new THREE.Vector3(20, 1.6, 15),
+            velocity: new THREE.Vector3(0, 0, 0),
+            baseSpeed: 0.15,
+            maxSpeed: 0.6,
+            currentSpeed: 0.15,
+            isDancing: false,
+            movementTimer: 0,
+            isMoving: false
+        };
+        
+        const keys = {};
+        let mouseX = 0, mouseY = 0;
+        let isPointerLocked = false;
+        
+        // Debug system
+        let isDebugMode = false;
+        let debugGridGroup = null;
+        
+        function initScene() {
+            logMessage('Initializing scene...', 'info');
+            
+            try {
+                // Scene
+                scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xf5f5f5);
+                logMessage('Scene created', 'success');
+                
+                // Camera
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.copy(player.position);
+                logMessage('Camera created', 'success');
+                
+                // Renderer - SIMPLIFIED LIKE WORKING MINIMAL TEST
+                renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                // No shadows - keep it simple like working minimal test
+                document.getElementById('canvas-container').appendChild(renderer.domElement);
+                logMessage('Renderer created and appended', 'success');
+                
+                // Lighting - EXACT SAME AS WORKING MINIMAL TEST
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+                logMessage('Simple ambient lighting added (like working minimal test)', 'success');
+                
+                // Factory system
+                componentFactory = new ComponentFactory();
+                
+                // Build room
+                componentFactory.buildRoomFromLayout(EMBEDDED_LAYOUT, scene);
+                
+                // Set player position
+                if (EMBEDDED_LAYOUT.player && EMBEDDED_LAYOUT.player.startPosition) {
+                    player.position.set(...EMBEDDED_LAYOUT.player.startPosition);
+                    camera.position.copy(player.position);
+                    logMessage('Player positioned', 'success');
+                }
+                
+                logMessage('Scene initialization complete!', 'success');
+                return true;
+                
+            } catch (error) {
+                logMessage(`Scene init error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        function createDebugGrid() {
+            if (debugGridGroup) {
+                scene.remove(debugGridGroup);
+                debugGridGroup = null;
+            }
+            
+            debugGridGroup = new THREE.Group();
+            const width = window.LOBBY_WIDTH;
+            const depth = window.LOBBY_DEPTH;
+            const height = window.LOBBY_HEIGHT;
+            
+            const lineMaterial = new THREE.LineBasicMaterial({ color: 0x00ff00, opacity: 0.3, transparent: true });
+            
+            // Floor grid (X-Z plane at Y=0)
+            for (let x = 0; x <= width; x++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, 0.01, 0),
+                    new THREE.Vector3(x, 0.01, depth)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            for (let z = 0; z <= depth; z++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, 0.01, z),
+                    new THREE.Vector3(width, 0.01, z)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            
+            // Ceiling grid (X-Z plane at Y=height)
+            for (let x = 0; x <= width; x++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, height - 0.01, 0),
+                    new THREE.Vector3(x, height - 0.01, depth)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            for (let z = 0; z <= depth; z++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, height - 0.01, z),
+                    new THREE.Vector3(width, height - 0.01, z)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            
+            // North wall grid (X-Y plane at Z=depth)
+            for (let x = 0; x <= width; x++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, 0, depth - 0.01),
+                    new THREE.Vector3(x, height, depth - 0.01)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            for (let y = 0; y <= height; y++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, y, depth - 0.01),
+                    new THREE.Vector3(width, y, depth - 0.01)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            
+            // South wall grid (X-Y plane at Z=0)
+            for (let x = 0; x <= width; x++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(x, 0, 0.01),
+                    new THREE.Vector3(x, height, 0.01)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            for (let y = 0; y <= height; y++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0, y, 0.01),
+                    new THREE.Vector3(width, y, 0.01)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            
+            // East wall grid (Y-Z plane at X=width)
+            for (let z = 0; z <= depth; z++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(width - 0.01, 0, z),
+                    new THREE.Vector3(width - 0.01, height, z)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            for (let y = 0; y <= height; y++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(width - 0.01, y, 0),
+                    new THREE.Vector3(width - 0.01, y, depth)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            
+            // West wall grid (Y-Z plane at X=0)
+            for (let z = 0; z <= depth; z++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0.01, 0, z),
+                    new THREE.Vector3(0.01, height, z)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            for (let y = 0; y <= height; y++) {
+                const geometry = new THREE.BufferGeometry().setFromPoints([
+                    new THREE.Vector3(0.01, y, 0),
+                    new THREE.Vector3(0.01, y, depth)
+                ]);
+                debugGridGroup.add(new THREE.Line(geometry, lineMaterial));
+            }
+            
+            scene.add(debugGridGroup);
+            logMessage('Comprehensive debug grid created (floor, ceiling, all walls)', 'success');
+        }
+        
+        function toggleDebugMode() {
+            isDebugMode = !isDebugMode;
+            
+            if (isDebugMode) {
+                createDebugGrid();
+                logMessage('Debug mode ON', 'info');
+            } else {
+                if (debugGridGroup) {
+                    scene.remove(debugGridGroup);
+                    debugGridGroup = null;
+                }
+                logMessage('Debug mode OFF', 'info');
+            }
+        }
+        
+        function animate() {
+            animationId = requestAnimationFrame(animate);
+            
+            // Basic movement system
+            player.velocity.set(0, 0, 0);
+            
+            const movementKeys = ['w', 's', 'a', 'd'];
+            const currentlyMoving = movementKeys.some(key => keys[key]);
+            
+            if (currentlyMoving && !player.isDancing) {
+                const currentTime = Date.now();
+                
+                if (!player.isMoving) {
+                    player.isMoving = true;
+                    player.movementTimer = currentTime;
+                    player.currentSpeed = player.baseSpeed;
+                } else {
+                    const moveDuration = (currentTime - player.movementTimer) / 1000;
+                    if (moveDuration >= 2.0) {
+                        player.currentSpeed = player.maxSpeed;
+                    } else {
+                        const progress = moveDuration / 2.0;
+                        player.currentSpeed = player.baseSpeed + (player.maxSpeed - player.baseSpeed) * progress;
+                    }
+                }
+                
+                if (keys['w']) player.velocity.z = player.currentSpeed;
+                if (keys['s']) player.velocity.z = -player.currentSpeed;
+                if (keys['a']) player.velocity.x = -player.currentSpeed;
+                if (keys['d']) player.velocity.x = player.currentSpeed;
+            } else {
+                player.isMoving = false;
+                player.currentSpeed = player.baseSpeed;
+            }
+            
+            // Apply movement
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            player.position.add(forward.multiplyScalar(player.velocity.z));
+            player.position.add(right.multiplyScalar(player.velocity.x));
+            
+            // Keep in bounds
+            const wallBuffer = 0.5;
+            if (window.LOBBY_WIDTH && window.LOBBY_DEPTH) {
+                player.position.x = Math.max(wallBuffer, Math.min(window.LOBBY_WIDTH - wallBuffer, player.position.x));
+                player.position.z = Math.max(wallBuffer, Math.min(window.LOBBY_DEPTH - wallBuffer, player.position.z));
+            }
+            
+            // Update camera
+            camera.position.copy(player.position);
+            camera.rotation.order = 'YXZ';
+            camera.rotation.y = -mouseX;
+            camera.rotation.x = mouseY;
+            
+            // Dancing
+            if (player.isDancing) {
+                camera.position.y = player.position.y + Math.sin(Date.now() * 0.01) * 0.2;
+                camera.rotation.z = Math.sin(Date.now() * 0.01) * 0.1;
+            } else {
+                camera.rotation.z = 0;
+            }
+            
+            // Debug ball interaction
+            const debugBall = componentFactory.findObject('debug-ball');
+            if (debugBall) {
+                const playerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+                const ballPos2D = new THREE.Vector2(debugBall.position.x, debugBall.position.z);
+                const distance = playerPos2D.distanceTo(ballPos2D);
+                
+                if (distance <= 1.0) {
+                    const kickDirection = new THREE.Vector3()
+                        .subVectors(debugBall.position, player.position);
+                    
+                    if (kickDirection.length() > 0.1) {
+                        kickDirection.normalize();
+                        kickDirection.multiplyScalar(0.3);
+                        debugBall.position.add(kickDirection);
+                        toggleDebugMode();
+                        logMessage(`Debug ball kicked! Mode: ${isDebugMode ? 'ON' : 'OFF'}`, 'info');
+                    }
+                }
+                
+                // Keep ball in bounds
+                debugBall.position.x = Math.max(1, Math.min(window.LOBBY_WIDTH - 1, debugBall.position.x));
+                debugBall.position.z = Math.max(1, Math.min(window.LOBBY_DEPTH - 1, debugBall.position.z));
+                debugBall.position.y = Math.max(0.3, debugBall.position.y);
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // ============================================================================
+        // EVENT HANDLERS
+        // ============================================================================
+        document.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+            
+            if (e.key === ' ') {
+                e.preventDefault();
+                player.isDancing = true;
+                logMessage('Dancing started!', 'info');
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+            
+            if (e.key === ' ') {
+                player.isDancing = false;
+            }
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === renderer.domElement) {
+                mouseX += e.movementX * 0.002;
+                mouseY += e.movementY * 0.002;
+                mouseY = Math.max(-Math.PI/3, Math.min(Math.PI/3, mouseY));
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Pointer lock on click
+        document.addEventListener('click', () => {
+            if (!isPointerLocked && renderer && renderer.domElement) {
+                renderer.domElement.requestPointerLock();
+            }
+        });
+        
+        document.addEventListener('pointerlockchange', () => {
+            isPointerLocked = !!document.pointerLockElement;
+            logMessage(`Pointer lock: ${isPointerLocked ? 'ON' : 'OFF'}`, 'info');
+        });
+        
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                logMessage(`THREE.js loaded (r${THREE.REVISION})`, 'success');
+                
+                if (initScene()) {
+                    animate();
+                    logMessage('🚀 Progressive build complete!', 'success');
+                    logMessage('WASD to move, Mouse to look, Space to dance', 'info');
+                    logMessage('Kick the green debug ball to toggle grid!', 'info');
+                } else {
+                    logMessage('Scene initialization failed!', 'error');
+                }
+                
+            } else {
+                logMessage('THREE.js failed to load', 'error');
+                document.body.innerHTML = '<h1 style="color: red; text-align: center; margin-top: 50px;">THREE.js failed to load. Check internet connection.</h1>';
+            }
+        }, 1000);
+        
+    </script>
+</body>
+</html>

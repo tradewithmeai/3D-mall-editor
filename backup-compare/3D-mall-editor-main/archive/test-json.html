@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JSON Loading Test</title>
+</head>
+<body>
+    <h1>JSON Loading Test</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        async function testJSONLoading() {
+            try {
+                console.log('Testing components.json...');
+                const componentsResponse = await fetch('components.json');
+                console.log('Components response:', componentsResponse.status, componentsResponse.statusText);
+                
+                if (componentsResponse.ok) {
+                    const components = await componentsResponse.json();
+                    console.log('Components loaded:', Object.keys(components));
+                    results.innerHTML += '<p>✅ components.json loaded successfully</p>';
+                } else {
+                    results.innerHTML += '<p>❌ components.json failed to load: ' + componentsResponse.status + '</p>';
+                }
+                
+                console.log('Testing room-layout.json...');
+                const roomResponse = await fetch('room-layout.json');
+                console.log('Room response:', roomResponse.status, roomResponse.statusText);
+                
+                if (roomResponse.ok) {
+                    const room = await roomResponse.json();
+                    console.log('Room loaded:', room.name);
+                    results.innerHTML += '<p>✅ room-layout.json loaded successfully</p>';
+                } else {
+                    results.innerHTML += '<p>❌ room-layout.json failed to load: ' + roomResponse.status + '</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error testing JSON loading:', error);
+                results.innerHTML += '<p>❌ Error: ' + error.message + '</p>';
+            }
+        }
+        
+        testJSONLoading();
+    </script>
+</body>
+</html>

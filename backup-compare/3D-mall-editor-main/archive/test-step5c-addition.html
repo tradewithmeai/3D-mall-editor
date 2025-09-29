@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Test - Step 5C: Component Addition</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 400px;
+            max-height: 350px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 10px;
+            max-width: 320px;
+        }
+        .btn-group {
+            margin: 8px 0;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+        }
+        .btn {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 9px;
+        }
+        .btn:hover { background: #0f0; color: #000; }
+        .btn.add { border-color: #4f4; color: #4f4; }
+        .btn.add:hover { background: #4f4; color: #000; }
+        .btn.danger { border-color: #f44; color: #f44; }
+        .btn.danger:hover { background: #f44; color: #fff; }
+        #toggle-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+        .counter {
+            display: inline-block;
+            background: #333;
+            color: #ff0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-size: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>➕ Component Addition Test</h3>
+        
+        <div class="btn-group">
+            <strong>Add Furniture:</strong><br>
+            <button class="btn add" onclick="addComponent('desk')">Add Desk</button>
+            <button class="btn add" onclick="addComponent('chair')">Add Chair</button>
+            <button class="btn add" onclick="addComponent('lamp')">Add Lamp</button><br>
+            <button class="btn add" onclick="addComponent('plant')">Add Plant</button>
+            <button class="btn add" onclick="addComponent('book')">Add Book</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Add Decorations:</strong><br>
+            <button class="btn add" onclick="addComponent('picture')">Add Picture</button>
+            <button class="btn add" onclick="addComponent('mirror')">Add Mirror</button><br>
+            <button class="btn add" onclick="addComponent('sculpture')">Add Sculpture</button>
+            <button class="btn add" onclick="addComponent('vase')">Add Vase</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Add Lighting:</strong><br>
+            <button class="btn add" onclick="addComponent('ceiling-light')">Ceiling Light</button>
+            <button class="btn add" onclick="addComponent('floor-lamp')">Floor Lamp</button><br>
+            <button class="btn add" onclick="addComponent('spotlight')">Spotlight</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Batch Operations:</strong><br>
+            <button class="btn add" onclick="addOfficeSet()">Add Office Set</button>
+            <button class="btn add" onclick="addDecorSet()">Add Decor Set</button><br>
+            <button class="btn add" onclick="addRandomItems(5)">Add 5 Random</button>
+            <button class="btn add" onclick="addGrid()">Add Grid Pattern</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Management:</strong><br>
+            <button class="btn" onclick="listComponents()">📋 List All</button>
+            <button class="btn" onclick="findComponent()">🔍 Find Item</button><br>
+            <button class="btn danger" onclick="removeLastAdded()">❌ Remove Last</button>
+            <button class="btn danger" onclick="clearAllAdded()">💀 Clear Added</button>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn" onclick="resetRoom()">🔄 Reset Room</button>
+            <button class="btn" onclick="saveLayout()">💾 Save Layout</button>
+        </div>
+        
+        <div style="margin-top: 10px; font-size: 9px;">
+            <strong>Total objects:</strong> <span id="object-count" class="counter">0</span><br>
+            <strong>Added items:</strong> <span id="added-count" class="counter">0</span>
+        </div>
+    </div>
+
+    <div id="toggle-info" onclick="toggleInfo()">HIDE INFO</div>
+    <div id="info">
+        <h3>🧪 Dynamic Addition Testing</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Extended component definitions including furniture
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder", "size": [0.1, 0.1, 1, 8],
+                    "material": { "type": "MeshBasicMaterial", "color": "#000000" },
+                    "properties": { "castShadow": false, "receiveShadow": false }
+                },
+                "debugBall": {
+                    "model": "sphere", "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial", "color": "#44ff44", "roughness": 0.3,
+                        "metalness": 0.2, "transparent": true, "opacity": 0.8,
+                        "emissive": "#114411", "emissiveIntensity": 0.2
+                    },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "floor": {
+                    "model": "plane", "size": [10, 8], "rotation": [-1.5707963267948966, 0, 0],
+                    "material": { "type": "MeshStandardMaterial", "color": "#90EE90", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "receiveShadow": true }
+                },
+                "wall": {
+                    "model": "plane", "size": [10, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#f8f8f8", "roughness": 0.9, "metalness": 0.1 },
+                    "properties": { "castShadow": false, "receiveShadow": true }
+                },
+                // NEW: Furniture components
+                "desk": {
+                    "model": "box", "size": [1.5, 0.8, 0.1],
+                    "material": { "type": "MeshStandardMaterial", "color": "#8B4513", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "chair": {
+                    "model": "box", "size": [0.5, 0.5, 0.9],
+                    "material": { "type": "MeshStandardMaterial", "color": "#2F2F2F", "roughness": 0.4, "metalness": 0.2 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "lamp": {
+                    "model": "cylinder", "size": [0.15, 0.15, 0.8, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#FFD700", "roughness": 0.2, "metalness": 0.8 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "plant": {
+                    "model": "sphere", "size": [0.3, 8, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#228B22", "roughness": 0.8, "metalness": 0.0 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "book": {
+                    "model": "box", "size": [0.2, 0.3, 0.05],
+                    "material": { "type": "MeshStandardMaterial", "color": "#8B0000", "roughness": 0.7, "metalness": 0.0 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "picture": {
+                    "model": "box", "size": [0.8, 0.6, 0.05],
+                    "material": { "type": "MeshStandardMaterial", "color": "#4169E1", "roughness": 0.3, "metalness": 0.1 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "mirror": {
+                    "model": "box", "size": [0.6, 0.8, 0.05],
+                    "material": { "type": "MeshStandardMaterial", "color": "#C0C0C0", "roughness": 0.05, "metalness": 0.9 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "sculpture": {
+                    "model": "sphere", "size": [0.25, 6, 6],
+                    "material": { "type": "MeshStandardMaterial", "color": "#BC8F8F", "roughness": 0.5, "metalness": 0.3 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "vase": {
+                    "model": "cylinder", "size": [0.12, 0.18, 0.4, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#800080", "roughness": 0.2, "metalness": 0.1 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "ceiling-light": {
+                    "model": "sphere", "size": [0.2, 8, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#FFFACD", "roughness": 0.1, "metalness": 0.0, 
+                                "emissive": "#FFFACD", "emissiveIntensity": 0.3 },
+                    "properties": { "castShadow": false, "receiveShadow": false }
+                },
+                "floor-lamp": {
+                    "model": "cylinder", "size": [0.08, 0.08, 1.2, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#000000", "roughness": 0.4, "metalness": 0.6 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                },
+                "spotlight": {
+                    "model": "cylinder", "size": [0.1, 0.15, 0.3, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#2F2F2F", "roughness": 0.3, "metalness": 0.7 },
+                    "properties": { "castShadow": true, "receiveShadow": true }
+                }
+            }
+        };
+
+        // Enhanced factory with addition capabilities
+        class AdditionComponentFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map();
+                this.addedItems = new Map(); // Track dynamically added items separately
+                this.additionHistory = [];
+                this.nextId = 1;
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                const params = {};
+                
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    case 'box': return new THREE.BoxGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) {
+                    console.error(`Component type '${componentType}' not found`);
+                    return null;
+                }
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                const material = this.createMaterial(componentDef.material);
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                const uniqueId = config.id || `${componentType}-${this.nextId++}`;
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.compass || null,
+                    id: uniqueId,
+                    createdBy: 'AdditionComponentFactory',
+                    createdAt: Date.now(),
+                    isAdded: config.isAdded || false // Track if dynamically added
+                };
+                
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                
+                // Track added items separately
+                if (config.isAdded) {
+                    this.addedItems.set(uniqueId, mesh);
+                }
+                
+                return mesh;
+            }
+            
+            // NEW: Add component at random or specified position
+            addComponent(componentType, options = {}) {
+                const scene = options.scene || window.scene;
+                
+                // Generate position if not specified
+                let position = options.position;
+                if (!position) {
+                    position = this.generateRandomPosition(componentType);
+                }
+                
+                const config = {
+                    id: `added-${componentType}-${this.nextId}`,
+                    position: position,
+                    rotation: options.rotation,
+                    size: options.size,
+                    material: options.material,
+                    isAdded: true
+                };
+                
+                const mesh = this.createComponent(componentType, config, scene);
+                
+                if (mesh) {
+                    this.additionHistory.push({
+                        timestamp: Date.now(),
+                        componentType: componentType,
+                        id: mesh.userData.id,
+                        position: position,
+                        action: 'add'
+                    });
+                    
+                    console.log(`Added ${componentType} at position [${position.join(', ')}]`);
+                }
+                
+                return mesh;
+            }
+            
+            // Generate smart positioning based on component type
+            generateRandomPosition(componentType) {
+                const floorLevel = 0.05; // Slightly above floor
+                
+                switch (componentType) {
+                    case 'desk':
+                        return [
+                            (Math.random() - 0.5) * 8, // X: within room bounds
+                            floorLevel + 0.4, // Y: desk height
+                            (Math.random() - 0.5) * 6  // Z: within room bounds
+                        ];
+                    
+                    case 'chair':
+                        return [
+                            (Math.random() - 0.5) * 8,
+                            floorLevel + 0.45, // Y: chair seat height
+                            (Math.random() - 0.5) * 6
+                        ];
+                    
+                    case 'lamp':
+                    case 'plant':
+                    case 'sculpture':
+                    case 'vase':
+                        return [
+                            (Math.random() - 0.5) * 8,
+                            floorLevel + 0.4, // Y: on desk/surface level
+                            (Math.random() - 0.5) * 6
+                        ];
+                    
+                    case 'book':
+                        return [
+                            (Math.random() - 0.5) * 8,
+                            floorLevel + 0.825, // Y: on desk surface
+                            (Math.random() - 0.5) * 6
+                        ];
+                    
+                    case 'picture':
+                    case 'mirror':
+                        // Mount on walls
+                        const wall = Math.floor(Math.random() * 4);
+                        switch (wall) {
+                            case 0: return [0, 2, 3.9]; // North wall
+                            case 1: return [0, 2, -3.9]; // South wall  
+                            case 2: return [4.9, 2, 0]; // East wall
+                            case 3: return [-4.9, 2, 0]; // West wall
+                        }
+                        break;
+                    
+                    case 'ceiling-light':
+                        return [
+                            (Math.random() - 0.5) * 6,
+                            7.5, // Y: near ceiling
+                            (Math.random() - 0.5) * 4
+                        ];
+                    
+                    case 'floor-lamp':
+                        return [
+                            (Math.random() - 0.5) * 7,
+                            floorLevel + 0.6, // Y: floor lamp height
+                            (Math.random() - 0.5) * 5
+                        ];
+                    
+                    case 'spotlight':
+                        return [
+                            (Math.random() - 0.5) * 8,
+                            7, // Y: ceiling mounted
+                            (Math.random() - 0.5) * 6
+                        ];
+                    
+                    default:
+                        return [
+                            (Math.random() - 0.5) * 8,
+                            floorLevel + 0.5,
+                            (Math.random() - 0.5) * 6
+                        ];
+                }
+            }
+            
+            // NEW: Add multiple components at once
+            addMultiple(componentType, count, options = {}) {
+                const addedItems = [];
+                for (let i = 0; i < count; i++) {
+                    const item = this.addComponent(componentType, options);
+                    if (item) addedItems.push(item);
+                }
+                return addedItems;
+            }
+            
+            // NEW: Add predefined sets
+            addOfficeSet() {
+                const desk = this.addComponent('desk', { position: [1, 0.45, 0] });
+                this.addComponent('chair', { position: [1, 0.45, -1.2] });
+                this.addComponent('lamp', { position: [1.5, 0.85, 0.2] });
+                this.addComponent('book', { position: [0.7, 0.85, -0.1] });
+                return 4;
+            }
+            
+            addDecorSet() {
+                this.addComponent('plant', { position: [-2, 0.35, 1] });
+                this.addComponent('sculpture', { position: [0, 0.8, 2] });
+                this.addComponent('picture', { position: [0, 2, 3.9] });
+                this.addComponent('vase', { position: [-1, 0.45, -1] });
+                return 4;
+            }
+            
+            // NEW: Add in grid pattern
+            addGrid(componentType = 'book', spacing = 1.5) {
+                let count = 0;
+                for (let x = -3; x <= 3; x += spacing) {
+                    for (let z = -2; z <= 2; z += spacing) {
+                        if (Math.abs(x) > 0.5 || Math.abs(z) > 0.5) { // Avoid center
+                            this.addComponent(componentType, {
+                                position: [x, 0.05, z]
+                            });
+                            count++;
+                        }
+                    }
+                }
+                return count;
+            }
+            
+            // Management functions
+            removeLastAdded() {
+                if (this.addedItems.size === 0) return false;
+                
+                // Get the most recent added item
+                const entries = Array.from(this.addedItems.entries());
+                const [lastId, lastMesh] = entries[entries.length - 1];
+                
+                return this.removeComponent(lastId, window.scene);
+            }
+            
+            clearAllAdded() {
+                const addedIds = Array.from(this.addedItems.keys());
+                let removedCount = 0;
+                
+                addedIds.forEach(id => {
+                    if (this.removeComponent(id, window.scene)) {
+                        removedCount++;
+                    }
+                });
+                
+                return removedCount;
+            }
+            
+            removeComponent(identifier, scene) {
+                const mesh = this.findObject(identifier);
+                if (!mesh) return false;
+                
+                mesh.geometry.dispose();
+                if (mesh.material.dispose) mesh.material.dispose();
+                scene.remove(mesh);
+                
+                // Remove from both maps
+                for (let [key, value] of this.createdObjects) {
+                    if (value === mesh) {
+                        this.createdObjects.delete(key);
+                        break;
+                    }
+                }
+                
+                for (let [key, value] of this.addedItems) {
+                    if (value === mesh) {
+                        this.addedItems.delete(key);
+                        break;
+                    }
+                }
+                
+                return true;
+            }
+            
+            findObject(identifier) {
+                for (let [key, mesh] of this.createdObjects) {
+                    if (key === identifier || mesh.userData.id === identifier) {
+                        return mesh;
+                    }
+                }
+                
+                const semanticMap = {
+                    'floor': (obj) => obj.userData.componentType === 'floor',
+                    'north-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'north',
+                    'south-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'south',
+                    'east-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'east',
+                    'west-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'west',
+                    'referencePole': (obj) => obj.userData.componentType === 'referencePole',
+                    'debugBall': (obj) => obj.userData.componentType === 'debugBall'
+                };
+                
+                if (semanticMap[identifier]) {
+                    for (let [key, mesh] of this.createdObjects) {
+                        if (semanticMap[identifier](mesh)) {
+                            return mesh;
+                        }
+                    }
+                }
+                
+                return null;
+            }
+            
+            getObjectCount() {
+                return this.createdObjects.size;
+            }
+            
+            getAddedCount() {
+                return this.addedItems.size;
+            }
+            
+            listAllComponents() {
+                const components = [];
+                for (let [id, mesh] of this.createdObjects) {
+                    components.push({
+                        id: id,
+                        type: mesh.userData.componentType,
+                        position: mesh.position.toArray(),
+                        isAdded: mesh.userData.isAdded || false
+                    });
+                }
+                return components;
+            }
+            
+            getAdditionHistory() {
+                return this.additionHistory;
+            }
+            
+            clearHistory() {
+                this.additionHistory = [];
+            }
+        }
+
+        // Global variables
+        const status = document.getElementById('status');
+        const objectCount = document.getElementById('object-count');
+        const addedCount = document.getElementById('added-count');
+        let factory;
+        let scene, camera, renderer;
+        
+        function updateStatus(message, isError = false) {
+            console.log(message);
+            const timestamp = new Date().toLocaleTimeString();
+            status.innerHTML += `<br>[${timestamp}] ${isError ? '❌' : '✅'} ${message}`;
+        }
+        
+        function updateCounts() {
+            if (factory) {
+                objectCount.textContent = factory.getObjectCount();
+                addedCount.textContent = factory.getAddedCount();
+            }
+        }
+
+        // Scene setup
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(6, 5, 6);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+            
+            // Enhanced lighting for furniture visibility
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+            
+            const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.7);
+            directionalLight1.position.set(8, 8, 5);
+            directionalLight1.castShadow = true;
+            directionalLight1.shadow.mapSize.width = 2048;
+            directionalLight1.shadow.mapSize.height = 2048;
+            scene.add(directionalLight1);
+            
+            const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.3);
+            directionalLight2.position.set(-5, 5, -5);
+            scene.add(directionalLight2);
+            
+            // Make scene globally accessible
+            window.scene = scene;
+            
+            updateStatus("Scene initialized with enhanced lighting for furniture");
+        }
+
+        // Create initial room
+        function createInitialRoom() {
+            factory = new AdditionComponentFactory();
+            
+            factory.createComponent('referencePole', { id: 'ref-pole', position: [0, 0.5, 0] }, scene);
+            factory.createComponent('debugBall', { id: 'debug-ball', position: [2, 0.3, 1] }, scene);
+            factory.createComponent('floor', { id: 'floor', position: [0, 0, 0] }, scene);
+            
+            factory.createComponent('wall', { 
+                id: 'north-wall', position: [0, 4, 4], rotation: [0, Math.PI, 0], compass: 'north' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'south-wall', position: [0, 4, -4], rotation: [0, 0, 0], compass: 'south' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'east-wall', position: [5, 4, 0], rotation: [0, -Math.PI/2, 0], 
+                size: [8, 8], compass: 'east' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'west-wall', position: [-5, 4, 0], rotation: [0, Math.PI/2, 0], 
+                size: [8, 8], compass: 'west' 
+            }, scene);
+            
+            updateStatus(`Initial room created - ready for component addition`);
+            updateCounts();
+            factory.clearHistory();
+        }
+
+        // Addition functions
+        function addComponent(componentType) {
+            if (!factory) return;
+            
+            const item = factory.addComponent(componentType);
+            if (item) {
+                updateStatus(`Added ${componentType}: ${item.userData.id}`);
+                updateCounts();
+            } else {
+                updateStatus(`Failed to add ${componentType}`, true);
+            }
+        }
+
+        function addOfficeSet() {
+            if (!factory) return;
+            
+            const count = factory.addOfficeSet();
+            updateStatus(`Added office set: ${count} items`);
+            updateCounts();
+        }
+
+        function addDecorSet() {
+            if (!factory) return;
+            
+            const count = factory.addDecorSet();
+            updateStatus(`Added decor set: ${count} items`);
+            updateCounts();
+        }
+
+        function addRandomItems(count) {
+            if (!factory) return;
+            
+            const items = ['book', 'plant', 'lamp', 'sculpture', 'vase'];
+            let added = 0;
+            
+            for (let i = 0; i < count; i++) {
+                const randomItem = items[Math.floor(Math.random() * items.length)];
+                if (factory.addComponent(randomItem)) {
+                    added++;
+                }
+            }
+            
+            updateStatus(`Added ${added} random items`);
+            updateCounts();
+        }
+
+        function addGrid() {
+            if (!factory) return;
+            
+            const count = factory.addGrid('book', 1.5);
+            updateStatus(`Added grid pattern: ${count} books`);
+            updateCounts();
+        }
+
+        function removeLastAdded() {
+            if (!factory) return;
+            
+            if (factory.removeLastAdded()) {
+                updateStatus("Removed last added item");
+                updateCounts();
+            } else {
+                updateStatus("No added items to remove", true);
+            }
+        }
+
+        function clearAllAdded() {
+            if (!factory) return;
+            
+            const count = factory.clearAllAdded();
+            updateStatus(`Cleared all added items: ${count} removed`);
+            updateCounts();
+        }
+
+        function listComponents() {
+            if (!factory) return;
+            
+            const components = factory.listAllComponents();
+            updateStatus("=== ALL COMPONENTS ===");
+            
+            const original = components.filter(c => !c.isAdded);
+            const added = components.filter(c => c.isAdded);
+            
+            updateStatus(`Original (${original.length}): ${original.map(c => c.type).join(', ')}`);
+            updateStatus(`Added (${added.length}): ${added.map(c => `${c.type}(${c.id})`).join(', ')}`);
+        }
+
+        function findComponent() {
+            const type = prompt("Enter component type to find:");
+            if (!type || !factory) return;
+            
+            const components = factory.listAllComponents();
+            const found = components.filter(c => c.type.includes(type));
+            
+            if (found.length > 0) {
+                updateStatus(`Found ${found.length} components matching '${type}':`);
+                found.forEach(c => {
+                    updateStatus(`  ${c.id}: [${c.position.map(p => p.toFixed(1)).join(', ')}]`);
+                });
+            } else {
+                updateStatus(`No components found matching '${type}'`, true);
+            }
+        }
+
+        function resetRoom() {
+            if (!factory) return;
+            
+            // Clear all factory objects
+            for (let [key, mesh] of factory.createdObjects) {
+                mesh.geometry.dispose();
+                if (mesh.material.dispose) mesh.material.dispose();
+                scene.remove(mesh);
+            }
+            
+            factory = null;
+            updateStatus("Scene cleared");
+            updateCounts();
+            
+            setTimeout(() => {
+                createInitialRoom();
+                updateStatus("Room reset complete");
+            }, 100);
+        }
+
+        function saveLayout() {
+            if (!factory) return;
+            
+            const components = factory.listAllComponents();
+            const layout = {
+                timestamp: new Date().toISOString(),
+                totalComponents: components.length,
+                addedComponents: components.filter(c => c.isAdded).length,
+                components: components
+            };
+            
+            console.log('Room Layout:', layout);
+            updateStatus(`Layout saved to console: ${layout.totalComponents} components`);
+        }
+
+        // Initialize
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                initScene();
+                createInitialRoom();
+                updateStatus("➕ COMPONENT ADDITION TESTING READY");
+                updateStatus("Try adding furniture and decorations to the room!");
+            } else {
+                updateStatus("❌ THREE.js failed to load", true);
+            }
+        }, 1000);
+        
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // UI functions
+        function toggleInfo() {
+            const info = document.getElementById('info');
+            const toggle = document.getElementById('toggle-info');
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                toggle.textContent = 'HIDE INFO';
+            } else {
+                info.style.display = 'none';
+                toggle.textContent = 'SHOW INFO';
+            }
+        }
+
+        // Mouse controls
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Syntax Check</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h2>Checking main index.html for JavaScript errors...</h2>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        
+        function log(msg, isError = false) {
+            const div = document.createElement('div');
+            div.textContent = msg;
+            div.className = isError ? 'error' : 'success';
+            results.appendChild(div);
+        }
+        
+        // Load and parse the main file
+        fetch('/')
+            .then(response => response.text())
+            .then(html => {
+                log('✓ Successfully fetched index.html');
+                
+                // Extract the script content
+                const scriptMatch = html.match(/<script[^>]*>([\s\S]*?)<\/script>/);
+                if (!scriptMatch) {
+                    log('✗ No script tag found', true);
+                    return;
+                }
+                
+                const scriptContent = scriptMatch[1];
+                log('✓ Extracted script content (' + scriptContent.length + ' characters)');
+                
+                // Try to execute the script in a try-catch
+                try {
+                    // Create a function to test syntax
+                    new Function(scriptContent);
+                    log('✓ JavaScript syntax is valid');
+                    
+                    // Now try to actually execute it
+                    log('Attempting to execute script...');
+                    eval(scriptContent);
+                    
+                } catch (error) {
+                    log('✗ JavaScript execution error: ' + error.message, true);
+                    log('Error at line: ' + (error.lineNumber || 'unknown'), true);
+                    log('Error stack: ' + error.stack, true);
+                }
+            })
+            .catch(error => {
+                log('✗ Failed to fetch index.html: ' + error.message, true);
+            });
+    </script>
+</body>
+</html>

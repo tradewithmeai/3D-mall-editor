@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Mall Floorplan Editor</title>
+    <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+    <div class="editor-container">
+        <header>
+            <h1>Floorplan Editor</h1>
+            <div class="controls">
+                <div class="tool-palette">
+                    <label>Tool:</label>
+                    <button id="tool-empty" class="tool-btn active" data-tool="empty">Empty</button>
+                    <button id="tool-floor" class="tool-btn" data-tool="floor">Floor</button>
+                    <button id="tool-wall-edge" class="tool-btn" data-tool="wall-edge">Wall</button>
+                    <button id="tool-erase" class="tool-btn" data-tool="erase">Erase</button>
+                </div>
+                <div class="file-controls">
+                    <button id="import-btn">Import JSON</button>
+                    <div class="export-controls">
+                        <select id="export-type">
+                            <option value="scene">Export Scene (v1)</option>
+                            <option value="mall-template" id="export-mall-template-item">Export as Mall Template</option>
+                            <option value="gallery-template">Export as Gallery Template</option>
+                            <option value="room-template">Export as Room Template</option>
+                        </select>
+                        <button id="export-btn">Export</button>
+                    </div>
+                    <button id="export-selected-unit-btn" style="display: none;">Export Gallery Template (from Selected Gallery)</button>
+                    <button id="clear-btn">Clear Grid</button>
+                    <button id="clear-template-btn" class="tool-btn">Clear Template</button>
+                    <div class="load-template-controls">
+                        <button id="load-template-btn" class="dropdown-btn">
+                            Load Template ▼
+                        </button>
+                        <div id="load-template-dropdown" class="dropdown-content">
+                            <a href="#" id="open-from-disk">Open from disk...</a>
+                            <div class="dropdown-separator"></div>
+                            <div id="recent-files-section">
+                                <span class="dropdown-label">Recent files:</span>
+                                <div id="recent-files-list">
+                                    <span class="no-recent">No recent files</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="toggle-template-btn" style="display: none;">Show Template</button>
+                    <div class="boundary-controls">
+                        <label>
+                            <input type="checkbox" id="show-unit-boundaries" checked>
+                            Show Gallery Boundaries
+                        </label>
+                        <label id="limit-edits-label" style="display: none;">
+                            <input type="checkbox" id="limit-edits-to-active-unit">
+                            Limit edits to active gallery
+                        </label>
+                    </div>
+                    <button id="load-units-btn">Load Units Index</button>
+                    <select id="unit-select" style="display: none;">
+                        <option value="">Select Unit...</option>
+                    </select>
+                </div>
+
+                <!-- Test Panel -->
+                <div class="test-panel-controls">
+                    <button id="test-panel-toggle" class="dropdown-btn">
+                        Test Panel ▼
+                    </button>
+                    <div id="test-panel-content" class="dropdown-content">
+                        <div class="test-panel-buttons">
+                            <button id="load-mall-fixture">Load Mall Fixture</button>
+                            <button id="load-gallery-fixture">Load Gallery Fixture</button>
+                            <button id="load-room-fixture">Load Room Fixture</button>
+                            <button id="run-smoke-test">Run Smoke Test</button>
+                        </div>
+                        <div id="test-status" class="test-status">Ready</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="grid-container">
+                <canvas id="grid-canvas" width="1200" height="800"></canvas>
+            </div>
+            
+            <div class="info-panel">
+                <h3>Grid Info</h3>
+                <div id="grid-info">
+                    <p>Size: <span id="grid-size">60x40</span></p>
+                    <p>Cell Size: <span id="cell-size">20px</span></p>
+                    <p>Tool: <span id="current-tool">Empty</span></p>
+                </div>
+                
+                <h3>Legend</h3>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #f0f0f0;"></div>
+                        <span>Empty</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #8B4513;"></div>
+                        <span>Floor</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="border-top: 3px solid #000;"></div>
+                        <span>Wall</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-line" style="border-top: 2px solid #ff0000;"></div>
+                        <span>Erase</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Hidden file inputs -->
+    <input type="file" id="file-input" accept=".json" style="display: none;">
+    <input type="file" id="template-file-input" accept=".json" style="display: none;">
+
+    <!-- Drag & Drop Overlay -->
+    <div id="drag-drop-overlay" class="drag-drop-overlay" style="display: none;">
+        <div class="drag-drop-content">
+            <div class="drag-drop-icon">📁</div>
+            <div class="drag-drop-text">Drop JSON file here</div>
+            <div class="drag-drop-subtext">Supports: scene.v1, mall-template.v1, unit-template.v1, room-template.v1</div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Mode badge -->
+    <div id="mode-badge" class="mode-badge" style="display: none;">
+        <span id="mode-badge-text">Scene Mode</span>
+    </div>
+
+    <script type="module" src="editor.js"></script>
+</body>
+</html>

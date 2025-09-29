@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Console Test</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f0f0f0; }
+        #console { background: #000; color: #0f0; padding: 20px; white-space: pre-wrap; max-height: 500px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h2>Real-time Console Output from Main Page</h2>
+    <div id="console">Loading main page in hidden iframe...\n</div>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        
+        // Override console methods to capture output
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        function logToDiv(type, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+            ).join(' ');
+            consoleDiv.textContent += `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            logToDiv('log', ...args);
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            logToDiv('error', ...args);
+        };
+        
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            logToDiv('warn', ...args);
+        };
+        
+        // Create hidden iframe to load main page
+        const iframe = document.createElement('iframe');
+        iframe.src = '/';
+        iframe.style.display = 'none';
+        iframe.onload = function() {
+            logToDiv('info', 'Main page loaded in iframe');
+            
+            // Try to access iframe console (may be blocked by same-origin policy)
+            try {
+                const iframeWindow = iframe.contentWindow;
+                const iframeConsole = iframeWindow.console;
+                
+                // Override iframe console methods
+                iframeConsole.log = console.log;
+                iframeConsole.error = console.error;
+                iframeConsole.warn = console.warn;
+                
+                logToDiv('info', 'Successfully hooked into iframe console');
+            } catch (e) {
+                logToDiv('warn', 'Could not hook iframe console: ' + e.message);
+            }
+        };
+        
+        iframe.onerror = function(e) {
+            logToDiv('error', 'Iframe failed to load: ' + e);
+        };
+        
+        document.body.appendChild(iframe);
+        
+        // Also check for any global errors
+        window.addEventListener('error', function(e) {
+            logToDiv('error', 'Global error: ' + e.message + ' at ' + e.filename + ':' + e.lineno);
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            logToDiv('error', 'Unhandled promise rejection: ' + e.reason);
+        });
+        
+        logToDiv('info', 'Console monitoring started');
+    </script>
+</body>
+</html>

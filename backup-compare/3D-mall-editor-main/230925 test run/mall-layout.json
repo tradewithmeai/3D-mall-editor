@@ -1,0 +1,12258 @@
+{
+  "instances": [
+    {
+      "type": "referencePole",
+      "position": [
+        0,
+        0.5,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        8,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        10,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        12,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        14,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        16,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        18,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        20,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        22,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        24,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        26,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        28,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        30,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        32,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        34,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        36,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        38,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        40,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        42,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        44,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        46,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        48,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        50,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        52,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        54,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        56,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        58,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        60,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        62,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        64,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        66,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        68,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        70,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        72,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        74,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        76,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        78,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        80,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        82,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        84,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        86,
+        4,
+        14
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        16
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        16
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        18
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        18
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        20
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        20
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        22
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        22
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        24
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        24
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        26
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        26
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        28
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        28
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        30
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        30
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        32
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        32
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        34
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        34
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        36
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        36
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        38
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        38
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        40
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        40
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        42
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        42
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        44
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        44
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        46
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        46
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        48
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        48
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        50
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        50
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        52
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        52
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        54
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        54
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        56
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        56
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyWall",
+      "position": [
+        6,
+        4,
+        58
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        8,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        10,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        12,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        14,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        16,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        18,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        20,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        22,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        24,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        26,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        28,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        30,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        32,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        34,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        36,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        38,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        40,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        42,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        44,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        46,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        48,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        50,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        52,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        54,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        56,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        58,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        60,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        62,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        64,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        66,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        68,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        70,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        72,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        74,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        76,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        78,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        80,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        82,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        84,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [
+        86,
+        0,
+        58
+      ],
+      "rotation": [
+        -1.5707963267948966,
+        0,
+        0
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Diagnostic Test</title>
+</head>
+<body>
+    <h1>Diagnostic Test</h1>
+    <div id="status">Loading...</div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        console.log('Script started');
+        document.getElementById('status').innerHTML = 'Script started';
+        
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                console.log('THREE.js loaded successfully');
+                document.getElementById('status').innerHTML = 'THREE.js loaded - creating simple scene...';
+                
+                try {
+                    const scene = new THREE.Scene();
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    const renderer = new THREE.WebGLRenderer();
+                    
+                    renderer.setSize(400, 300);
+                    document.body.appendChild(renderer.domElement);
+                    
+                    const geometry = new THREE.BoxGeometry();
+                    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+                    const cube = new THREE.Mesh(geometry, material);
+                    scene.add(cube);
+                    
+                    camera.position.z = 5;
+                    
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        cube.rotation.x += 0.01;
+                        cube.rotation.y += 0.01;
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    
+                    document.getElementById('status').innerHTML = 'SUCCESS: Green rotating cube should appear below';
+                    console.log('SUCCESS: Simple scene created');
+                    
+                } catch (error) {
+                    console.error('ERROR creating scene:', error);
+                    document.getElementById('status').innerHTML = 'ERROR: ' + error.message;
+                }
+                
+            } else {
+                console.error('THREE.js failed to load');
+                document.getElementById('status').innerHTML = 'ERROR: THREE.js failed to load';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

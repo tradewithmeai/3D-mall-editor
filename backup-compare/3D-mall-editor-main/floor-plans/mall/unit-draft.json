@@ -1,0 +1,68 @@
+{
+  "instances": [
+    {
+      "type": "referencePole",
+      "position": [0, 0.5, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [0, 0, 0],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [2, 0, 0],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [4, 0, 0],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [6, 0, 0],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [0, 0, 2],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [2, 0, 2],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [4, 0, 2],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [6, 0, 2],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [0, 0, 4],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [2, 0, 4],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [4, 0, 4],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyFloor",
+      "position": [6, 0, 4],
+      "rotation": [-1.5707963267948966, 0, 0]
+    }
+  ]
+}

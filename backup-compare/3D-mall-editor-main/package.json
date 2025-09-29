@@ -1,0 +1,18 @@
+{
+  "name": "3d-mall",
+  "version": "1.0.0",
+  "description": "3D mall floorplan editor and simulator",
+  "scripts": {
+    "start:editor": "npx http-server -c-1 -p 5173 .",
+    "validate:mall": "node scripts/validate-mall.js",
+    "split:units": "node scripts/split-mall-into-units.js --out-dir floor-plans/units_generated",
+    "promote:unit": "node scripts/promote-unit.js",
+    "test:round-trip": "node tests/golden-round-trip.test.js",
+    "test:export": "node tests/test-export-functionality.js",
+    "test:load-template": "node tests/test-load-template-functionality.js"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}

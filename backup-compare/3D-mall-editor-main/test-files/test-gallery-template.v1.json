@@ -1,0 +1,30 @@
+{
+  "meta": {
+    "schema": "gallery-template.v1",
+    "version": "1.0",
+    "name": "Sample Gallery Template"
+  },
+  "id": "gallery-sample-20250925",
+  "parentMallId": "mall-sample-20250924",
+  "rect": {
+    "x": 2,
+    "y": 2,
+    "w": 8,
+    "h": 6
+  },
+  "rooms": [
+    {
+      "id": "room-1",
+      "gridRect": { "x": 3, "y": 3, "w": 3, "h": 2 }
+    },
+    {
+      "id": "room-2",
+      "gridRect": { "x": 6, "y": 3, "w": 3, "h": 2 }
+    },
+    {
+      "id": "room-3",
+      "gridRect": { "x": 4, "y": 5, "w": 3, "h": 2 }
+    }
+  ],
+  "created": "2025-09-25T01:15:00.000Z"
+}

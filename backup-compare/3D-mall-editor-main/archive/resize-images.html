@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Resizer for Gallery</title>
+</head>
+<body>
+    <h2>Resize Gallery Images</h2>
+    <p>This tool will resize your gallery images to web-optimized sizes (512x512, under 100KB)</p>
+    
+    <input type="file" id="fileInput" multiple accept="image/*">
+    <div id="output"></div>
+    
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            
+            Array.from(files).forEach((file, index) => {
+                const img = new Image();
+                img.onload = function() {
+                    // Create canvas for resizing
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Set target size (512x512 max, maintaining aspect ratio)
+                    const maxSize = 512;
+                    let { width, height } = img;
+                    
+                    if (width > height && width > maxSize) {
+                        height = (height * maxSize) / width;
+                        width = maxSize;
+                    } else if (height > maxSize) {
+                        width = (width * maxSize) / height;
+                        height = maxSize;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // Draw resized image
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to blob and create download link
+                    canvas.toBlob(function(blob) {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = `resized_${file.name}`;
+                        link.textContent = `Download ${file.name} (${width}x${height}, ${Math.round(blob.size/1024)}KB)`;
+                        link.style.display = 'block';
+                        output.appendChild(link);
+                    }, 'image/jpeg', 0.8);
+                };
+                img.src = URL.createObjectURL(file);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Test - Controlled Environment</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; font-family: monospace; }
+        #status {
+            position: absolute; top: 10px; left: 10px; color: #0f0;
+            background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px;
+            max-width: 400px; font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div id="status">🧪 Wall Test - Controlled Environment</div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        function updateStatus(msg) {
+            status.innerHTML += '<br>' + msg;
+            console.log(msg);
+        }
+        
+        // EXACT same components as working minimal test + ONE wall definition
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [40, 30],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    }
+                },
+                "wall": {
+                    "model": "plane",
+                    "size": [40, 8],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#ffffff",
+                        "roughness": 0.8,
+                        "metalness": 0.0
+                    }
+                }
+            }
+        };
+
+        // EXACT same factory class as working minimal test
+        class MinimalFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+            }
+            
+            createMaterial(materialConfig) {
+                const MaterialClass = materialConfig.type === 'MeshBasicMaterial' ? 
+                    THREE.MeshBasicMaterial : THREE.MeshStandardMaterial;
+                
+                const params = {};
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color') {
+                        params[key] = new THREE.Color(value);
+                        updateStatus(`Material color: ${value} -> #${params[key].getHexString()}`);
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                const material = new MaterialClass(params);
+                updateStatus(`Created ${materialConfig.type}: ${Object.keys(params).join(', ')}`);
+                return material;
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) return null;
+                
+                const geometry = this.createGeometry(componentDef.model, componentDef.size);
+                const material = this.createMaterial(componentDef.material);
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                
+                // Log final material state for walls
+                if (componentType === 'wall') {
+                    updateStatus(`WALL FINAL: color=#${mesh.material.color.getHexString()}, type=${mesh.material.constructor.name}`);
+                }
+                
+                scene.add(mesh);
+                return mesh;
+            }
+        }
+        
+        // EXACT same initialization as working minimal test
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`✅ THREE.js loaded (r${THREE.REVISION})`);
+                
+                try {
+                    // EXACT same scene setup as working minimal
+                    const scene = new THREE.Scene();
+                    scene.background = new THREE.Color(0xf5f5f5);
+                    updateStatus('✅ Scene created');
+                    
+                    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                    camera.position.set(0, 2, 5);
+                    updateStatus('✅ Camera created');
+                    
+                    const renderer = new THREE.WebGLRenderer();
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+                    document.body.appendChild(renderer.domElement);
+                    updateStatus('✅ Renderer created');
+                    
+                    // EXACT same lighting as working minimal
+                    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                    scene.add(ambientLight);
+                    updateStatus('✅ Lighting added');
+                    
+                    const factory = new MinimalFactory();
+                    updateStatus('✅ Factory created');
+                    
+                    // Create objects ONE BY ONE
+                    updateStatus('--- CREATING POLE ---');
+                    const pole = factory.createComponent('referencePole', { position: [0, 0.5, 0] }, scene);
+                    
+                    updateStatus('--- CREATING FLOOR ---');
+                    const floor = factory.createComponent('floor', { position: [0, 0, 0] }, scene);
+                    
+                    updateStatus('--- CREATING SINGLE WALL ---');
+                    const wall = factory.createComponent('wall', { position: [0, 4, -10] }, scene);
+                    
+                    if (pole && floor && wall) {
+                        updateStatus('✅ All objects created');
+                    } else {
+                        updateStatus('❌ Object creation failed');
+                    }
+                    
+                    // Render
+                    renderer.render(scene, camera);
+                    updateStatus('✅ Render complete - check wall color!');
+                    
+                    // Animation
+                    function animate() {
+                        requestAnimationFrame(animate);
+                        renderer.render(scene, camera);
+                    }
+                    animate();
+                    
+                } catch (error) {
+                    updateStatus(`❌ Error: ${error.message}`);
+                }
+                
+            } else {
+                updateStatus('❌ THREE.js failed to load');
+            }
+        }, 1000);
+        
+    </script>
+</body>
+</html>

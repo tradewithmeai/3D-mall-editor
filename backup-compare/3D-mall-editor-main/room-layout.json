@@ -1,0 +1,46 @@
+{
+  "instances": [
+    {
+      "type": "referencePole",
+      "position": [0, 0.5, 0]
+    },
+    {
+      "type": "lobbyFloor", 
+      "position": [20, 0, 15],
+      "rotation": [-1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyCeiling",
+      "position": [20, 8, 15], 
+      "rotation": [1.5707963267948966, 0, 0]
+    },
+    {
+      "type": "lobbyNorthWall",
+      "name": "northWall",
+      "position": [20, 4, 30],
+      "rotation": [0, 3.141592653589793, 0]
+    },
+    {
+      "type": "lobbySouthWall", 
+      "name": "southWall",
+      "position": [20, 4, 0],
+      "rotation": [0, 0, 0]
+    },
+    {
+      "type": "lobbyEastWall",
+      "name": "eastWall", 
+      "position": [40, 4, 15],
+      "rotation": [0, -1.5707963267948966, 0]
+    },
+    {
+      "type": "lobbyWestWall",
+      "name": "westWall",
+      "position": [0, 4, 15],
+      "rotation": [0, 1.5707963267948966, 0]
+    },
+    {
+      "type": "debugBall",
+      "position": [35, 1.5, 15]
+    }
+  ]
+}

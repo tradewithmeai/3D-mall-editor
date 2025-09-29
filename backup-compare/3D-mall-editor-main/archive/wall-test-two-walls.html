@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Test - Two Walls</title>
+    <style>
+        body { margin: 0; padding: 0; background: #000; font-family: monospace; }
+        #status {
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            color: #0f0;
+            background: rgba(0,0,0,0.9); 
+            padding: 15px; 
+            border-radius: 5px;
+            max-width: 350px; 
+            max-height: 80vh;
+            overflow-y: auto;
+            font-size: 11px;
+            z-index: 1000;
+        }
+        .wall-info {
+            color: #ff4;
+            background: rgba(255,255,0,0.1);
+            padding: 2px 4px;
+            margin: 2px 0;
+            border-left: 3px solid #ff0;
+        }
+        .error {
+            color: #f44;
+            background: rgba(255,0,0,0.1);
+            padding: 2px 4px;
+            margin: 2px 0;
+            border-left: 3px solid #f44;
+        }
+    </style>
+</head>
+<body>
+    <div id="status"><strong>🧪 Two Wall Test - Find Breaking Point</strong></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const status = document.getElementById('status');
+        
+        function updateStatus(msg, type = 'normal') {
+            const div = document.createElement('div');
+            if (type === 'wall') div.className = 'wall-info';
+            else if (type === 'error') div.className = 'error';
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            status.appendChild(div);
+            status.scrollTop = status.scrollHeight;
+            console.log(`[TWO-WALL-TEST] ${msg}`);
+        }
+        
+        // Error catching
+        window.addEventListener('error', (e) => {
+            updateStatus(`❌ JS ERROR: ${e.message} at line ${e.lineno}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', (e) => {
+            updateStatus(`❌ PROMISE ERROR: ${e.reason}`, 'error');
+        });
+        
+        // EXACT same components as working single wall test
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": {
+                        "type": "MeshBasicMaterial",
+                        "color": "#000000"
+                    }
+                },
+                "floor": {
+                    "model": "plane",
+                    "size": [20, 20],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#90EE90",
+                        "roughness": 0.6,
+                        "metalness": 0.1
+                    }
+                },
+                "wall": {
+                    "model": "plane",
+                    "size": [20, 8],
+                    "material": {
+                        "type": "MeshStandardMaterial",
+                        "color": "#ffffff",
+                        "roughness": 0.8,
+                        "metalness": 0.0
+                    }
+                }
+            }
+        };
+
+        // Same factory with extra error handling
+        class TestFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.wallCount = 0;
+                updateStatus('Factory constructor completed');
+            }
+            
+            createMaterial(materialConfig) {
+                try {
+                    updateStatus(`Creating material: ${materialConfig.type}`);
+                    
+                    const MaterialClass = materialConfig.type === 'MeshBasicMaterial' ? 
+                        THREE.MeshBasicMaterial : THREE.MeshStandardMaterial;
+                    
+                    const params = {};
+                    Object.entries(materialConfig).forEach(([key, value]) => {
+                        if (key === 'type') return;
+                        if (key === 'color') {
+                            params[key] = new THREE.Color(value);
+                            updateStatus(`Material color: ${value} -> #${params[key].getHexString()}`);
+                        } else {
+                            params[key] = value;
+                        }
+                    });
+                    
+                    const material = new MaterialClass(params);
+                    updateStatus(`✅ Material created: ${material.constructor.name}`);
+                    return material;
+                    
+                } catch (error) {
+                    updateStatus(`❌ Material creation error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+            
+            createGeometry(type, dimensions) {
+                try {
+                    updateStatus(`Creating geometry: ${type} [${dimensions.join(',')}]`);
+                    
+                    let geometry;
+                    switch (type) {
+                        case 'cylinder': geometry = new THREE.CylinderGeometry(...dimensions); break;
+                        case 'plane': geometry = new THREE.PlaneGeometry(...dimensions); break;
+                        default: geometry = new THREE.BoxGeometry(1, 1, 1); break;
+                    }
+                    
+                    updateStatus(`✅ Geometry created: ${geometry.constructor.name}`);
+                    return geometry;
+                    
+                } catch (error) {
+                    updateStatus(`❌ Geometry creation error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                try {
+                    updateStatus(`--- CREATING ${componentType.toUpperCase()} ---`);
+                    
+                    const componentDef = this.registry.components[componentType];
+                    if (!componentDef) {
+                        throw new Error(`Unknown component: ${componentType}`);
+                    }
+                    
+                    const geometry = this.createGeometry(componentDef.model, componentDef.size);
+                    const material = this.createMaterial(componentDef.material);
+                    
+                    updateStatus(`Creating mesh...`);
+                    const mesh = new THREE.Mesh(geometry, material);
+                    
+                    if (config.position) {
+                        updateStatus(`Setting position: [${config.position.join(',')}]`);
+                        mesh.position.set(...config.position);
+                    }
+                    
+                    if (config.rotation) {
+                        updateStatus(`Setting rotation: [${config.rotation.join(',')}]`);
+                        mesh.rotation.set(...config.rotation);
+                    }
+                    
+                    if (componentDef.rotation) {
+                        updateStatus(`Applying component rotation: [${componentDef.rotation.join(',')}]`);
+                        mesh.rotation.set(...componentDef.rotation);
+                    }
+                    
+                    // Track walls
+                    if (componentType === 'wall') {
+                        this.wallCount++;
+                        const color = mesh.material.color.getHexString();
+                        updateStatus(`WALL #${this.wallCount}: color=#${color}`, 'wall');
+                    }
+                    
+                    updateStatus(`Adding to scene...`);
+                    scene.add(mesh);
+                    
+                    updateStatus(`✅ ${componentType} created successfully`);
+                    return mesh;
+                    
+                } catch (error) {
+                    updateStatus(`❌ Component creation error: ${error.message}`, 'error');
+                    throw error;
+                }
+            }
+        }
+        
+        function initTest() {
+            try {
+                updateStatus('🧪 Starting TWO wall test...', 'wall');
+                
+                updateStatus('Creating scene...');
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0xf5f5f5);
+                updateStatus('✅ Scene created');
+                
+                updateStatus('Creating camera...');
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                camera.position.set(0, 2, 8);
+                updateStatus('✅ Camera created');
+                
+                updateStatus('Creating renderer...');
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+                updateStatus('✅ Renderer created');
+                
+                updateStatus('Adding lighting...');
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+                scene.add(ambientLight);
+                updateStatus('✅ Lighting added');
+                
+                updateStatus('Creating factory...');
+                const factory = new TestFactory();
+                updateStatus('✅ Factory ready');
+                
+                // Create objects with detailed logging
+                updateStatus('Creating reference pole...');
+                factory.createComponent('referencePole', { position: [0, 0.5, 0] }, scene);
+                
+                updateStatus('Creating floor...');
+                factory.createComponent('floor', { position: [0, 0, 0] }, scene);
+                
+                updateStatus('Creating FIRST wall...');
+                factory.createComponent('wall', { position: [0, 4, -10] }, scene);
+                
+                updateStatus('Creating SECOND wall...');
+                factory.createComponent('wall', { position: [0, 4, 10], rotation: [0, Math.PI, 0] }, scene);
+                
+                updateStatus(`🎉 SUCCESS: Created ${factory.wallCount} walls!`, 'wall');
+                
+                updateStatus('Rendering...');
+                renderer.render(scene, camera);
+                updateStatus('✅ Render complete!');
+                
+                // Simple animation
+                function animate() {
+                    requestAnimationFrame(animate);
+                    renderer.render(scene, camera);
+                }
+                animate();
+                
+            } catch (error) {
+                updateStatus(`💥 FATAL ERROR: ${error.message}`, 'error');
+                updateStatus(`Stack: ${error.stack}`, 'error');
+            }
+        }
+        
+        // Initialize with extensive error handling
+        setTimeout(() => {
+            try {
+                if (typeof THREE !== 'undefined') {
+                    updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                    initTest();
+                } else {
+                    updateStatus('❌ THREE.js failed to load', 'error');
+                }
+            } catch (error) {
+                updateStatus(`💥 Initialization error: ${error.message}`, 'error');
+            }
+        }, 1000);
+        
+    </script>
+</body>
+</html>

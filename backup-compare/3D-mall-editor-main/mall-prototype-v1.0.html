@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<!--
+Mall Prototype v1.0 - Unified Beth + Movement Harness
+Complete 3D Environment with Room Building + Triple Camera Movement
+Created: 2025-08-06
+Features: Beth room carving, first-person/Beth-style/top-down cameras, smooth acceleration, spin-stun, visual tests
+White Box Code Philosophy: Full of light and promise
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mall Prototype v1.0 - Unified 3D Environment</title>
+    <style>
+        body { 
+            margin: 0; 
+            padding: 0; 
+            font-family: 'Courier New', monospace; 
+            background: #1a1a1a; 
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        #container { 
+            display: flex; 
+            height: 100vh; 
+        }
+
+        #canvas-container { 
+            flex: 1; 
+            position: relative;
+            background: #000;
+        }
+
+        #controls { 
+            width: 400px; 
+            background: #2a2a2a; 
+            padding: 20px; 
+            overflow-y: auto;
+            border-left: 2px solid #444;
+        }
+
+        .section { 
+            margin-bottom: 25px; 
+            padding: 15px; 
+            background: #333; 
+            border-radius: 8px; 
+            border: 1px solid #555; 
+        }
+
+        .section h3 { 
+            margin: 0 0 15px 0; 
+            color: #00ff00; 
+            border-bottom: 1px solid #555; 
+            padding-bottom: 8px; 
+        }
+
+        .btn { 
+            background: #444; 
+            color: #ffffff; 
+            border: 2px solid #00ff00; 
+            padding: 10px 15px; 
+            margin: 5px 0; 
+            cursor: pointer; 
+            border-radius: 5px; 
+            font-family: inherit; 
+            font-size: 14px; 
+            width: 100%; 
+            transition: all 0.3s;
+        }
+
+        .btn:hover { 
+            background: #555; 
+            border-color: #00ff88; 
+        }
+
+        .btn.danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #cccccc;
+            font-size: 12px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            background: #555;
+            border: 1px solid #666;
+            border-radius: 4px;
+            color: #ffffff;
+            font-family: inherit;
+        }
+
+        .preview-box {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+
+        .status { 
+            background: #1a1a1a; 
+            border: 1px solid #444; 
+            padding: 10px; 
+            height: 120px; 
+            overflow-y: auto; 
+            font-size: 12px; 
+            color: #cccccc; 
+            border-radius: 5px; 
+        }
+
+        .room-list {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #1a1a1a;
+            border: 1px solid #444;
+            border-radius: 5px;
+        }
+
+        .room-item {
+            padding: 8px;
+            border-bottom: 1px solid #333;
+            font-size: 11px;
+        }
+
+        .room-item:last-child {
+            border-bottom: none;
+        }
+
+        .json-output {
+            background: #1a1a1a;
+            border: 1px solid #444;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 10px;
+            white-space: pre-wrap;
+            color: #00ff88;
+        }
+
+        .help-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 1000;
+            border: 2px solid #00ff00;
+            display: none;
+        }
+
+        .help-overlay.active {
+            display: block;
+        }
+
+        .debug-info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 12px;
+            z-index: 999;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+            font-size: 11px;
+        }
+
+        .stat-item {
+            background: #444;
+            padding: 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .version-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 255, 0, 0.8);
+            color: #000;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 1001;
+        }
+
+        .toolbar {
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .toolbar h4 {
+            margin: 0 0 10px 0;
+            color: #00ff00;
+            font-size: 12px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #555;
+            padding-bottom: 5px;
+        }
+
+        .toolbar-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .toolbar .btn {
+            margin: 0;
+            padding: 8px 12px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="canvas-container">
+            <!-- Help Overlay -->
+            <div id="help-overlay" class="help-overlay">
+                <h3>🎮 Mall Prototype v1.0 Controls</h3>
+                <div><strong>Movement:</strong></div>
+                <div>• W/A/S/D – Move around</div>
+                <div>• Mouse – Look around (in first-person)</div>
+                <div>• Space – Spin & Stun</div>
+                <div>• H – Toggle this help</div>
+                <div>• C – Switch cameras</div>
+                <br>
+                <div><strong>Building:</strong></div>
+                <div>• Set X/Y position and room size</div>
+                <div>• Create Room to build with Beth</div>
+                <div>• Clear All Rooms to reset</div>
+                <br>
+                <div><strong>Views:</strong></div>
+                <div>• First-person – Normal movement view</div>
+                <div>• Beth-style – Angled overview for building</div>
+                <div>• Top-down – Planning and navigation view</div>
+                <div>• Toggle Wireframe + Grid for validation</div>
+            </div>
+
+            <!-- Debug Info -->
+            <div id="debug-info" class="debug-info">
+                <div><strong>Mall Prototype v1.0</strong></div>
+                <div id="position-info">Position: [0, 0, 0]</div>
+                <div id="speed-info">Speed: 2.0 units/s</div>
+                <div id="camera-info">Camera: Y=0°</div>
+                <div id="state-info">State: Normal</div>
+                <div id="view-mode-info" style="color: #ffff00; font-weight: bold;">📷 View: First-person</div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <!-- Mall Unit Info -->
+            <div class="section">
+                <h3>🏢 Mall Unit Status</h3>
+                <div id="mall-info">
+                    <div>Loading mall unit configuration...</div>
+                </div>
+            </div>
+
+            <!-- NAVIGATION Toolbar -->
+            <div class="toolbar">
+                <h4>🎮 NAVIGATION</h4>
+                <div class="toolbar-buttons">
+                    <button class="btn" onclick="MallSystem.toggleMovement()" id="movement-btn">🎯 Enable Movement</button>
+                    <button class="btn" onclick="MallSystem.toggleView()" id="view-btn">📷 Switch View (C)</button>
+                </div>
+                <div style="font-size: 10px; color: #999; margin-top: 5px;">
+                    WASD + mouse, Space=spin, C=camera, H=help
+                </div>
+            </div>
+
+            <!-- DEBUG Toolbar -->
+            <div class="toolbar">
+                <h4>🧪 DEBUG</h4>
+                <div class="toolbar-buttons">
+                    <button class="btn" onclick="MallSystem.toggleWireframe()" id="wireframe-btn">📐 Toggle Wireframe</button>
+                    <button class="btn" onclick="MallSystem.testCornerCoordinates()">🎯 Test Coordinates</button>
+                    <button class="btn" onclick="MallSystem.clearTestMarkers()">🧹 Clear Markers</button>
+                    <button class="btn" onclick="MallSystem.toggleHelp()" id="help-btn">❓ Help (H)</button>
+                </div>
+            </div>
+
+            <!-- BUILD Toolbar -->
+            <div class="toolbar">
+                <h4>🏗️ BUILD</h4>
+                
+                <div class="input-group">
+                    <label>X Position (from SW corner)</label>
+                    <input type="number" id="room-x" value="0" min="0" max="16" step="0.5">
+                </div>
+                
+                <div class="input-group">
+                    <label>Y Position (from SW corner)</label>
+                    <input type="number" id="room-z" value="0" min="0" max="16" step="0.5">
+                </div>
+                
+                <div class="input-group">
+                    <label>Room Width (meters)</label>
+                    <input type="number" id="room-width" value="4" min="2" max="10" step="0.5">
+                </div>
+                
+                <div class="input-group">
+                    <label>Room Depth (meters)</label>
+                    <input type="number" id="room-depth" value="4" min="2" max="10" step="0.5">
+                </div>
+
+                <div class="preview-box" id="room-preview">
+                    <div class="coordinates" id="preview-coords">
+                        Preview: Room bounds will appear here
+                    </div>
+                </div>
+
+                <div class="toolbar-buttons" style="margin-top: 10px;">
+                    <button class="btn" onclick="MallSystem.buildRoom()">🔨 Create Room</button>
+                    <button class="btn danger" onclick="MallSystem.clearRooms()">🗑️ Clear All</button>
+                </div>
+            </div>
+
+            <!-- EXPORT Toolbar -->
+            <div class="toolbar">
+                <h4>📄 EXPORT</h4>
+                <div class="toolbar-buttons">
+                    <button class="btn" onclick="MallSystem.exportJSON()">📋 Generate Blueprint</button>
+                </div>
+                <div class="json-output" id="json-output" style="margin-top: 10px;">
+                    Click "Generate Blueprint" to export combined JSON...
+                </div>
+            </div>
+
+            <!-- Current Rooms -->
+            <div class="section">
+                <h3>📋 Current Rooms</h3>
+                <div class="room-list" id="room-list">
+                    <div style="color: #666; text-align: center;">No rooms created</div>
+                </div>
+            </div>
+
+
+            <!-- Movement Stats -->
+            <div class="section">
+                <h3>📊 Movement Stats</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div>Base Speed</div>
+                        <div id="base-speed">2.0 u/s</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Max Speed</div>
+                        <div id="max-speed">8.0 u/s</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Acceleration</div>
+                        <div id="acceleration">6.0 u/s²</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>Spin Speed</div>
+                        <div id="spin-speed">0.0 rad/s</div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Status & Logging -->
+            <div class="section">
+                <h3>📊 Status Log</h3>
+                <div class="status" id="status-log">
+                    Mall Prototype v1.0 initializing...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version Badge -->
+    <div class="version-badge">
+        🎲 Mall Prototype v1.0
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="componentFactory.js"></script>
+    <script>
+        // Global scene objects
+        let scene, mainCamera, bethCamera, topDownCamera, renderer;
+        let testEnvironment = [];
+        
+        // Mall Prototype System - Unified Beth + Movement
+        class MallPrototypeSystem {
+            constructor() {
+                // Mall and room state
+                this.mallUnit = null;
+                this.rooms = [];
+                this.roomCounter = 0;
+                this.testMarkers = [];
+                
+                // Movement state
+                this.enabled = false;
+                this.viewMode = 0; // 0=First-person, 1=Beth-style, 2=Top-down
+                this.wireframeMode = false;
+                this.helpVisible = false;
+                
+                // Movement parameters
+                this.baseSpeed = 2.0;
+                this.maxSpeed = 8.0;
+                this.acceleration = 6.0;
+                this.currentSpeed = this.baseSpeed;
+                this.accelerationTime = 0;
+                this.accelerationThreshold = 2.0;
+                this.rampUpDuration = 1.0;
+                
+                // Input state
+                this.keys = {
+                    forward: false,
+                    backward: false,
+                    left: false,
+                    right: false,
+                    space: false
+                };
+                
+                // Spin & stun system
+                this.spinSpeed = 0;
+                this.spinAcceleration = 0.5;
+                this.maxSpinSpeed = 10.0;
+                this.isSpinning = false;
+                this.isStunned = false;
+                this.stunDuration = 2.0;
+                this.fallDuration = 0.5;
+                this.stunStartTime = 0;
+                this.fallStartTime = 0;
+                this.isFalling = false;
+                
+                // Camera and physics
+                this.yaw = 0;
+                this.lookSpeed = 0.002;
+                this.velocity = new THREE.Vector3();
+                this.position = new THREE.Vector3(10, 1.8, 10); // Start at center of mall unit
+                
+                // Timing
+                this.lastTime = 0;
+                this.deltaTime = 0;
+                
+                this.setupEventListeners();
+            }
+            
+            setupEventListeners() {
+                // Keyboard events
+                document.addEventListener('keydown', (e) => this.onKeyDown(e));
+                document.addEventListener('keyup', (e) => this.onKeyUp(e));
+                
+                // Pointer lock events
+                document.addEventListener('pointerlockchange', () => this.onPointerLockChange());
+                document.addEventListener('pointerlockerror', () => this.onPointerLockError());
+                
+                // Mouse movement
+                document.addEventListener('mousemove', (e) => this.onMouseMove(e));
+            }
+            
+            setupInputEvents() {
+                // Set up input event listeners for live preview
+                ['room-x', 'room-z', 'room-width', 'room-depth'].forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.addEventListener('input', () => {
+                            if (this.mallUnit) {
+                                this.updatePreview();
+                            }
+                        });
+                    }
+                });
+            }
+            
+            async init() {
+                this.log("🏗️ Mall Prototype v1.0 initializing...");
+                
+                // Load mall unit definition with enhanced diagnostics
+                try {
+                    // Enhanced diagnostics
+                    const currentURL = window.location.href;
+                    const baseURL = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+                    const jsonURL = baseURL + 'mall-unit.json';
+                    
+                    this.log(`🌐 Current URL: ${currentURL}`);
+                    this.log(`📂 Base URL: ${baseURL}`);
+                    this.log(`📡 Fetching: ${jsonURL}`);
+                    
+                    // Check if we're on file:// protocol
+                    if (window.location.protocol === 'file:') {
+                        this.log(`⚠️ WARNING: Using file:// protocol - fetch may fail due to CORS restrictions`);
+                        this.log(`💡 TIP: Run HTTP server with: npx http-server or python -m http.server`);
+                    }
+                    
+                    const response = await fetch('mall-unit.json');
+                    this.log(`📊 Fetch response: ${response.status} ${response.statusText}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    this.log("📄 Parsing JSON data...");
+                    const jsonText = await response.text();
+                    this.log(`📝 JSON text length: ${jsonText.length} characters`);
+                    
+                    this.mallUnit = JSON.parse(jsonText);
+                    this.log(`✅ Mall unit loaded: ${this.mallUnit.dimensions.width}×${this.mallUnit.dimensions.depth}×${this.mallUnit.dimensions.height}m`);
+                    this.log(`🏗️ Origin: [${this.mallUnit.origin.join(', ')}]`);
+                    this.log(`🎯 Boundaries: X[${this.mallUnit.boundaries.minX}-${this.mallUnit.boundaries.maxX}] Z[${this.mallUnit.boundaries.minZ}-${this.mallUnit.boundaries.maxZ}]`);
+                    
+                    this.updateMallInfo();
+                    this.createBoundaryVisualization();
+                    this.updatePreview();
+                    this.setupInputEvents();
+                    this.log("🎮 Mall Prototype v1.0 ready for room building and movement testing");
+                    this.log("Click 'Enable Movement' to start, 'Create Room' to build with Beth");
+                    
+                } catch (error) {
+                    this.log(`❌ Failed to load mall unit: ${error.message}`);
+                    this.log(`❌ Error type: ${error.name}`);
+                    this.log(`❌ Error stack: ${error.stack}`);
+                    this.log(`🔧 Diagnostics:`);
+                    this.log(`   • Protocol: ${window.location.protocol}`);
+                    this.log(`   • Host: ${window.location.host}`);
+                    this.log(`   • Pathname: ${window.location.pathname}`);
+                    this.log(`💡 Solutions:`);
+                    this.log(`   1. Ensure HTTP server running (not file://)`);
+                    this.log(`   2. Check mall-unit.json exists in same directory`);
+                    this.log(`   3. Verify JSON file is valid`);
+                    this.log(`   4. Check browser Network tab for failed requests`);
+                    
+                    this.log(`💥 SYSTEM HALT: Cannot proceed without valid mall unit data`);
+                    this.log(`🔧 Fix the root cause above, then reload the page`);
+                }
+                
+                this.setupInputEvents();
+                this.log("🎮 Mall Prototype v1.0 ready for room building and movement testing");
+                this.log("Click 'Enable Movement' to start, 'Create Room' to build with Beth");
+            }
+            
+            // === MOVEMENT SYSTEM ===
+            
+            toggleMovement() {
+                if (this.enabled) {
+                    this.disable();
+                } else {
+                    this.enable();
+                }
+            }
+            
+            enable() {
+                const canvas = renderer.domElement;
+                canvas.requestPointerLock();
+            }
+            
+            disable() {
+                document.exitPointerLock();
+            }
+            
+            onPointerLockChange() {
+                this.enabled = !!document.pointerLockElement;
+                this.updateUI();
+                
+                if (this.enabled) {
+                    this.log("🎯 Movement controls enabled - Use WASD + mouse");
+                    this.log(`🔍 DEBUG: Enabled=${this.enabled}, PointerLock=${!!document.pointerLockElement}`);
+                } else {
+                    this.log("🔓 Movement controls disabled");
+                    this.log(`🔍 DEBUG: Enabled=${this.enabled}, PointerLock=${!!document.pointerLockElement}`);
+                }
+            }
+            
+            onPointerLockError() {
+                this.log("❌ Pointer lock failed");
+            }
+            
+            onKeyDown(event) {
+                if (!this.enabled && event.code !== 'KeyH') return;
+                
+                switch (event.code) {
+                    case 'KeyW':
+                        this.keys.forward = true;
+                        break;
+                    case 'KeyS':
+                        this.keys.backward = true;
+                        break;
+                    case 'KeyA':
+                        this.keys.left = true;
+                        break;
+                    case 'KeyD':
+                        this.keys.right = true;
+                        break;
+                    case 'Space':
+                        event.preventDefault();
+                        if (!this.keys.space && !this.isStunned) {
+                            this.startSpin();
+                        }
+                        this.keys.space = true;
+                        break;
+                    case 'KeyH':
+                        this.toggleHelp();
+                        break;
+                    case 'KeyC':
+                        this.toggleView();
+                        break;
+                }
+            }
+            
+            onKeyUp(event) {
+                if (!this.enabled && event.code !== 'KeyH') return;
+                
+                switch (event.code) {
+                    case 'KeyW':
+                        this.keys.forward = false;
+                        break;
+                    case 'KeyS':
+                        this.keys.backward = false;
+                        break;
+                    case 'KeyA':
+                        this.keys.left = false;
+                        break;
+                    case 'KeyD':
+                        this.keys.right = false;
+                        break;
+                    case 'Space':
+                        if (this.keys.space) {
+                            this.endSpin();
+                        }
+                        this.keys.space = false;
+                        break;
+                }
+            }
+            
+            onMouseMove(event) {
+                if (!this.enabled || this.isStunned || this.viewMode !== 0) return;
+                
+                this.yaw -= event.movementX * this.lookSpeed;
+                mainCamera.rotation.y = this.yaw;
+            }
+            
+            startSpin() {
+                if (this.isSpinning || this.isStunned) return;
+                
+                this.isSpinning = true;
+                this.log("🌀 Spin charging...");
+            }
+            
+            endSpin() {
+                if (!this.isSpinning) return;
+                
+                const finalSpeed = this.spinSpeed;
+                this.log(`🎯 Spin released! Final speed: ${finalSpeed.toFixed(2)} rad/s`);
+                
+                // Start fall and stun sequence
+                this.isFalling = true;
+                this.fallStartTime = performance.now();
+                this.stunStartTime = this.fallStartTime + this.fallDuration * 1000;
+                
+                this.log("🤸 Falling forward...");
+                
+                // Create visual stun indicator
+                this.createStunIndicator();
+            }
+            
+            createStunIndicator() {
+                const geometry = new THREE.SphereGeometry(0.3, 8, 8);
+                const material = new THREE.MeshBasicMaterial({
+                    color: 0xff0000,
+                    transparent: true,
+                    opacity: 0.5
+                });
+                const indicator = new THREE.Mesh(geometry, material);
+                indicator.position.copy(this.position);
+                indicator.userData = { isStunIndicator: true };
+                scene.add(indicator);
+                
+                // Remove after stun duration
+                setTimeout(() => {
+                    scene.remove(indicator);
+                }, (this.fallDuration + this.stunDuration) * 1000);
+            }
+            
+            update() {
+                const currentTime = performance.now();
+                this.deltaTime = (currentTime - this.lastTime) / 1000;
+                this.lastTime = currentTime;
+                
+                // Update spin and stun system
+                this.updateSpinAndStun(currentTime);
+                
+                // Update movement (if not stunned)
+                if (!this.isStunned) {
+                    this.updateMovement();
+                }
+                
+                // Update camera position
+                mainCamera.position.copy(this.position);
+                
+                // Debug marker removed for clean scene
+                
+                // Update debug info
+                this.updateDebugInfo();
+                
+                // Run automated assertions
+                this.runAssertions();
+            }
+            
+            updateSpinAndStun(currentTime) {
+                if (this.isSpinning && !this.isFalling) {
+                    // Charge spin speed
+                    this.spinSpeed = Math.min(
+                        this.spinSpeed + this.spinAcceleration * this.deltaTime,
+                        this.maxSpinSpeed
+                    );
+                    
+                    // Apply spin rotation
+                    mainCamera.rotation.z = Math.sin(currentTime * 0.01) * this.spinSpeed * 0.1;
+                }
+                
+                if (this.isFalling) {
+                    const fallProgress = (currentTime - this.fallStartTime) / (this.fallDuration * 1000);
+                    
+                    if (fallProgress < 1) {
+                        // Falling forward - rotate camera X
+                        mainCamera.rotation.x = -fallProgress * Math.PI / 2;
+                    } else if (!this.isStunned) {
+                        // Start stun phase
+                        this.isStunned = true;
+                        this.isFalling = false;
+                        this.isSpinning = false;
+                        this.log("😵 Stunned! Controls disabled for 2 seconds...");
+                        
+                        // Schedule recovery
+                        setTimeout(() => {
+                            this.isStunned = false;
+                            this.spinSpeed = 0;
+                            mainCamera.rotation.x = 0;
+                            mainCamera.rotation.z = 0;
+                            this.log("✅ Recovered! Controls re-enabled");
+                        }, this.stunDuration * 1000);
+                    }
+                }
+            }
+            
+            updateMovement() {
+                if (!this.enabled) return;
+                
+                // Calculate movement input
+                let moving = this.keys.forward || this.keys.backward || this.keys.left || this.keys.right;
+                
+                // DEBUG: Log key states
+                if (moving) {
+                    this.log(`🎮 DEBUG: Keys - W:${this.keys.forward}, A:${this.keys.left}, S:${this.keys.backward}, D:${this.keys.right}`);
+                }
+                
+                if (moving) {
+                    // Increment acceleration time
+                    this.accelerationTime += this.deltaTime;
+                    
+                    // Calculate current speed with acceleration
+                    if (this.accelerationTime > this.accelerationThreshold) {
+                        const rampProgress = Math.min(
+                            (this.accelerationTime - this.accelerationThreshold) / this.rampUpDuration,
+                            1.0
+                        );
+                        this.currentSpeed = this.baseSpeed + (this.maxSpeed - this.baseSpeed) * rampProgress;
+                    }
+                } else {
+                    // Reset speed instantly when not moving
+                    this.accelerationTime = 0;
+                    this.currentSpeed = this.baseSpeed;
+                }
+                
+                // Calculate movement direction
+                const direction = new THREE.Vector3();
+                
+                if (this.keys.forward) direction.z -= 1;
+                if (this.keys.backward) direction.z += 1;
+                if (this.keys.left) direction.x -= 1;
+                if (this.keys.right) direction.x += 1;
+                
+                direction.normalize();
+                
+                // Apply camera rotation to movement direction
+                direction.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+                
+                // Calculate velocity
+                this.velocity.copy(direction);
+                this.velocity.multiplyScalar(this.currentSpeed * this.deltaTime);
+                
+                // Apply movement with collision detection
+                this.moveWithCollision();
+            }
+            
+            moveWithCollision() {
+                if (this.velocity.length() === 0) return;
+                
+                const oldPosition = this.position.clone();
+                
+                // Try movement
+                const oldPos = this.position.clone();
+                this.position.add(this.velocity);
+                
+                // DEBUG: Log position changes
+                if (this.velocity.length() > 0) {
+                    this.log(`🚶 DEBUG: Position change [${oldPos.x.toFixed(2)}, ${oldPos.z.toFixed(2)}] → [${this.position.x.toFixed(2)}, ${this.position.z.toFixed(2)}]`);
+                }
+                
+                // Simple boundary collision (mall unit bounds)
+                if (this.mallUnit) {
+                    const bounds = this.mallUnit.boundaries;
+                    const margin = 0.5;
+                    
+                    if (this.position.x < bounds.minX + margin ||
+                        this.position.x > bounds.maxX - margin ||
+                        this.position.z < bounds.minZ + margin ||
+                        this.position.z > bounds.maxZ - margin) {
+                        
+                        // Revert movement
+                        this.position.copy(oldPosition);
+                    }
+                }
+                
+                // Check collision with room walls
+                for (const room of this.rooms) {
+                    const bounds = room.bounds;
+                    const margin = 0.3;
+                    
+                    // Check if player is inside this room's bounds (with margin)
+                    if (this.position.x > bounds.minX - margin && this.position.x < bounds.maxX + margin &&
+                        this.position.z > bounds.minZ - margin && this.position.z < bounds.maxZ + margin) {
+                        
+                        // Player is near/inside this room - check wall collision
+                        const wallThickness = this.mallUnit.constraints.wallThickness;
+                        const halfThick = wallThickness / 2;
+                        
+                        // Check each wall
+                        if ((this.position.x > bounds.minX - halfThick && this.position.x < bounds.minX + halfThick) ||
+                            (this.position.x > bounds.maxX - halfThick && this.position.x < bounds.maxX + halfThick) ||
+                            (this.position.z > bounds.minZ - halfThick && this.position.z < bounds.minZ + halfThick) ||
+                            (this.position.z > bounds.maxZ - halfThick && this.position.z < bounds.maxZ + halfThick)) {
+                            
+                            this.position.copy(oldPosition);
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // === VIEW SYSTEM ===
+            
+            toggleView() {
+                this.viewMode = (this.viewMode + 1) % 3;
+                
+                switch(this.viewMode) {
+                    case 0:
+                        this.log("🔍 First-person view");
+                        break;
+                    case 1:
+                        this.log("🔍 Beth-style angled overview");
+                        break;
+                    case 2:
+                        this.log("🔍 Top-down orthographic view");
+                        break;
+                }
+                
+                this.updateUI();
+            }
+            
+            toggleWireframe() {
+                this.wireframeMode = !this.wireframeMode;
+                
+                // Get all meshes in the scene
+                const allMeshes = [];
+                
+                // Add room meshes
+                this.rooms.forEach(room => {
+                    room.meshes.forEach(mesh => {
+                        allMeshes.push(mesh);
+                    });
+                });
+                
+                // Add mall unit boundary mesh and control its visibility
+                const boundaryMesh = scene.children.find(child => 
+                    child.userData && child.userData.id === 'mall-unit-boundary'
+                );
+                if (boundaryMesh) {
+                    allMeshes.push(boundaryMesh);
+                    // Control boundary visibility based on wireframe mode
+                    boundaryMesh.visible = this.wireframeMode;
+                    this.log(`🔍 DEBUG: Found boundary mesh, visibility=${this.wireframeMode}`);
+                } else {
+                    this.log(`⚠️ DEBUG: Boundary mesh not found for wireframe toggle`);
+                }
+                
+                // Toggle wireframe for all meshes
+                allMeshes.forEach(mesh => {
+                    if (this.wireframeMode) {
+                        // Store original material if not already stored
+                        if (!mesh.userData.originalWireframe) {
+                            mesh.userData.originalWireframe = mesh.material.wireframe;
+                        }
+                        
+                        // Apply wireframe rendering
+                        mesh.material.wireframe = true;
+                        
+                    } else {
+                        // Restore original material properties
+                        if (mesh.userData.originalWireframe !== undefined) {
+                            mesh.material.wireframe = mesh.userData.originalWireframe;
+                        }
+                    }
+                });
+                
+                // Grid overlay temporarily disabled for collision debugging
+                // if (this.wireframeMode) {
+                //     this.showGridOverlay();
+                // } else {
+                //     this.hideGridOverlay();
+                // }
+                
+                this.log(`📐 Wireframe view ${this.wireframeMode ? 'enabled' : 'disabled'} (${allMeshes.length} meshes affected)`);
+                this.updateUI();
+            }
+            
+            showGridOverlay() {
+                if (!this.mallUnit || this.gridOverlay) return;
+
+                // Create grid lines for corner-based coordinate system
+                const size = Math.max(this.mallUnit.dimensions.width, this.mallUnit.dimensions.depth);
+                const divisions = size; // 1-meter grid spacing
+                
+                // Create grid helper with subtle colors
+                const gridHelper = new THREE.GridHelper(size, divisions, 0x444444, 0x222222); // Subtle dark gray lines
+                
+                // Position grid at mall unit center (using corner-based to Three.js conversion)
+                const originX = this.mallUnit.origin[0];
+                const originZ = this.mallUnit.origin[2];
+                const centerOffsetX = this.mallUnit.threeJsConversion.centerOffset.x;
+                const centerOffsetZ = this.mallUnit.threeJsConversion.centerOffset.z;
+                
+                const centerX = originX + this.mallUnit.dimensions.width / 2 + centerOffsetX;
+                const centerZ = originZ + this.mallUnit.dimensions.depth / 2 + centerOffsetZ;
+                
+                gridHelper.position.set(centerX, 0.02, centerZ); // Slightly higher above ground
+                gridHelper.userData = { id: 'coordinate-grid', type: 'grid-overlay' };
+                
+                scene.add(gridHelper);
+                this.gridOverlay = gridHelper;
+                
+                this.log(`📐 Grid overlay: ${size}×${size}m with ${divisions} divisions at position [${centerX.toFixed(1)}, 0.02, ${centerZ.toFixed(1)}]`);
+            }
+
+            hideGridOverlay() {
+                if (this.gridOverlay) {
+                    scene.remove(this.gridOverlay);
+                    this.gridOverlay = null;
+                    this.log(`📐 Coordinate grid overlay disabled`);
+                }
+            }
+            
+            toggleHelp() {
+                this.helpVisible = !this.helpVisible;
+                const overlay = document.getElementById('help-overlay');
+                overlay.classList.toggle('active', this.helpVisible);
+            }
+            
+            // === BETH ROOM BUILDING SYSTEM ===
+            
+            updateMallInfo() {
+                const info = document.getElementById('mall-info');
+                if (this.mallUnit) {
+                    info.innerHTML = `
+                        <div><strong>Mall Unit Configuration:</strong></div>
+                        <div>Size: ${this.mallUnit.dimensions.width}×${this.mallUnit.dimensions.depth}×${this.mallUnit.dimensions.height}m</div>
+                        <div>Coordinate System: ${this.mallUnit.metadata.coordinateSystem}</div>
+                        <div>Origin: SW corner [${this.mallUnit.origin.join(', ')}]</div>
+                        <div>Compatible with: ${this.mallUnit.metadata.compatibleWith}</div>
+                    `;
+                } else {
+                    info.innerHTML = '<div style="color: #ff4444;">Mall unit not loaded</div>';
+                }
+            }
+            
+            createBoundaryVisualization() {
+                if (!this.mallUnit) return;
+
+                // Create wireframe boundary using corner-based positioning
+                const geometry = new THREE.BoxGeometry(
+                    this.mallUnit.dimensions.width,
+                    this.mallUnit.dimensions.height,
+                    this.mallUnit.dimensions.depth
+                );
+                
+                const material = new THREE.MeshBasicMaterial({
+                    color: this.mallUnit.materials.boundary.color,
+                    wireframe: this.mallUnit.materials.boundary.wireframe,
+                    transparent: true,
+                    opacity: this.mallUnit.materials.boundary.opacity
+                });
+                
+                this.log(`🔍 DEBUG: Boundary material wireframe=${this.mallUnit.materials.boundary.wireframe}, color=${this.mallUnit.materials.boundary.color}`);
+
+                const boundaryMesh = new THREE.Mesh(geometry, material);
+                
+                // Make boundary invisible by default - only show in wireframe mode
+                boundaryMesh.visible = false;
+                
+                // Convert corner-based to Three.js center-based positioning
+                const centerX = this.mallUnit.origin[0] + this.mallUnit.dimensions.width / 2 + this.mallUnit.threeJsConversion.centerOffset.x;
+                const centerY = this.mallUnit.dimensions.height / 2;
+                const centerZ = this.mallUnit.origin[2] + this.mallUnit.dimensions.depth / 2 + this.mallUnit.threeJsConversion.centerOffset.z;
+                
+                boundaryMesh.position.set(centerX, centerY, centerZ);
+                boundaryMesh.userData = { id: 'mall-unit-boundary', type: 'boundary' };
+                
+                scene.add(boundaryMesh);
+                this.log(`🔲 Mall unit boundary created (invisible by default) - Corner origin [${this.mallUnit.origin.join(', ')}] → Three.js center [${centerX}, ${centerY}, ${centerZ}]`);
+                
+                // Add default ground plane for visual reference
+                this.createDefaultSceneContent();
+            }
+            
+            createDefaultSceneContent() {
+                if (!this.mallUnit) return;
+                
+                // Create ground plane covering the mall unit area
+                const groundGeometry = new THREE.PlaneGeometry(
+                    this.mallUnit.dimensions.width, 
+                    this.mallUnit.dimensions.depth
+                );
+                const groundMaterial = new THREE.MeshLambertMaterial({ 
+                    color: this.mallUnit.materials.floor.color,
+                    transparent: true,
+                    opacity: 0.8
+                });
+                const groundPlane = new THREE.Mesh(groundGeometry, groundMaterial);
+                groundPlane.rotation.x = -Math.PI / 2; // Horizontal
+                
+                // Position at mall center
+                const centerX = this.mallUnit.origin[0] + this.mallUnit.dimensions.width / 2 + this.mallUnit.threeJsConversion.centerOffset.x;
+                const centerZ = this.mallUnit.origin[2] + this.mallUnit.dimensions.depth / 2 + this.mallUnit.threeJsConversion.centerOffset.z;
+                groundPlane.position.set(centerX, 0, centerZ);
+                groundPlane.userData = { id: 'default-ground', type: 'ground' };
+                
+                scene.add(groundPlane);
+                this.log(`🏢 Default ground plane created: ${this.mallUnit.dimensions.width}×${this.mallUnit.dimensions.depth}m`);
+            }
+            
+            updatePreview() {
+                if (!this.mallUnit) {
+                    const preview = document.getElementById('preview-coords');
+                    preview.innerHTML = `<div style="color: #ff4444">⏳ Loading mall unit...</div>`;
+                    return;
+                }
+
+                const x = parseFloat(document.getElementById('room-x').value) || 0;
+                const z = parseFloat(document.getElementById('room-z').value) || 0;
+                const width = parseFloat(document.getElementById('room-width').value) || 4;
+                const depth = parseFloat(document.getElementById('room-depth').value) || 4;
+
+                const preview = document.getElementById('preview-coords');
+                const bounds = this.calculateRoomBounds(x, z, width, depth);
+                
+                preview.innerHTML = `
+                    <strong>Preview Room:</strong><br>
+                    SW Corner: [${x}, ${z}] (corner-based)<br>
+                    Size: ${width}×${depth}m<br>
+                    Room Bounds: X[${bounds.minX} to ${bounds.maxX}] Y[${bounds.minZ} to ${bounds.maxZ}]<br>
+                    <span style="color: ${bounds.valid ? '#00ff00' : '#ff4444'}">${bounds.valid ? '✅ Valid placement' : '❌ Outside mall unit'}</span>
+                `;
+            }
+            
+            calculateRoomBounds(x, z, width, depth) {
+                // Check if mall unit is loaded
+                if (!this.mallUnit) {
+                    this.log("⚠️ Mall unit not loaded yet - cannot calculate room bounds");
+                    return { minX: 0, maxX: 0, minZ: 0, maxZ: 0, valid: false };
+                }
+
+                // Corner-based bounds calculation: room position is SW corner
+                const originX = this.mallUnit.origin[0];
+                const originZ = this.mallUnit.origin[2];
+                
+                // Calculate room bounds in corner-based coordinate system
+                const minX = originX + x;
+                const maxX = originX + x + width;
+                const minZ = originZ + z;
+                const maxZ = originZ + z + depth;
+
+                const valid = this.mallUnit && 
+                    minX >= this.mallUnit.boundaries.minX &&
+                    maxX <= this.mallUnit.boundaries.maxX &&
+                    minZ >= this.mallUnit.boundaries.minZ &&
+                    maxZ <= this.mallUnit.boundaries.maxZ;
+
+                return { minX, maxX, minZ, maxZ, valid };
+            }
+            
+            buildRoom() {
+                const x = parseFloat(document.getElementById('room-x').value) || 0;
+                const z = parseFloat(document.getElementById('room-z').value) || 0;
+                const width = parseFloat(document.getElementById('room-width').value) || 4;
+                const depth = parseFloat(document.getElementById('room-depth').value) || 4;
+
+                this.log(`🔨 Building room at [${x}, ${z}] size ${width}×${depth}m...`);
+
+                // Validate bounds
+                const bounds = this.calculateRoomBounds(x, z, width, depth);
+                if (!bounds.valid) {
+                    this.log("❌ Room exceeds mall unit boundaries!");
+                    return false;
+                }
+
+                // Create room structure
+                const roomId = `room-${++this.roomCounter}`;
+                const room = {
+                    id: roomId,
+                    x: x,
+                    z: z,
+                    width: width,
+                    depth: depth,
+                    bounds: bounds,
+                    meshes: [],
+                    created: new Date().toISOString()
+                };
+
+                // Create room geometry
+                this.createRoomGeometry(room);
+                
+                this.rooms.push(room);
+                this.updateRoomList();
+                this.log(`✅ Room ${roomId} created successfully`);
+                
+                return true;
+            }
+            
+            createRoomGeometry(room) {
+                // Check if mall unit is loaded
+                if (!this.mallUnit) {
+                    this.log("❌ Cannot create room geometry - mall unit not loaded");
+                    return;
+                }
+
+                const height = this.mallUnit.dimensions.height;
+                
+                // Corner-based to Three.js coordinate conversion
+                const originX = this.mallUnit.origin[0];
+                const originZ = this.mallUnit.origin[2];
+                const centerOffsetX = this.mallUnit.threeJsConversion.centerOffset.x;
+                const centerOffsetZ = this.mallUnit.threeJsConversion.centerOffset.z;
+                
+                // Convert corner-based position to Three.js center-based position
+                const posX = originX + room.x + room.width/2 + centerOffsetX;
+                const posZ = originZ + room.z + room.depth/2 + centerOffsetZ;
+                
+                // Standardized color scheme for visual identification
+                const colors = {
+                    floor: 0x8B4513,     // Brown floor
+                    ceiling: 0xFFFFFF,   // White ceiling (clear and visible)
+                    northSouth: 0x4169E1, // Blue north/south walls
+                    eastWest: 0xDC143C    // Red east/west walls
+                };
+                
+                // Create floor (brown) - using corner-based positioning
+                const floorGeometry = new THREE.PlaneGeometry(room.width, room.depth);
+                const floorMaterial = new THREE.MeshStandardMaterial({ color: colors.floor });
+                const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+                floor.rotation.x = -Math.PI / 2;
+                floor.position.set(posX, 0.05, posZ);
+                floor.userData = { id: `${room.id}-floor`, type: 'floor', roomId: room.id, color: 'brown' };
+                scene.add(floor);
+                room.meshes.push(floor);
+
+                // Create walls with color coding using corner-based positioning
+                const wallHeight = height - 0.1;
+                const wallThickness = this.mallUnit.constraints.wallThickness;
+                
+                // North wall (blue - north/south) - at far edge of depth
+                const northWall = this.createWall(room.width, wallHeight, wallThickness, colors.northSouth);
+                northWall.position.set(posX, wallHeight/2 + 0.05, posZ + room.depth/2);
+                northWall.userData = { id: `${room.id}-north-wall`, type: 'wall', roomId: room.id, direction: 'north', color: 'blue' };
+                scene.add(northWall);
+                room.meshes.push(northWall);
+
+                // South wall (blue - north/south) - at near edge of depth
+                const southWall = this.createWall(room.width, wallHeight, wallThickness, colors.northSouth);
+                southWall.position.set(posX, wallHeight/2 + 0.05, posZ - room.depth/2);
+                southWall.userData = { id: `${room.id}-south-wall`, type: 'wall', roomId: room.id, direction: 'south', color: 'blue' };
+                scene.add(southWall);
+                room.meshes.push(southWall);
+
+                // East wall (red - east/west) - at far edge of width
+                const eastWall = this.createWall(wallThickness, wallHeight, room.depth, colors.eastWest);
+                eastWall.position.set(posX + room.width/2, wallHeight/2 + 0.05, posZ);
+                eastWall.userData = { id: `${room.id}-east-wall`, type: 'wall', roomId: room.id, direction: 'east', color: 'red' };
+                scene.add(eastWall);
+                room.meshes.push(eastWall);
+
+                // West wall (red - east/west) - at near edge of width
+                const westWall = this.createWall(wallThickness, wallHeight, room.depth, colors.eastWest);
+                westWall.position.set(posX - room.width/2, wallHeight/2 + 0.05, posZ);
+                westWall.userData = { id: `${room.id}-west-wall`, type: 'wall', roomId: room.id, direction: 'west', color: 'red' };
+                scene.add(westWall);
+                room.meshes.push(westWall);
+
+                // Create ceiling (white) - Fixed rotation to face UP toward camera
+                const ceilingGeometry = new THREE.PlaneGeometry(room.width, room.depth);
+                const ceilingMaterial = new THREE.MeshStandardMaterial({ 
+                    color: colors.ceiling,
+                    side: THREE.DoubleSide  // Ensure visibility from both sides
+                });
+                const ceiling = new THREE.Mesh(ceilingGeometry, ceilingMaterial);
+                ceiling.rotation.x = -Math.PI / 2;  // Fixed: negative rotation to face UP
+                ceiling.position.set(posX, height - 0.05, posZ);
+                ceiling.userData = { id: `${room.id}-ceiling`, type: 'ceiling', roomId: room.id, color: 'white' };
+                scene.add(ceiling);
+                room.meshes.push(ceiling);
+
+                // Enhanced logging with corner-based coordinate details
+                this.log(`🏗️ Room created: Brown floor, White ceiling, Blue N/S walls, Red E/W walls (${room.meshes.length} meshes)`);
+                this.log(`📐 Corner-based input: X=${room.x}, Y=${room.z} → Three.js position: [${posX}, ${posZ}]`);
+                this.log(`🔄 Coordinate conversion: Origin[${originX}, ${originZ}] + Room[${room.x + room.width/2}, ${room.z + room.depth/2}] + Offset[${centerOffsetX}, ${centerOffsetZ}]`);
+            }
+            
+            createWall(width, height, depth, color = 0xffffff) {
+                const geometry = new THREE.BoxGeometry(width, height, depth);
+                const material = new THREE.MeshStandardMaterial({ color: color });
+                return new THREE.Mesh(geometry, material);
+            }
+            
+            clearRooms() {
+                this.log(`🗑️ Clearing ${this.rooms.length} rooms...`);
+                
+                // Remove all room meshes from scene
+                this.rooms.forEach(room => {
+                    room.meshes.forEach(mesh => {
+                        scene.remove(mesh);
+                    });
+                });
+                
+                // Clear rooms array
+                this.rooms = [];
+                this.roomCounter = 0;
+                
+                this.updateRoomList();
+                this.log("✅ All rooms cleared");
+            }
+            
+            updateRoomList() {
+                const list = document.getElementById('room-list');
+                
+                if (this.rooms.length === 0) {
+                    list.innerHTML = '<div style="color: #666; text-align: center;">No rooms created</div>';
+                    return;
+                }
+                
+                list.innerHTML = this.rooms.map(room => {
+                    return `
+                        <div class="room-item">
+                            <div style="color: #00ff88;"><strong>${room.id}</strong></div>
+                            <div>Position: [${room.x}, ${room.z}]</div>
+                            <div>Size: ${room.width}×${room.depth}m</div>
+                            <div>Meshes: ${room.meshes.length}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            exportJSON() {
+                const blueprint = {
+                    metadata: {
+                        version: "1.0",
+                        type: "mall-blueprint", 
+                        generated: new Date().toISOString(),
+                        agent: "Mall Prototype v1.0"
+                    },
+                    mallUnit: this.mallUnit,
+                    rooms: this.rooms.map(room => ({
+                        id: room.id,
+                        position: { x: room.x, z: room.z },
+                        dimensions: { width: room.width, depth: room.depth },
+                        bounds: room.bounds,
+                        created: room.created
+                    })),
+                    stats: {
+                        totalRooms: this.rooms.length,
+                        totalMeshes: this.rooms.reduce((sum, room) => sum + room.meshes.length, 0)
+                    }
+                };
+                
+                const output = document.getElementById('json-output');
+                output.textContent = JSON.stringify(blueprint, null, 2);
+                
+                this.log(`📋 JSON blueprint generated: ${this.rooms.length} rooms, ${blueprint.stats.totalMeshes} meshes`);
+            }
+            
+            // === VISUAL TESTS ===
+            
+            testCornerCoordinates() {
+                this.log("🧪 CORNER COORDINATE SYSTEM VALIDATION");
+                
+                // Test 1: SW Corner placement [0, 0]
+                const swCorner = { x: 0, z: 0, width: 4, depth: 4 };
+                const swBounds = this.calculateRoomBounds(swCorner.x, swCorner.z, swCorner.width, swCorner.depth);
+                this.log(`✅ SW Corner X=0,Y=0: Bounds X[${swBounds.minX}-${swBounds.maxX}] Y[${swBounds.minZ}-${swBounds.maxZ}] - ${swBounds.valid ? 'VALID' : 'INVALID'}`);
+                
+                // Test 2: NE Corner placement [16, 16]
+                const neCorner = { x: 16, z: 16, width: 4, depth: 4 };
+                const neBounds = this.calculateRoomBounds(neCorner.x, neCorner.z, neCorner.width, neCorner.depth);
+                this.log(`✅ NE Corner X=16,Y=16: Bounds X[${neBounds.minX}-${neBounds.maxX}] Y[${neBounds.minZ}-${neBounds.maxZ}] - ${neBounds.valid ? 'VALID' : 'INVALID'}`);
+                
+                // Test 3: Mid-room placement [8, 8] 
+                const midRoom = { x: 8, z: 8, width: 4, depth: 4 };
+                const midBounds = this.calculateRoomBounds(midRoom.x, midRoom.z, midRoom.width, midRoom.depth);
+                this.log(`✅ Mid-room X=8,Y=8: Bounds X[${midBounds.minX}-${midBounds.maxX}] Y[${midBounds.minZ}-${midBounds.maxZ}] - ${midBounds.valid ? 'VALID' : 'INVALID'}`);
+                
+                // Test 4: Edge case - room that would exceed boundaries
+                const edgeCase = { x: 18, z: 18, width: 4, depth: 4 };
+                const edgeBounds = this.calculateRoomBounds(edgeCase.x, edgeCase.z, edgeCase.width, edgeCase.depth);
+                this.log(`❌ Edge case X=18,Y=18: Bounds X[${edgeBounds.minX}-${edgeBounds.maxX}] Y[${edgeBounds.minZ}-${edgeBounds.maxZ}] - ${edgeBounds.valid ? 'VALID' : 'INVALID'}`);
+                
+                // Coordinate conversion verification
+                if (this.mallUnit) {
+                    const originX = this.mallUnit.origin[0];
+                    const originZ = this.mallUnit.origin[2];
+                    const centerOffsetX = this.mallUnit.threeJsConversion.centerOffset.x;
+                    const centerOffsetZ = this.mallUnit.threeJsConversion.centerOffset.z;
+                    
+                    this.log(`🔄 Coordinate System: Origin[${originX}, ${originZ}] + ThreeJS Offset[${centerOffsetX}, ${centerOffsetZ}]`);
+                    
+                    // Test specific conversion for SW corner room
+                    const testX = 0, testZ = 0, testW = 4, testD = 4;
+                    const posX = originX + testX + testW/2 + centerOffsetX;
+                    const posZ = originZ + testZ + testD/2 + centerOffsetZ;
+                    this.log(`🎯 SW Corner X=${testX},Y=${testZ} → Three.js Position [${posX}, ${posZ}]`);
+                }
+                
+                // Add visual markers for corner coordinate validation
+                this.addVisualTestMarkers();
+                
+                this.log("🏁 Corner coordinate validation complete - Visual markers placed, confirm onscreen");
+            }
+            
+            addVisualTestMarkers() {
+                if (!this.mallUnit) return;
+
+                // Clear existing markers first
+                this.clearTestMarkers();
+
+                // Define test points using corner-based coordinate system
+                const testPoints = {
+                    SW: { x: 0, y: 0.5, z: 0 },
+                    NE: { x: this.mallUnit.dimensions.width, y: 0.5, z: this.mallUnit.dimensions.depth },
+                    MID: { x: this.mallUnit.dimensions.width/2, y: 0.5, z: this.mallUnit.dimensions.depth/2 },
+                    EAST_EDGE: { x: this.mallUnit.dimensions.width, y: 0.5, z: 0 },
+                    NORTH_EDGE: { x: 0, y: 0.5, z: this.mallUnit.dimensions.depth }
+                };
+
+                // Define distinct colors for each marker
+                const markerColors = {
+                    SW: 0x00ff00,      // Green - Southwest corner
+                    NE: 0xff0000,      // Red - Northeast corner  
+                    MID: 0xffff00,     // Yellow - Mid-room
+                    EAST_EDGE: 0x0000ff, // Blue - East edge
+                    NORTH_EDGE: 0xff00ff  // Magenta - North edge
+                };
+
+                // Convert corner-based positions to Three.js positions
+                const originX = this.mallUnit.origin[0];
+                const originZ = this.mallUnit.origin[2];
+                const centerOffsetX = this.mallUnit.threeJsConversion.centerOffset.x;
+                const centerOffsetZ = this.mallUnit.threeJsConversion.centerOffset.z;
+
+                Object.entries(testPoints).forEach(([name, pos]) => {
+                    // Convert to Three.js coordinate system
+                    const threeJsPos = {
+                        x: originX + pos.x + centerOffsetX,
+                        y: pos.y,
+                        z: originZ + pos.z + centerOffsetZ
+                    };
+                    
+                    this.createTestMarker(threeJsPos, markerColors[name], name);
+                });
+
+                this.log("🎨 Visual validation markers: GREEN=SW, RED=NE, YELLOW=MID, BLUE=E-Edge, MAGENTA=N-Edge");
+            }
+            
+            createTestMarker(pos, color = 0xff00ff, label = '') {
+                const geometry = new THREE.SphereGeometry(0.2, 8, 8);
+                const material = new THREE.MeshBasicMaterial({ 
+                    color: color, 
+                    depthTest: false,
+                    transparent: true,
+                    opacity: 0.9
+                });
+                const marker = new THREE.Mesh(geometry, material);
+                marker.position.set(pos.x, pos.y, pos.z);
+                marker.renderOrder = 999; // Always on top
+                marker.userData = { id: `test-marker-${label}`, type: 'test-marker', label: label };
+                
+                scene.add(marker);
+                this.testMarkers.push(marker);
+                
+                this.log(`🎯 Visual marker placed at ${label}: [${pos.x.toFixed(1)}, ${pos.z.toFixed(1)}]`);
+                return marker;
+            }
+            
+            clearTestMarkers() {
+                this.testMarkers.forEach(marker => {
+                    scene.remove(marker);
+                });
+                this.testMarkers = [];
+                this.log("🧹 Test markers cleared");
+            }
+            
+            // === UI AND DEBUG ===
+            
+            updateDebugInfo() {
+                document.getElementById('position-info').textContent = 
+                    `Position: [${this.position.x.toFixed(1)}, ${this.position.y.toFixed(1)}, ${this.position.z.toFixed(1)}]`;
+                
+                document.getElementById('speed-info').textContent = 
+                    `Speed: ${this.currentSpeed.toFixed(1)} units/s`;
+                
+                document.getElementById('camera-info').textContent = 
+                    `Camera: Y=${(this.yaw * 180 / Math.PI).toFixed(0)}°`;
+                
+                const state = this.isStunned ? 'Stunned' : 
+                             this.isFalling ? 'Falling' : 
+                             this.isSpinning ? 'Spinning' : 'Normal';
+                document.getElementById('state-info').textContent = `State: ${state}`;
+                
+                const viewModes = ['First-person', 'Beth-style', 'Top-down'];
+                const viewIcons = ['👁️', '🔍', '📐'];
+                document.getElementById('view-mode-info').innerHTML = `${viewIcons[this.viewMode]} View: ${viewModes[this.viewMode]}`;
+                
+                // Update stats
+                document.getElementById('base-speed').textContent = `${this.baseSpeed.toFixed(1)} u/s`;
+                document.getElementById('max-speed').textContent = `${this.maxSpeed.toFixed(1)} u/s`;
+                document.getElementById('acceleration').textContent = `${this.acceleration.toFixed(1)} u/s²`;
+                document.getElementById('spin-speed').textContent = `${this.spinSpeed.toFixed(1)} rad/s`;
+            }
+            
+            runAssertions() {
+                // Assert speed ramping after threshold
+                if (this.accelerationTime > this.accelerationThreshold + this.rampUpDuration) {
+                    if (Math.abs(this.currentSpeed - this.maxSpeed) > 0.1) {
+                        this.log("❌ ASSERTION FAILED: Speed should be at maximum after ramp-up");
+                    }
+                }
+            }
+            
+            updateUI() {
+                const movementBtn = document.getElementById('movement-btn');
+                const viewBtn = document.getElementById('view-btn');
+                const wireframeBtn = document.getElementById('wireframe-btn');
+                
+                if (this.enabled) {
+                    movementBtn.textContent = '🔓 Disable Movement (ESC)';
+                    movementBtn.style.borderColor = '#ff4444';
+                } else {
+                    movementBtn.textContent = '🎯 Enable Movement';
+                    movementBtn.style.borderColor = '#00ff00';
+                }
+                
+                // Update view button based on current mode
+                switch(this.viewMode) {
+                    case 0:
+                        viewBtn.textContent = '🔍 Switch to Beth View';
+                        viewBtn.style.borderColor = '#00ff00';
+                        break;
+                    case 1:
+                        viewBtn.textContent = '📐 Switch to Top-down';
+                        viewBtn.style.borderColor = '#ffaa00';
+                        break;
+                    case 2:
+                        viewBtn.textContent = '👁️ Switch to First-person';
+                        viewBtn.style.borderColor = '#ff4444';
+                        break;
+                }
+                
+                if (this.wireframeMode) {
+                    wireframeBtn.textContent = '📐 Disable Wireframe';
+                    wireframeBtn.style.borderColor = '#ff4444';
+                } else {
+                    wireframeBtn.textContent = '📐 Toggle Wireframe';
+                    wireframeBtn.style.borderColor = '#00ff00';
+                }
+            }
+            
+            log(message) {
+                const log = document.getElementById('status-log');
+                const timestamp = new Date().toLocaleTimeString();
+                log.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+                log.scrollTop = log.scrollHeight;
+                console.log(`[Mall Prototype] ${message}`);
+            }
+        }
+        
+        // Initialize Three.js scene
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x222222);
+            
+            // Main camera (first-person)
+            mainCamera = new THREE.PerspectiveCamera(75, (window.innerWidth - 400) / window.innerHeight, 0.1, 1000);
+            mainCamera.position.set(10, 1.8, 10); // Start at center of mall unit
+            
+            // Beth-style camera (angled overview)
+            bethCamera = new THREE.PerspectiveCamera(75, (window.innerWidth - 400) / window.innerHeight, 0.1, 1000);
+            bethCamera.position.set(15, 10, 15);
+            bethCamera.lookAt(0, 0, 0);
+            
+            // Top-down camera (orthographic)
+            const aspect = (window.innerWidth - 400) / window.innerHeight;
+            topDownCamera = new THREE.OrthographicCamera(-10 * aspect, 10 * aspect, 10, -10, 0.1, 100);
+            topDownCamera.position.set(0, 20, 0);
+            topDownCamera.lookAt(0, 0, 0);
+            
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth - 400, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(20, 20, 20);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Debug marker removed for clean scene
+            
+            // Animation loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Update movement system (only if initialized)
+                if (MallSystem) {
+                    MallSystem.update();
+                }
+                
+                // Choose camera based on view mode
+                let activeCamera = mainCamera; // Default first-person
+                if (MallSystem) {
+                    switch(MallSystem.viewMode) {
+                        case 0: activeCamera = mainCamera; break;     // First-person
+                        case 1: activeCamera = bethCamera; break;     // Beth-style
+                        case 2: activeCamera = topDownCamera; break;  // Top-down
+                    }
+                }
+                renderer.render(scene, activeCamera);
+            }
+            animate();
+        }
+        
+        // Initialize unified system
+        let MallSystem;
+        
+        function init() {
+            console.log("INIT: Starting Mall Prototype v1.0...");
+            
+            try {
+                console.log("INIT: Calling initScene()...");
+                initScene();
+                console.log("INIT: Scene initialized successfully");
+                
+                console.log("INIT: Creating MallPrototypeSystem...");
+                MallSystem = new MallPrototypeSystem();
+                console.log("INIT: MallSystem created successfully");
+                
+                MallSystem.init();
+                console.log("INIT: All initialization complete!");
+                
+            } catch (error) {
+                console.error("INIT ERROR:", error);
+                document.getElementById('status-log').innerHTML = `<div style="color: red;">Initialization failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const width = window.innerWidth - 400;
+            const height = window.innerHeight;
+            
+            mainCamera.aspect = width / height;
+            mainCamera.updateProjectionMatrix();
+            
+            bethCamera.aspect = width / height;
+            bethCamera.updateProjectionMatrix();
+            
+            const aspect = width / height;
+            topDownCamera.left = -10 * aspect;
+            topDownCamera.right = 10 * aspect;
+            topDownCamera.updateProjectionMatrix();
+            
+            renderer.setSize(width, height);
+        });
+        
+        // Initialize when page loads
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>

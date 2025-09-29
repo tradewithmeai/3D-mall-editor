@@ -1,0 +1,75 @@
+{
+  "referencePole": {
+    "model": "cylinder",
+    "size": [0.1, 0.1, 1, 8],
+    "material": {
+      "color": "#000000"
+    },
+    "collision": false
+  },
+  
+  "lobbyFloor": {
+    "model": "plane",
+    "size": [40, 30],
+    "rotation": [-1.5707963267948966, 0, 0],
+    "material": {
+      "color": "#90EE90"
+    },
+    "collision": true
+  },
+  
+  "lobbyCeiling": {
+    "model": "plane", 
+    "size": [40, 30],
+    "rotation": [1.5707963267948966, 0, 0],
+    "material": {
+      "color": "#e6e6fa"
+    },
+    "collision": false
+  },
+  
+  "lobbyNorthWall": {
+    "model": "plane",
+    "size": [40, 8],
+    "material": {
+      "color": "#f8f8f8"
+    },
+    "collision": true
+  },
+  
+  "lobbySouthWall": {
+    "model": "plane", 
+    "size": [40, 8],
+    "material": {
+      "color": "#f8f8f8"
+    },
+    "collision": true
+  },
+  
+  "lobbyEastWall": {
+    "model": "plane",
+    "size": [30, 8],
+    "material": {
+      "color": "#f8f8f8"
+    },
+    "collision": true
+  },
+  
+  "lobbyWestWall": {
+    "model": "plane",
+    "size": [30, 8],
+    "material": {
+      "color": "#f8f8f8"
+    },
+    "collision": true
+  },
+  
+  "debugBall": {
+    "model": "sphere",
+    "size": [0.3, 16, 16],
+    "material": {
+      "color": "#00ff00"
+    },
+    "collision": true
+  }
+}

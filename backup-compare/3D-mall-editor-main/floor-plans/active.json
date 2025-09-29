@@ -1,0 +1,64 @@
+{
+  "instances": [
+    {
+      "position": [0, 0, 0],
+      "type": "Floor"
+    },
+    {
+      "position": [2, 0, 0],
+      "type": "Floor"
+    },
+    {
+      "position": [0, 0, 2],
+      "type": "Floor"
+    },
+    {
+      "position": [2, 0, 2],
+      "type": "Floor"
+    }
+  ],
+  "units": [
+    {
+      "id": "unit-101",
+      "name": "Small Shop",
+      "gridRect": {
+        "x": 0,
+        "y": 0,
+        "w": 2,
+        "h": 1
+      },
+      "entrance": {
+        "side": "north",
+        "offset": 0
+      },
+      "type": "retail",
+      "occupancy": {
+        "status": "occupied",
+        "tenantId": "tenant-abc",
+        "since": "2025-09-09"
+      },
+      "meta": {
+        "category": "retail",
+        "size": "small"
+      }
+    },
+    {
+      "id": "unit-102",
+      "name": "Corner Unit",
+      "gridRect": {
+        "x": 1,
+        "y": 1,
+        "w": 1,
+        "h": 1
+      },
+      "entrance": {
+        "side": "east",
+        "offset": 0
+      },
+      "type": "kiosk",
+      "occupancy": {
+        "status": "vacant"
+      }
+    }
+  ]
+}

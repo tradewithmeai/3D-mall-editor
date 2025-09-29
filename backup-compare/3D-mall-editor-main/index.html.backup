@@ -1,0 +1,2174 @@
+<!--
+    3D Office Simulator
+    Interactive 3D office environment with AI-powered characters
+    Built with Three.js WebGL library for immersive 3D experience
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Basic HTML5 meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Office Simulator</title>
+    
+    <!-- SEO and description meta tags -->
+    <meta name="description" content="Interactive 3D office environment with AI-powered characters, real-time physics, and immersive workplace simulation.">
+    <meta name="keywords" content="3D office, virtual office, interactive simulation, workplace, three.js, webgl">
+    <meta name="author" content="3D Office Simulator">
+    
+    <!-- Open Graph meta tags for social media sharing -->
+    <meta property="og:title" content="3D Office Simulator">
+    <meta property="og:description" content="Explore an interactive 3D office environment with AI characters and realistic physics.">
+    <meta property="og:type" content="website">
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="3D Office Simulator">
+    <meta name="twitter:description" content="Interactive 3D office environment with AI-powered characters.">
+    
+    <!-- Favicon and app icons -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="32x32" href="favicon-32x32.png">
+    <style>
+        /* ==========================================================================
+           GLOBAL STYLES
+           Base styles for the 3D application
+           ========================================================================== */
+        
+        /* Full-screen immersive layout */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars for immersive experience */
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000; /* Black background while scene loads */
+        }
+        
+        /* Three.js canvas container - full viewport */
+        #canvas-container {
+            width: 100vw;  /* Full viewport width */
+            height: 100vh; /* Full viewport height */
+            position: relative; /* For absolute positioned UI overlays */
+        }
+        
+        /* ==========================================================================
+           UI OVERLAY COMPONENTS
+           Heads-up display elements over the 3D scene
+           ========================================================================== */
+        
+        /* Main control instructions overlay */
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px); /* Modern blur effect */
+            max-width: 300px;
+        }
+        
+        #dialogue-box {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 20px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+        }
+        
+        #dialogue-box h3 {
+            margin: 0 0 10px 0;
+            color: #D97356;
+        }
+        
+        #dialogue-content {
+            margin: 10px 0;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .dialogue-option {
+            background: #f0f0f0;
+            border: 2px solid #D97356;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .dialogue-option:hover {
+            background: #D97356;
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        #custom-question-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+        
+        #custom-question-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #D97356;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        
+        #custom-question-submit {
+            background: #D97356;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        #custom-question-submit:hover {
+            background: #c85a3f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        #custom-question-submit:disabled {
+            background: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(217, 115, 86, 0.3);
+            border-radius: 50%;
+            border-top-color: #D97356;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .instruction {
+            opacity: 0.8;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        
+        #interaction-prompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: none;
+            font-size: 14px;
+        }
+        
+        .floating-text {
+            position: absolute;
+            color: #ff0;
+            font-size: 24px;
+            font-weight: bold;
+            pointer-events: none;
+            animation: floatUp 2s ease-out forwards;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-100px); }
+        }
+
+    </style>
+</head>
+<body>
+    <!-- ==========================================================================
+         MAIN APPLICATION CONTAINER
+         ========================================================================== -->
+    
+    <!-- Three.js WebGL canvas will be inserted here -->
+    <div id="canvas-container"></div>
+    
+    
+    <!-- ==========================================================================
+         USER INTERFACE OVERLAYS
+         HUD elements displayed over the 3D scene
+         ========================================================================== -->
+    
+    <!-- Control instructions panel -->
+    <div id="ui-overlay">
+        <h2 id="title">3D Office Simulator</h2>
+        <p style="font-size: 20px;" id="subtitle">🧠 Interactive Environment</p>
+        
+        <!-- Movement controls -->
+        <p id="move-instruction">Use WASD to move around</p>
+        <p id="look-instruction">Arrow keys or mouse to look left/right</p>
+        
+        <!-- Interaction controls -->
+        <p id="interact-instruction">Press E to interact</p>
+        <p id="dance-instruction">Press SPACE to dance</p>
+        <p id="close-instruction">Press ESC to close dialogs/release mouse</p>
+        
+        <!-- Physics object controls -->
+        <p id="ball-instruction">Walk into the red ball to kick it</p>
+        <p id="throw-instruction">Click on the ball to throw it</p>
+        
+        <!-- Advanced features -->
+        <p class="instruction" style="margin-top: 10px;" id="tip-instruction">💡 Ask custom questions during conversations!</p>
+    </div>
+    
+    <!-- Character dialogue interface -->
+    <div id="dialogue-box">
+        <!-- Character info header -->
+        <h3 id="dialogue-name">Character Name</h3>
+        
+        <!-- Conversation history -->
+        <div id="dialogue-content">Dialogue content will appear here</div>
+        
+        <!-- Pre-defined conversation options -->
+        <div id="dialogue-options"></div>
+        
+        <!-- Custom question input section -->
+        <div id="custom-question-container">
+            <p style="margin: 5px 0; font-size: 14px; opacity: 0.8; text-align: center;" id="custom-question-divider">━━━ Or ask your own question ━━━</p>
+            <input type="text" id="custom-question-input" placeholder="Ask anything! e.g., 'What's your favorite feature?' or 'Tell me about your work'" maxlength="200">
+            <button id="custom-question-submit">Ask Question</button>
+        </div>
+    </div>
+    
+    <!-- Interaction prompt (appears when near interactable objects) -->
+    <div id="interaction-prompt"></div>
+    
+    <!-- ==========================================================================
+         THREE.JS 3D ENGINE AND APPLICATION LOGIC
+         ========================================================================== -->
+    
+    <!-- Three.js WebGL library (r128) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Main application script -->
+    <script>
+        /* ==========================================================================
+           APPLICATION INITIALIZATION
+           Console logging and initial setup
+           ========================================================================== */
+        
+        console.log('🚀 3D Office Simulator loaded successfully!');
+        console.log('Interactive 3D office environment ready.');
+        
+        /* ==========================================================================
+           THREE.JS SCENE SETUP
+           Initialize the 3D environment, camera, and renderer
+           ========================================================================== */
+        
+        // Create the main 3D scene
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f5); // Light gray background
+        scene.fog = new THREE.Fog(0xf5f5f5, 10, 50);   // Atmospheric fog for depth
+        
+        // Set up the perspective camera (first-person view)
+        const camera = new THREE.PerspectiveCamera(
+            75,                                    // Field of view (75 degrees)
+            window.innerWidth / window.innerHeight, // Aspect ratio
+            0.1,                                   // Near clipping plane
+            1000                                   // Far clipping plane
+        );
+        camera.position.set(0, 1.6, 5); // Start position: center, eye level, back from origin
+        
+        // Create WebGL renderer with antialiasing for smooth edges
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;                    // Enable shadows
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;     // Soft shadow algorithm
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        
+        /* ==========================================================================
+           VISUAL EFFECTS SYSTEM
+           Functions for creating dynamic visual feedback
+           ========================================================================== */
+        
+        /**
+         * Creates floating text that appears at a 3D world position and fades upward
+         * Used for interaction feedback like "KICK!", "Bounce!", etc.
+         * @param {string} text - The text to display
+         * @param {THREE.Vector3} worldPos - 3D world position to place the text
+         */
+        function createFloatingText(text, worldPos) {
+            // Convert 3D world position to 2D screen coordinates
+            const screenPos = worldPos.clone();
+            screenPos.project(camera);
+            
+            // Calculate screen pixel position
+            const x = (screenPos.x * 0.5 + 0.5) * window.innerWidth;
+            const y = (-screenPos.y * 0.5 + 0.5) * window.innerHeight;
+            
+            // Create DOM element for the floating text
+            const div = document.createElement('div');
+            div.className = 'floating-text'; // CSS animation handles the floating effect
+            div.textContent = text;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            document.body.appendChild(div);
+            
+            // Remove element after animation completes (2 seconds)
+            setTimeout(() => div.remove(), 2000);
+        }
+        
+        /* ==========================================================================
+           LIGHTING SYSTEM
+           Multi-layered lighting setup for realistic office environment
+           ========================================================================== */
+        
+        // Ambient light provides overall scene illumination (soft, shadowless)
+        const ambientLight = new THREE.AmbientLight(
+            0xf0f8ff, // Alice blue tint for office lighting
+            0.4        // Low intensity to avoid washing out details
+        );
+        scene.add(ambientLight);
+        
+        // Main directional light simulates sunlight/ceiling lights
+        const directionalLight = new THREE.DirectionalLight(
+            0xffffff, // Pure white light
+            0.6       // Medium intensity
+        );
+        directionalLight.position.set(10, 15, 10); // Above and to the side
+        
+        // Configure shadow mapping for realistic shadows
+        directionalLight.castShadow = true;
+        directionalLight.shadow.camera.near = 0.1;  // Shadow camera near plane
+        directionalLight.shadow.camera.far = 50;    // Shadow camera far plane
+        directionalLight.shadow.camera.left = -30;  // Shadow camera bounds
+        directionalLight.shadow.camera.right = 30;
+        directionalLight.shadow.camera.top = 30;
+        directionalLight.shadow.camera.bottom = -30;
+        directionalLight.shadow.mapSize.width = 2048;  // High resolution shadows
+        directionalLight.shadow.mapSize.height = 2048;
+        scene.add(directionalLight);
+        
+        // Colored accent lights for atmospheric office lighting
+        // These create colored highlights and mood lighting throughout the space
+        
+        // Green accent light (back-left corner)
+        const accentLight1 = new THREE.PointLight(
+            0x00ff88, // Green-cyan color
+            0.6,      // Medium intensity
+            15        // Light falloff distance
+        );
+        accentLight1.position.set(-15, 8, -15);
+        scene.add(accentLight1);
+        
+        // Pink accent light (back-right corner)
+        const accentLight2 = new THREE.PointLight(
+            0xff4488, // Pink-red color
+            0.6,      // Medium intensity
+            15        // Light falloff distance
+        );
+        accentLight2.position.set(15, 8, -15);
+        scene.add(accentLight2);
+        
+        // Blue accent light (front-center)
+        const accentLight3 = new THREE.PointLight(
+            0x4488ff, // Blue color
+            0.6,      // Medium intensity
+            15        // Light falloff distance
+        );
+        accentLight3.position.set(0, 8, 15);
+        scene.add(accentLight3);
+        
+        // Ceiling mood lighting (subtle color changing)
+        const moodLight = new THREE.PointLight(0x6366f1, 0.3, 25);
+        moodLight.position.set(0, 12, 0);
+        scene.add(moodLight);
+        
+        // Animate mood lighting
+        let lightTime = 0;
+        function animateLighting() {
+            lightTime += 0.01;
+            const hue = (Math.sin(lightTime) + 1) * 0.5;
+            moodLight.color.setHSL(hue * 0.6 + 0.6, 0.5, 0.3);
+        }
+        
+        // Floor with pattern
+        const floorGeometry = new THREE.PlaneGeometry(40, 40);
+        const floorMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xdcdcdc,
+            roughness: 0.7,
+            metalness: 0.1
+        });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+        
+        // Add floor tiles pattern
+        const tileGeometry = new THREE.PlaneGeometry(2, 2);
+        const tileMaterial1 = new THREE.MeshStandardMaterial({ color: 0xe8e8e8 });
+        const tileMaterial2 = new THREE.MeshStandardMaterial({ color: 0xf0f0f0 });
+        
+        for (let x = -20; x < 20; x += 2) {
+            for (let z = -20; z < 20; z += 2) {
+                const tile = new THREE.Mesh(tileGeometry, ((x + z) / 2) % 2 === 0 ? tileMaterial1 : tileMaterial2);
+                tile.position.set(x + 1, 0.01, z + 1);
+                tile.rotation.x = -Math.PI / 2;
+                tile.receiveShadow = true;
+                scene.add(tile);
+            }
+        }
+        
+        // Walls with windows
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xf8f8f8,
+            roughness: 0.9
+        });
+        
+        const windowMaterial = new THREE.MeshStandardMaterial({
+            color: 0x87ceeb,
+            transparent: true,
+            opacity: 0.3,
+            roughness: 0.1,
+            metalness: 0.5
+        });
+        
+        // Back wall with windows
+        const backWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(40, 10),
+            wallMaterial
+        );
+        backWall.position.set(0, 5, -20);
+        backWall.receiveShadow = true;
+        scene.add(backWall);
+        
+        // Add windows to back wall
+        for (let x = -15; x <= 15; x += 10) {
+            const window = new THREE.Mesh(
+                new THREE.PlaneGeometry(4, 3),
+                windowMaterial
+            );
+            window.position.set(x, 5, -19.9);
+            scene.add(window);
+        }
+        
+        // Side walls
+        const leftWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(40, 10),
+            wallMaterial
+        );
+        leftWall.position.set(-20, 5, 0);
+        leftWall.rotation.y = Math.PI / 2;
+        leftWall.receiveShadow = true;
+        scene.add(leftWall);
+        
+        // Right wall removed - will be replaced with split sections in corridor code
+        
+        // Office furniture materials
+        const woodMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x8b6914,
+            roughness: 0.6,
+            metalness: 0.1
+        });
+        
+        const metalMaterial = new THREE.MeshStandardMaterial({
+            color: 0x404040,
+            roughness: 0.3,
+            metalness: 0.8
+        });
+        
+        // Create detailed desks
+        function createDesk(x, z) {
+            const deskGroup = new THREE.Group();
+            
+            // Desk top
+            const deskTop = new THREE.Mesh(
+                new THREE.BoxGeometry(3, 0.1, 1.5),
+                woodMaterial
+            );
+            deskTop.position.y = 0.75;
+            deskTop.castShadow = true;
+            deskTop.receiveShadow = true;
+            deskGroup.add(deskTop);
+            
+            // Metal frame
+            const frameGeometry = new THREE.BoxGeometry(0.05, 0.7, 0.05);
+            const framePositions = [
+                [-1.45, 0.35, -0.7],
+                [1.45, 0.35, -0.7],
+                [-1.45, 0.35, 0.7],
+                [1.45, 0.35, 0.7]
+            ];
+            
+            framePositions.forEach(pos => {
+                const frame = new THREE.Mesh(frameGeometry, metalMaterial);
+                frame.position.set(...pos);
+                frame.castShadow = true;
+                deskGroup.add(frame);
+            });
+            
+            // Computer monitor
+            const monitorBase = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.15, 0.15, 0.05, 16),
+                metalMaterial
+            );
+            monitorBase.position.set(0, 0.82, 0);
+            deskGroup.add(monitorBase);
+            
+            const monitorStand = new THREE.Mesh(
+                new THREE.BoxGeometry(0.05, 0.3, 0.05),
+                metalMaterial
+            );
+            monitorStand.position.set(0, 0.95, 0);
+            deskGroup.add(monitorStand);
+            
+            const monitorScreen = new THREE.Mesh(
+                new THREE.BoxGeometry(1.2, 0.7, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x000000, roughness: 0.1, metalness: 0.5 })
+            );
+            monitorScreen.position.set(0, 1.3, 0);
+            deskGroup.add(monitorScreen);
+            
+            // Keyboard
+            const keyboard = new THREE.Mesh(
+                new THREE.BoxGeometry(0.4, 0.02, 0.15),
+                metalMaterial
+            );
+            keyboard.position.set(0, 0.81, 0.3);
+            deskGroup.add(keyboard);
+            
+            // Chair
+            const chairSeat = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.05, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            chairSeat.position.set(0, 0.5, 0.8);
+            deskGroup.add(chairSeat);
+            
+            const chairBack = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 0.6, 0.05),
+                new THREE.MeshStandardMaterial({ color: 0x333333 })
+            );
+            chairBack.position.set(0, 0.8, 1.02);
+            deskGroup.add(chairBack);
+            
+            // Random desk items
+            if (Math.random() > 0.5) {
+                const mug = new THREE.Mesh(
+                    new THREE.CylinderGeometry(0.08, 0.08, 0.1, 8),
+                    new THREE.MeshStandardMaterial({ color: 0xffffff })
+                );
+                mug.position.set(Math.random() * 0.5 - 0.25, 0.85, Math.random() * 0.3);
+                deskGroup.add(mug);
+            }
+            
+            // Desk lamp
+            const lampBase = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.15, 0.15, 0.05, 8),
+                metalMaterial
+            );
+            lampBase.position.set(-1, 0.82, -0.3);
+            deskGroup.add(lampBase);
+            
+            const lampArm = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8),
+                metalMaterial
+            );
+            lampArm.position.set(-1, 1.2, -0.3);
+            lampArm.rotation.z = Math.PI / 6;
+            deskGroup.add(lampArm);
+            
+            const lampHead = new THREE.Mesh(
+                new THREE.ConeGeometry(0.2, 0.3, 8),
+                metalMaterial
+            );
+            lampHead.position.set(-0.7, 1.5, -0.3);
+            lampHead.rotation.z = -Math.PI / 3;
+            deskGroup.add(lampHead);
+            
+            // Lamp light
+            const lampLight = new THREE.PointLight(0xffd700, 0.8, 5);
+            lampLight.position.set(-0.6, 1.4, -0.3);
+            lampLight.castShadow = true;
+            deskGroup.add(lampLight);
+            
+            deskGroup.position.set(x, 0, z);
+            return deskGroup;
+        }
+        
+        // Add desks
+        const desk1 = createDesk(-10, -10);
+        const desk2 = createDesk(0, -10);
+        const desk3 = createDesk(10, -10);
+        const desk4 = createDesk(-10, 5);
+        const desk5 = createDesk(0, 5);
+        const desk6 = createDesk(10, 5);
+        scene.add(desk1, desk2, desk3, desk4, desk5, desk6);
+        
+        // Add whiteboard
+        const whiteboardMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xffffff,
+            roughness: 0.2,
+            metalness: 0.1
+        });
+        
+        const whiteboard = new THREE.Mesh(
+            new THREE.BoxGeometry(4, 2, 0.1),
+            whiteboardMaterial
+        );
+        whiteboard.position.set(0, 3, -19.8);
+        whiteboard.castShadow = true;
+        scene.add(whiteboard);
+        
+        // Company Logo on back wall
+        function createTextTexture(text, bgColor, textColor, fontSize = 48) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 256;
+            const context = canvas.getContext('2d');
+            
+            context.fillStyle = bgColor;
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            context.fillStyle = textColor;
+            context.font = `bold ${fontSize}px Arial`;
+            context.textAlign = 'center';
+            context.fillText(text, canvas.width / 2, canvas.height / 2 + fontSize / 4);
+            
+            return new THREE.CanvasTexture(canvas);
+        }
+        
+        // Company logo removed - was conflicting with EXIT sign positioning
+        
+        // Motivational Posters
+        const posterMessages = [
+            { text: 'CODE\nCREATE\nINNOVATE', color: '#e11d48' },
+            { text: 'THINK\nDIFFERENT', color: '#059669' },
+            { text: 'FAIL FAST\nLEARN FASTER', color: '#7c3aed' },
+            { text: 'DEPLOY\nON FRIDAY', color: '#dc2626' }
+        ];
+        
+        // Left wall posters
+        posterMessages.slice(0, 2).forEach((poster, index) => {
+            const posterTexture = createTextTexture(poster.text, '#f8fafc', poster.color, 28);
+            const posterMaterial = new THREE.MeshStandardMaterial({ map: posterTexture });
+            const posterMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.5, 3),
+                posterMaterial
+            );
+            posterMesh.position.set(-19.7, 4 + (index * 3), -8 + (index * 8));
+            posterMesh.rotation.y = Math.PI / 2;
+            scene.add(posterMesh);
+        });
+        
+        // Right wall posters
+        posterMessages.slice(2).forEach((poster, index) => {
+            const posterTexture = createTextTexture(poster.text, '#f8fafc', poster.color, 28);
+            const posterMaterial = new THREE.MeshStandardMaterial({ map: posterTexture });
+            const posterMesh = new THREE.Mesh(
+                new THREE.PlaneGeometry(2.5, 3),
+                posterMaterial
+            );
+            posterMesh.position.set(19.7, 4 + (index * 3), -8 + (index * 8));
+            posterMesh.rotation.y = -Math.PI / 2;
+            scene.add(posterMesh);
+        });
+        
+        // ========================================================================
+        // ART GALLERY SYSTEM
+        // Professional gallery wall for displaying user artwork
+        // ========================================================================
+        
+        // Gallery configuration
+        const galleryConfig = {
+            artworks: [
+                {
+                    title: "Frame Escape",
+                    url: "./images/gallery/frame-escape.png",
+                    frameStyle: "modern"
+                },
+                {
+                    title: "Digital Gallery", 
+                    url: "./images/gallery/digital-gallery.png",
+                    frameStyle: "classic"
+                },
+                {
+                    title: "AI Head",
+                    url: "./images/gallery/ai-head.png",
+                    frameStyle: "minimalist"
+                }
+            ]
+        };
+        
+        // Create picture frame function
+        function createPictureFrame(artwork, frameStyle = "modern") {
+            const group = new THREE.Group();
+            
+            // Frame dimensions
+            const frameWidth = 3;
+            const frameHeight = 2.5;
+            const frameDepth = 0.1;
+            const frameBorder = 0.15;
+            
+            // Frame materials based on style
+            const frameMaterials = {
+                modern: new THREE.MeshStandardMaterial({ 
+                    color: 0x2d3748, 
+                    metalness: 0.3, 
+                    roughness: 0.4 
+                }),
+                classic: new THREE.MeshStandardMaterial({ 
+                    color: 0x8b4513, 
+                    metalness: 0.1, 
+                    roughness: 0.8 
+                }),
+                minimalist: new THREE.MeshStandardMaterial({ 
+                    color: 0xffffff, 
+                    metalness: 0.0, 
+                    roughness: 0.9 
+                })
+            };
+            
+            // Create frame border
+            const frameGeometry = new THREE.BoxGeometry(frameWidth, frameHeight, frameDepth);
+            const frameMesh = new THREE.Mesh(frameGeometry, frameMaterials[frameStyle] || frameMaterials.modern);
+            group.add(frameMesh);
+            
+            // Create artwork plane (slightly inset)
+            const artworkGeometry = new THREE.PlaneGeometry(
+                frameWidth - (frameBorder * 2), 
+                frameHeight - (frameBorder * 2)
+            );
+            
+            // Create artwork material with text placeholder for now
+            const placeholderTexture = createTextTexture(artwork.title, '#f7fafc', '#2d3748', 24);
+            const artworkMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffffff,
+                map: placeholderTexture
+            });
+            
+            const artworkMesh = new THREE.Mesh(artworkGeometry, artworkMaterial);
+            artworkMesh.position.z = frameDepth / 2 + 0.01; // Slightly in front of frame
+            group.add(artworkMesh);
+            
+            // Add subtle shadow plane behind frame
+            const shadowGeometry = new THREE.PlaneGeometry(frameWidth + 0.2, frameHeight + 0.2);
+            const shadowMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x000000, 
+                transparent: true, 
+                opacity: 0.3 
+            });
+            const shadowMesh = new THREE.Mesh(shadowGeometry, shadowMaterial);
+            shadowMesh.position.z = -frameDepth / 2 - 0.05;
+            group.add(shadowMesh);
+            
+            return group;
+        }
+        
+        // Create gallery wall on back wall
+        galleryConfig.artworks.forEach((artwork, index) => {
+            const frame = createPictureFrame(artwork, artwork.frameStyle);
+            
+            // Position frames horizontally across back wall
+            const spacing = 6; // Space between frames
+            const startX = -(galleryConfig.artworks.length - 1) * spacing / 2;
+            
+            frame.position.set(
+                startX + (index * spacing), // X: spread horizontally
+                6, // Y: eye level height
+                -19.8 // Z: on back wall (slightly in front)
+            );
+            
+            scene.add(frame);
+        });
+        
+        // Add gallery spotlights
+        galleryConfig.artworks.forEach((artwork, index) => {
+            const spacing = 6;
+            const startX = -(galleryConfig.artworks.length - 1) * spacing / 2;
+            const artworkX = startX + (index * spacing);
+            
+            // Create spotlight for each artwork
+            const spotlight = new THREE.SpotLight(0xffffff, 1.5, 15, Math.PI / 6, 0.5);
+            spotlight.position.set(artworkX, 8, -17); // Above and in front of artwork
+            spotlight.target.position.set(artworkX, 6, -19.8); // Point at artwork
+            spotlight.castShadow = true;
+            spotlight.shadow.mapSize.width = 1024;
+            spotlight.shadow.mapSize.height = 1024;
+            
+            scene.add(spotlight);
+            scene.add(spotlight.target);
+        });
+        
+        // Digital Screens with Content
+        function createDigitalScreen(x, y, z, rotation = 0) {
+            const screenGroup = new THREE.Group();
+            
+            // Screen frame
+            const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x1a1a1a });
+            const frame = new THREE.Mesh(
+                new THREE.BoxGeometry(3.2, 2.2, 0.1),
+                frameMaterial
+            );
+            screenGroup.add(frame);
+            
+            // Screen content (will animate)
+            const screenCanvas = document.createElement('canvas');
+            screenCanvas.width = 512;
+            screenCanvas.height = 256;
+            const screenContext = screenCanvas.getContext('2d');
+            
+            // Initial screen content
+            function updateScreen() {
+                const now = Date.now();
+                const time = new Date().toLocaleTimeString();
+                
+                screenContext.fillStyle = '#0f172a';
+                screenContext.fillRect(0, 0, 512, 256);
+                
+                screenContext.fillStyle = '#06b6d4';
+                screenContext.font = 'bold 24px Arial';
+                screenContext.textAlign = 'center';
+                screenContext.fillText('SYSTEM STATUS', 256, 40);
+                
+                screenContext.fillStyle = '#10b981';
+                screenContext.font = '18px Arial';
+                screenContext.fillText('✓ All Systems Online', 256, 80);
+                screenContext.fillText('✓ Deployment Ready', 256, 110);
+                screenContext.fillText('✓ Tests Passing', 256, 140);
+                
+                screenContext.fillStyle = '#06b6d4';
+                screenContext.font = '16px Arial';
+                screenContext.fillText(time, 256, 180);
+                
+                screenContext.fillStyle = '#8b5cf6';
+                screenContext.fillText(`Uptime: ${Math.floor(now/1000/60)} min`, 256, 210);
+            }
+            
+            updateScreen();
+            const screenTexture = new THREE.CanvasTexture(screenCanvas);
+            
+            const screen = new THREE.Mesh(
+                new THREE.PlaneGeometry(3, 2),
+                new THREE.MeshStandardMaterial({ 
+                    map: screenTexture,
+                    emissive: 0x111111
+                })
+            );
+            screen.position.z = 0.06;
+            screenGroup.add(screen);
+            
+            // Update screen content periodically
+            setInterval(() => {
+                updateScreen();
+                screenTexture.needsUpdate = true;
+            }, 1000);
+            
+            screenGroup.position.set(x, y, z);
+            screenGroup.rotation.y = rotation;
+            return screenGroup;
+        }
+        
+        // Add digital screens
+        const screen1 = createDigitalScreen(-15, 4, -19.8);
+        const screen2 = createDigitalScreen(15, 4, -19.8);
+        scene.add(screen1, screen2);
+        
+        /* ==========================================================================
+           NEON SIGN SYSTEM
+           Creates illuminated text signs with realistic glow effects
+           ========================================================================== */
+        
+        /**
+         * Creates a neon sign with glowing text effect
+         * Uses HTML5 Canvas to generate text texture with glow
+         * @param {string} text - Text to display on the sign
+         * @param {number} x - X position in 3D space
+         * @param {number} y - Y position in 3D space  
+         * @param {number} z - Z position in 3D space
+         * @param {number} color - Hex color value for the neon glow
+         * @returns {THREE.Group} - Complete neon sign 3D object
+         */
+        function createNeonSign(text, x, y, z, color) {
+            const neonGroup = new THREE.Group();
+            
+            // Create HTML5 canvas for text rendering
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;  // High resolution for crisp text
+            canvas.height = 128;
+            const context = canvas.getContext('2d');
+            
+            // Draw dark background panel
+            context.fillStyle = '#1a1a1a'; // Dark gray background
+            context.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Configure text rendering
+            context.fillStyle = `#${color.toString(16).padStart(6, '0')}`; // Convert color to hex
+            context.font = 'bold 60px Arial';   // Large, bold font
+            context.textAlign = 'center';       // Center horizontally
+            context.textBaseline = 'middle';    // Center vertically
+            
+            // Draw the main text
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+            
+            // Add neon glow effect by redrawing with shadow
+            context.shadowColor = `#${color.toString(16).padStart(6, '0')}`;
+            context.shadowBlur = 20; // Blur radius for glow effect
+            context.fillText(text, canvas.width / 2, canvas.height / 2);
+            
+            // Convert canvas to Three.js texture
+            const texture = new THREE.CanvasTexture(canvas);
+            
+            // Create material with emissive glow
+            const signMaterial = new THREE.MeshStandardMaterial({
+                map: texture,              // Canvas texture with text
+                emissive: color,           // Self-illumination color
+                emissiveIntensity: 0.3,    // Glow intensity
+                transparent: true,         // Allow transparency
+                opacity: 0.9              // Slight transparency for realism
+            });
+            
+            // Create 3D geometry for the sign (width scales with text length)
+            const signGeometry = new THREE.PlaneGeometry(text.length * 0.8, 1.2);
+            const signMesh = new THREE.Mesh(signGeometry, signMaterial);
+            neonGroup.add(signMesh);
+            
+            // Add point light for environmental glow effect
+            const glowLight = new THREE.PointLight(
+                color, // Same color as sign
+                1,     // Light intensity
+                8      // Light falloff distance
+            );
+            glowLight.position.z = 1; // Position light in front of sign
+            neonGroup.add(glowLight);
+            
+            // Position the complete sign in 3D space
+            neonGroup.position.set(x, y, z);
+            return neonGroup;
+        }
+        
+        // Add neon signs - FIXED positioning
+        // EXIT sign on back wall - highly visible position
+        const neonExit = createNeonSign('EXIT', 0, 6, -19.5, 0x00ff00);
+        neonExit.rotation.y = 0; // Face forward toward room center
+        scene.add(neonExit);
+        
+        // CAFE sign on left wall - proper positioning
+        const neonCafe = createNeonSign('CAFE', -19.5, 4, 0, 0xff0080);
+        neonCafe.rotation.y = Math.PI / 2; // Face inward toward room center
+        scene.add(neonCafe);
+        
+        // CORRIDOR sign on right wall - marks corridor entrance
+        const neonCorridor = createNeonSign('CORRIDOR', 19.5, 6, 0, 0xffff00);
+        neonCorridor.rotation.y = -Math.PI / 2; // Face inward toward room center
+        scene.add(neonCorridor);
+        
+        /* ==========================================================================
+           CORRIDOR EXPANSION SYSTEM
+           Extended office space with procedural room generation
+           ========================================================================== */
+        
+        // CORRIDOR DIMENSIONS
+        // Define the corridor that extends east from the main office
+        const corridorLength = 60; // 60 units long - very spacious corridor
+        const corridorWidth = 6;   // 6 units wide - comfortable for movement
+        const corridorHeight = 10; // 10 units high - matching office ceiling
+        
+        // Create proper corridor entrance with actual opening
+        // Split right wall into sections around doorway
+        const doorwayWidth = 3;
+        const doorwayHeight = 8;
+        
+        // Right wall - left section (from z=-20 to doorway start)
+        const rightWallLeft = new THREE.Mesh(
+            new THREE.PlaneGeometry(20 - doorwayWidth/2, 10),
+            wallMaterial
+        );
+        rightWallLeft.position.set(20, 5, -(10 + doorwayWidth/4));
+        rightWallLeft.rotation.y = -Math.PI / 2;
+        rightWallLeft.receiveShadow = true;
+        scene.add(rightWallLeft);
+        
+        // Right wall - right section (from doorway end to z=20)
+        const rightWallRight = new THREE.Mesh(
+            new THREE.PlaneGeometry(20 - doorwayWidth/2, 10),
+            wallMaterial
+        );
+        rightWallRight.position.set(20, 5, 10 + doorwayWidth/4);
+        rightWallRight.rotation.y = -Math.PI / 2;
+        rightWallRight.receiveShadow = true;
+        scene.add(rightWallRight);
+        
+        // Right wall - top section above doorway
+        const rightWallTop = new THREE.Mesh(
+            new THREE.PlaneGeometry(doorwayWidth, 10 - doorwayHeight),
+            wallMaterial
+        );
+        rightWallTop.position.set(20, 5 + doorwayHeight/2 + (10 - doorwayHeight)/2, 0);
+        rightWallTop.rotation.y = -Math.PI / 2;
+        rightWallTop.receiveShadow = true;
+        scene.add(rightWallTop);
+        
+        // Doorway frame - left post
+        const leftPost = new THREE.Mesh(
+            new THREE.BoxGeometry(0.3, doorwayHeight, 0.3),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+        );
+        leftPost.position.set(19.85, doorwayHeight/2, -doorwayWidth/2);
+        scene.add(leftPost);
+        
+        // Doorway frame - right post
+        const rightPost = new THREE.Mesh(
+            new THREE.BoxGeometry(0.3, doorwayHeight, 0.3),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+        );
+        rightPost.position.set(19.85, doorwayHeight/2, doorwayWidth/2);
+        scene.add(rightPost);
+        
+        // Doorway frame - top beam
+        const topBeam = new THREE.Mesh(
+            new THREE.BoxGeometry(0.3, 0.3, doorwayWidth),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+        );
+        topBeam.position.set(19.85, doorwayHeight, 0);
+        scene.add(topBeam);
+        
+        // Corridor floor
+        const corridorFloor = new THREE.Mesh(
+            new THREE.PlaneGeometry(corridorLength, corridorWidth),
+            new THREE.MeshStandardMaterial({ 
+                color: 0xc8c8c8,
+                roughness: 0.8
+            })
+        );
+        corridorFloor.rotation.x = -Math.PI / 2;
+        corridorFloor.position.set(20 + corridorLength/2, 0, 0);
+        corridorFloor.receiveShadow = true;
+        scene.add(corridorFloor);
+        
+        // Corridor ceiling
+        const corridorCeiling = new THREE.Mesh(
+            new THREE.PlaneGeometry(corridorLength, corridorWidth),
+            new THREE.MeshStandardMaterial({ 
+                color: 0xf0f0f0,
+                roughness: 0.9
+            })
+        );
+        corridorCeiling.rotation.x = Math.PI / 2;
+        corridorCeiling.position.set(20 + corridorLength/2, corridorHeight, 0);
+        scene.add(corridorCeiling);
+        
+        // Corridor walls
+        const corridorLeftWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(corridorLength, corridorHeight),
+            wallMaterial
+        );
+        corridorLeftWall.position.set(20 + corridorLength/2, 5, -corridorWidth/2);
+        corridorLeftWall.receiveShadow = true;
+        scene.add(corridorLeftWall);
+        
+        const corridorRightWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(corridorLength, corridorHeight),
+            wallMaterial
+        );
+        corridorRightWall.position.set(20 + corridorLength/2, 5, corridorWidth/2);
+        corridorRightWall.rotation.y = Math.PI;
+        corridorRightWall.receiveShadow = true;
+        scene.add(corridorRightWall);
+        
+        // End wall of corridor
+        const corridorEndWall = new THREE.Mesh(
+            new THREE.PlaneGeometry(corridorWidth, corridorHeight),
+            wallMaterial
+        );
+        corridorEndWall.position.set(20 + corridorLength, 5, 0);
+        corridorEndWall.rotation.y = Math.PI / 2;
+        scene.add(corridorEndWall);
+        
+        /* ==========================================================================
+           DOOR GENERATION SYSTEM
+           Procedural door creation for corridor rooms
+           ========================================================================== */
+        
+        /**
+         * Creates a complete door with frame, panel, handle, and room number
+         * Used to populate the corridor with realistic office doors
+         * @param {number} x - X position in 3D space
+         * @param {number} z - Z position in 3D space
+         * @param {number} rotation - Door rotation in radians
+         * @param {string} label - Room number/label to display
+         * @returns {THREE.Group} - Complete door assembly
+         */
+        function createDoor(x, z, rotation, label) {
+            const doorGroup = new THREE.Group();
+            
+            // DOOR FRAME (outer wooden frame)
+            const doorFrameMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x8b4513 // Dark wood brown
+            });
+            const doorFrame = new THREE.Mesh(
+                new THREE.BoxGeometry(2.2, 7, 0.2), // Slightly larger than door panel
+                doorFrameMaterial
+            );
+            doorGroup.add(doorFrame);
+            
+            // DOOR PANEL (main door surface)
+            const doorMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x654321,  // Medium wood brown
+                roughness: 0.7    // Wooden surface texture
+            });
+            const door = new THREE.Mesh(
+                new THREE.BoxGeometry(2, 6.5, 0.15), // Slightly smaller than frame
+                doorMaterial
+            );
+            door.position.y = 0.25;  // Lift slightly off ground
+            door.position.z = 0.05;  // Position in front of frame
+            doorGroup.add(door);
+            
+            // DOOR HANDLE (golden metallic sphere)
+            const handleMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffd700,  // Gold color
+                metalness: 0.8,   // High metallic reflection
+                roughness: 0.2    // Smooth, polished surface
+            });
+            const handle = new THREE.Mesh(
+                new THREE.SphereGeometry(0.08, 8, 8), // Small sphere
+                handleMaterial
+            );
+            handle.position.set(0.7, 0, 0.1); // Right side of door, slightly forward
+            doorGroup.add(handle);
+            
+            // ROOM NUMBER LABEL (canvas-based text)
+            // Create small canvas for room number display
+            const canvas = document.createElement('canvas');
+            canvas.width = 128;  // Small, efficient size
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+            
+            // Draw white background plate
+            context.fillStyle = 'white';
+            context.fillRect(0, 0, 128, 64);
+            
+            // Draw black room number text
+            context.fillStyle = 'black';
+            context.font = 'bold 20px Arial';
+            context.textAlign = 'center';
+            context.fillText(label, 64, 40); // Center the room number
+            
+            // Convert canvas to 3D texture
+            const labelTexture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.MeshStandardMaterial({ map: labelTexture });
+            const labelPlane = new THREE.Mesh(
+                new THREE.PlaneGeometry(0.8, 0.4), // Small rectangular sign
+                labelMaterial
+            );
+            labelPlane.position.set(0, 2, 0.16); // Above handle, slightly forward
+            doorGroup.add(labelPlane);
+            
+            // FINAL POSITIONING
+            // Position and orient the complete door assembly
+            doorGroup.position.set(x, 3.5, z); // Position in 3D space
+            doorGroup.rotation.y = rotation;    // Rotate to face correct direction
+            return doorGroup;
+        }
+        
+        // Add doors along the left wall of corridor
+        const doorSpacing = 8;
+        for (let i = 0; i < 6; i++) {
+            const doorX = 25 + (i * doorSpacing);
+            const leftDoor = createDoor(doorX, -2.9, 0, `${101 + i}`);
+            scene.add(leftDoor);
+        }
+        
+        // Add doors along the right wall of corridor  
+        for (let i = 0; i < 6; i++) {
+            const doorX = 27 + (i * doorSpacing);
+            const rightDoor = createDoor(doorX, 2.9, Math.PI, `${201 + i}`);
+            scene.add(rightDoor);
+        }
+        
+        // Corridor lighting
+        const corridorLights = [];
+        for (let i = 0; i < 8; i++) {
+            const lightX = 25 + (i * 7);
+            const corridorLight = new THREE.PointLight(0xffffff, 0.6, 12);
+            corridorLight.position.set(lightX, 8, 0);
+            corridorLight.castShadow = true;
+            scene.add(corridorLight);
+            corridorLights.push(corridorLight);
+        }
+        
+        // Emergency lighting for atmosphere
+        const emergencyLight = new THREE.PointLight(0xff4444, 0.3, 15);
+        emergencyLight.position.set(20 + corridorLength - 5, 8, 0);
+        scene.add(emergencyLight);
+        
+        /* ==========================================================================
+           INTERACTIVE PHYSICS SYSTEM
+           Real-time physics simulation with player interaction
+           ========================================================================== */
+        
+        // BOUNCING BALL OBJECT
+        // Create ball geometry
+        const ballGeometry = new THREE.SphereGeometry(0.3, 16, 16); // Radius 0.3, smooth sphere
+        
+        // Ball material with dynamic visual effects
+        const ballMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0xff4444,           // Red base color
+            roughness: 0.4,            // Slight surface roughness
+            metalness: 0.1,            // Minimal metallic reflection
+            transparent: true,         // Allow transparency effects
+            opacity: 0.9,              // Slight transparency
+            emissive: 0x331111,        // Self-illumination (dark red)
+            emissiveIntensity: 0.2     // Low glow intensity
+        });
+        
+        // Create ball mesh
+        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+        ball.position.set(5, 2, 5);  // Start elevated for dramatic drop
+        ball.castShadow = true;       // Ball casts shadows
+        ball.receiveShadow = true;    // Ball receives shadows
+        
+        // Add point light for glow effect
+        const ballGlow = new THREE.PointLight(
+            0xff4444, // Red glow matching ball color
+            0.5,      // Medium intensity
+            5         // Limited range
+        );
+        ball.add(ballGlow); // Attach light to ball (moves with it)
+        
+        // PHYSICS SIMULATION DATA
+        // Store physics properties in userData for easy access
+        ball.userData = {
+            // Motion vectors
+            velocity: new THREE.Vector3(0.1, 0, 0.08), // Initial velocity (x, y, z)
+            
+            // Physics constants
+            gravity: -0.015,           // Downward acceleration
+            bounce: 0.8,               // Energy retained after bounce (0-1)
+            friction: 0.98,            // Air/ground friction multiplier
+            radius: 0.3,               // Ball radius for collision detection
+            
+            // State tracking
+            isGrounded: false,         // Whether ball is touching ground
+            recentlyKicked: false,     // Prevent multiple kicks in sequence
+            kickCooldown: 0            // Time remaining before next kick allowed
+        };
+        
+        scene.add(ball);
+        
+        // Plant decorations
+        const plantPot = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.3, 0.25, 0.4, 8),
+            new THREE.MeshStandardMaterial({ color: 0x8b4513 })
+        );
+        plantPot.position.set(-15, 0.2, -15);
+        scene.add(plantPot);
+        
+        const plantLeaves = new THREE.Mesh(
+            new THREE.SphereGeometry(0.6, 6, 5),
+            new THREE.MeshStandardMaterial({ color: 0x228b22 })
+        );
+        plantLeaves.position.set(-15, 0.8, -15);
+        scene.add(plantLeaves);
+        
+        // Add more plants
+        const plantPot2 = plantPot.clone();
+        plantPot2.position.set(15, 0.2, -15);
+        scene.add(plantPot2);
+        
+        const plantLeaves2 = plantLeaves.clone();
+        plantLeaves2.position.set(15, 0.8, -15);
+        scene.add(plantLeaves2);
+        
+        const plantPot3 = plantPot.clone();
+        plantPot3.position.set(0, 0.2, 15);
+        scene.add(plantPot3);
+        
+        const plantLeaves3 = plantLeaves.clone();
+        plantLeaves3.position.set(0, 0.8, 15);
+        scene.add(plantLeaves3);
+        
+        // Add coffee station
+        const coffeeTable = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 0.8, 1),
+            woodMaterial
+        );
+        coffeeTable.position.set(-18, 0.4, 10);
+        coffeeTable.castShadow = true;
+        scene.add(coffeeTable);
+        
+        const coffeeMachine = new THREE.Mesh(
+            new THREE.BoxGeometry(0.4, 0.5, 0.3),
+            metalMaterial
+        );
+        coffeeMachine.position.set(-18, 1.05, 10);
+        scene.add(coffeeMachine);
+        
+        /* ==========================================================================
+           CHARACTER SYSTEM
+           AI-powered 3D characters with personality and dialogue
+           ========================================================================== */
+        
+        // Global array to store all character instances
+        const characters = [];
+        
+        /**
+         * Creates a 3D character with AI personality and dialogue capabilities
+         * Characters are built from primitive geometries and include behavioral AI
+         * @param {string} name - Character's display name
+         * @param {string} role - Job title/role in the office
+         * @param {number} x - Starting X position
+         * @param {number} z - Starting Z position
+         * @param {number} shirtColor - Hex color for character's clothing
+         * @param {Object} characterData - Personality traits and behaviors
+         * @returns {THREE.Group} - Complete 3D character object
+         */
+        function createCharacter(name, role, x, z, shirtColor, characterData) {
+            const group = new THREE.Group();
+            
+            // CHARACTER BODY CONSTRUCTION
+            // Build character from primitive 3D shapes
+            
+            // Torso (main body) - tapered cylinder for natural shape
+            const torsoGeometry = new THREE.CylinderGeometry(
+                0.25, // Top radius (shoulders)
+                0.3,  // Bottom radius (waist)
+                0.8,  // Height
+                8     // Radial segments for smooth curves
+            );
+            const torsoMaterial = new THREE.MeshStandardMaterial({ color: shirtColor });
+            const torso = new THREE.Mesh(torsoGeometry, torsoMaterial);
+            torso.position.y = 0.6; // Lift above ground
+            torso.castShadow = true; // Enable shadow casting
+            group.add(torso);
+            
+            // Arms - positioned at shoulder level with natural pose
+            const armGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.6, 6);
+            const armMaterial = new THREE.MeshStandardMaterial({ color: shirtColor });
+            
+            // Left arm with slight outward angle
+            const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+            leftArm.position.set(-0.3, 0.7, 0); // Left of torso, at shoulder height
+            leftArm.rotation.z = Math.PI / 8;    // 22.5° outward angle
+            group.add(leftArm);
+            
+            // Right arm with slight outward angle (mirrored)
+            const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+            rightArm.position.set(0.3, 0.7, 0);  // Right of torso, at shoulder height
+            rightArm.rotation.z = -Math.PI / 8;  // -22.5° outward angle
+            group.add(rightArm);
+            
+            // Legs - dark colored pants/trousers
+            const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.8, 6);
+            const legMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x2c3e50 // Dark blue-gray for professional pants
+            });
+            
+            // Left leg
+            const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+            leftLeg.position.set(-0.15, 0.4, 0); // Left of center, mid-height
+            group.add(leftLeg);
+            
+            // Right leg
+            const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+            rightLeg.position.set(0.15, 0.4, 0);  // Right of center, mid-height
+            group.add(rightLeg);
+            
+            // Head - sphere geometry for simple but effective representation
+            const headGeometry = new THREE.SphereGeometry(0.25, 8, 6);
+            const headMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0xffdbac // Skin tone color
+            });
+            const head = new THREE.Mesh(headGeometry, headMaterial);
+            head.position.y = 1.25;   // Top of torso
+            head.castShadow = true;   // Head casts shadows
+            group.add(head);
+            
+            // Hair - slightly larger sphere, flattened for hair-like appearance
+            const hairGeometry = new THREE.SphereGeometry(0.27, 8, 6);
+            const hairMaterial = new THREE.MeshStandardMaterial({ 
+                color: characterData.hairColor // Custom hair color per character
+            });
+            const hair = new THREE.Mesh(hairGeometry, hairMaterial);
+            hair.position.y = 1.35; // Slightly above head center
+            hair.scale.y = 0.6;     // Flatten to look more like hair
+            group.add(hair);
+            
+            // Eyes - small black spheres for facial features
+            const eyeGeometry = new THREE.SphereGeometry(0.03, 4, 4);
+            const eyeMaterial = new THREE.MeshStandardMaterial({ 
+                color: 0x000000 // Black eyes
+            });
+            
+            // Left eye
+            const leftEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            leftEye.position.set(-0.08, 1.25, 0.22); // Left side, at head level, forward
+            group.add(leftEye);
+            
+            // Right eye
+            const rightEye = new THREE.Mesh(eyeGeometry, eyeMaterial);
+            rightEye.position.set(0.08, 1.25, 0.22);  // Right side, at head level, forward
+            group.add(rightEye);
+            
+            // CHARACTER NAME LABEL
+            // Canvas-based floating label that always faces the camera
+            
+            // Create canvas for name/role text
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;  // High resolution for crisp text
+            canvas.height = 64;
+            const context = canvas.getContext('2d');
+            
+            // Draw semi-transparent white background
+            context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+            context.fillRect(0, 0, 256, 64);
+            
+            // Draw character name (larger, bold)
+            context.fillStyle = 'black';
+            context.font = 'bold 20px Arial';
+            context.textAlign = 'center';
+            context.fillText(name, 128, 25); // Centered horizontally
+            
+            // Draw character role (smaller, gray)
+            context.font = '16px Arial';
+            context.fillStyle = '#666';
+            context.fillText(role, 128, 45); // Below name
+            
+            // Convert canvas to Three.js sprite (always faces camera)
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelMaterial = new THREE.SpriteMaterial({ map: texture });
+            const label = new THREE.Sprite(labelMaterial);
+            label.position.y = 1.8;        // Float above character head
+            label.scale.set(2, 0.5, 1);    // Scale to readable size
+            group.add(label);
+            
+            // POSITION AND AI DATA SETUP
+            
+            // Set character's initial 3D position
+            group.position.set(x, 0, z);
+            
+            // Store AI personality and behavioral data in userData
+            group.userData = { 
+                // Basic character info
+                name, 
+                role, 
+                conversations: [],              // Chat history with player
+                
+                // AI movement system
+                initialPosition: new THREE.Vector3(x, 0, z), // Home position
+                targetPosition: new THREE.Vector3(x, 0, z),  // Current movement target
+                moveTimer: 0,                   // Time until next random movement
+                
+                // Animation states
+                isDancing: false,               // Currently dancing animation
+                tripChance: 0.001,             // Random chance to trip/stumble
+                
+                // References to body parts for animations
+                leftArm: leftArm,               // For dancing arm movements
+                rightArm: rightArm,             // For dancing arm movements
+                
+                // Merge custom personality data (hairColor, personality, quirk, etc.)
+                ...characterData
+            };
+            
+            // Add to global characters array for AI updates
+            characters.push(group);
+            return group;
+        }
+        
+        /* ==========================================================================
+           CHARACTER INSTANCES
+           Create the office team with unique personalities and roles
+           ========================================================================== */
+        
+        // Lead Developer - Alex Chen (Back-left position)
+        const character1 = createCharacter('Alex Chen', 'Lead Developer', -10, -5, 0x4169e1, {
+            hairColor: 0x3d3d3d,                           // Dark gray hair
+            personality: 'thoughtful and innovative',       // Personality trait
+            quirk: 'explains everything with code analogies' // Conversation style
+        });
+        
+        // UX Designer - Sarah Kim (Back-right position)
+        const character2 = createCharacter('Sarah Kim', 'UX Designer', 10, -5, 0x9370db, {
+            hairColor: 0x4b0082,                        // Dark purple hair
+            personality: 'creative and user-focused',   // Personality trait
+            quirk: 'sees the world as wireframes'      // Conversation style
+        });
+        
+        // Data Scientist - Mike Torres (Front-left position)
+        const character3 = createCharacter('Mike Torres', 'Data Scientist', -10, 5, 0x228b22, {
+            hairColor: 0x8b4513,                                // Brown hair
+            personality: 'analytical and precise',              // Personality trait
+            quirk: 'gets excited about correlation coefficients' // Conversation style
+        });
+        
+        // Product Manager - Jamie Liu (Front-right position)
+        const character4 = createCharacter('Jamie Liu', 'Product Manager', 10, 5, 0xffa500, {
+            hairColor: 0x8b4513,                        // Brown hair
+            personality: 'strategic and collaborative', // Personality trait
+            quirk: 'organizes everything into sprints' // Conversation style
+        });
+        
+        // Add all characters to the 3D scene
+        scene.add(character1, character2, character3, character4);
+        
+        /* ==========================================================================
+           PLAYER CONTROL SYSTEM
+           First-person camera controls and movement
+           ========================================================================== */
+        
+        // PLAYER STATE OBJECT
+        // Represents the player's position and movement in 3D space
+        const player = {
+            position: new THREE.Vector3(0, 1.6, 5), // Start position (center, eye level, back)
+            velocity: new THREE.Vector3(0, 0, 0),   // Current movement velocity
+            speed: 0.1,                             // Movement speed multiplier
+            isDancing: false                        // Dancing animation state
+        };
+        
+        const keys = {};
+        
+        document.addEventListener('keydown', (e) => {
+            const customQuestionInput = document.getElementById('custom-question-input');
+            
+            if (document.activeElement === customQuestionInput) {
+                if (e.key === 'Escape') {
+                    dialogueBox.style.display = 'none';
+                    currentCharacter = null;
+                    if (document.pointerLockElement === renderer.domElement) {
+                        document.exitPointerLock();
+                    }
+                }
+                return;
+            }
+            
+            keys[e.key.toLowerCase()] = true;
+            keys[e.key] = true;
+            
+            if (e.key.toLowerCase() === 'e' && nearbyCharacter && dialogueBox.style.display !== 'block') {
+                e.preventDefault();
+                openDialogue(nearbyCharacter);
+            }
+            
+            if (e.key === ' ' && dialogueBox.style.display !== 'block') {
+                e.preventDefault();
+                player.isDancing = true;
+                createFloatingText('💃🕺', player.position);
+            }
+            
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            const customQuestionInput = document.getElementById('custom-question-input');
+            
+            if (document.activeElement === customQuestionInput) {
+                return;
+            }
+            
+            keys[e.key.toLowerCase()] = false;
+            keys[e.key] = false;
+            
+            if (e.key === ' ' && dialogueBox.style.display !== 'block') {
+                player.isDancing = false;
+            }
+        });
+        
+        // Character movement AI
+        function updateCharacterMovement(character, deltaTime) {
+            if (Math.random() < character.userData.tripChance && !character.userData.isDancing) {
+                character.rotation.x = Math.PI / 4;
+                character.position.y = 0.3;
+                createFloatingText('Oof!', character.position);
+                
+                setTimeout(() => {
+                    character.userData.tripChance = 0.001;
+                }, 5000);
+            }
+            
+            if (character === currentCharacter || character.userData.isDancing) {
+                if (character === currentCharacter) {
+                    const lookTarget = new THREE.Vector3(player.position.x, character.position.y, player.position.z);
+                    character.lookAt(lookTarget);
+                    character.rotation.x = 0;
+                    character.rotation.z = 0;
+                }
+                return;
+            }
+            
+            if (Math.random() < 0.001) {
+                character.userData.isDancing = true;
+                createFloatingText('🎵', character.position);
+                setTimeout(() => {
+                    character.userData.isDancing = false;
+                }, 3000);
+            }
+            
+            character.userData.moveTimer -= deltaTime;
+            
+            if (character.userData.moveTimer <= 0) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 3 + Math.random() * 5;
+                character.userData.targetPosition = new THREE.Vector3(
+                    character.userData.initialPosition.x + Math.cos(angle) * distance,
+                    0,
+                    character.userData.initialPosition.z + Math.sin(angle) * distance
+                );
+                
+                character.userData.targetPosition.x = Math.max(-18, Math.min(18, character.userData.targetPosition.x));
+                character.userData.targetPosition.z = Math.max(-18, Math.min(18, character.userData.targetPosition.z));
+                
+                character.userData.moveTimer = 5 + Math.random() * 5;
+            }
+            
+            const direction = new THREE.Vector3().subVectors(character.userData.targetPosition, character.position);
+            direction.y = 0;
+            const distance = direction.length();
+            
+            if (distance > 0.1) {
+                direction.normalize();
+                character.position.add(direction.multiplyScalar(0.02));
+                
+                character.lookAt(character.userData.targetPosition);
+                character.rotation.x = 0;
+                character.rotation.z = 0;
+                
+                if (!character.userData.isDancing) {
+                    character.position.y = Math.abs(Math.sin(Date.now() * 0.005)) * 0.05;
+                }
+            }
+        }
+        
+        // Dialogue system
+        const dialogueBox = document.getElementById('dialogue-box');
+        const dialogueName = document.getElementById('dialogue-name');
+        const dialogueContent = document.getElementById('dialogue-content');
+        const dialogueOptions = document.getElementById('dialogue-options');
+        const interactionPrompt = document.getElementById('interaction-prompt');
+        
+        let currentCharacter = null;
+        let nearbyCharacter = null;
+        
+        function generateDialogueOptions(character) {
+            const questions = [
+                "Tell me about your role here",
+                "What's a typical day like for you?",
+                "What's the most challenging part of your job?",
+                "What project are you most excited about?",
+                "What's your favorite development tool?",
+                "Any advice for someone starting out?",
+                "What's the weirdest bug you've encountered?",
+                "Coffee or tea?",
+                "Tabs or spaces?",
+                "What's your git commit style?"
+            ];
+            
+            const shuffled = questions.sort(() => Math.random() - 0.5);
+            return shuffled.slice(0, 4);
+        }
+        
+        function openDialogue(character) {
+            currentCharacter = character;
+            dialogueBox.style.display = 'block';
+            dialogueName.textContent = `${character.userData.name} - ${character.userData.role}`;
+            
+            if (document.pointerLockElement === renderer.domElement) {
+                document.exitPointerLock();
+            }
+            
+            const greetings = [
+                `Hello! I'm ${character.userData.name}, ${character.userData.role}. Ask me anything!`,
+                `Hey there! I'm ${character.userData.name}. Just ${character.userData.quirk}, as usual.`,
+                `Hi! ${character.userData.name} here. What can I help you understand about our work?`,
+                `Great to meet you! I'm ${character.userData.name}. Fair warning: I ${character.userData.quirk}.`
+            ];
+            
+            if (character.userData.conversations.length === 0) {
+                dialogueContent.innerHTML = `<p><strong>${character.userData.name}:</strong> ${greetings[Math.floor(Math.random() * greetings.length)]}</p>`;
+            } else {
+                const lastConv = character.userData.conversations[character.userData.conversations.length - 1];
+                dialogueContent.innerHTML = `<p><strong>You:</strong> ${lastConv.user}</p><p><strong>${character.userData.name}:</strong> ${lastConv.response}</p>`;
+            }
+            
+            const options = generateDialogueOptions(character);
+            dialogueOptions.innerHTML = '';
+            
+            options.forEach(option => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'dialogue-option';
+                optionDiv.textContent = option;
+                optionDiv.onclick = () => selectOption(option);
+                dialogueOptions.appendChild(optionDiv);
+            });
+            
+            document.getElementById('custom-question-input').value = '';
+            
+            setTimeout(() => {
+                document.getElementById('custom-question-input').focus();
+            }, 100);
+        }
+        
+        function selectOption(option) {
+            if (!currentCharacter) return;
+            
+            dialogueContent.innerHTML += `<p><strong>You:</strong> ${option}</p>`;
+            dialogueContent.innerHTML += `<p><strong>${currentCharacter.userData.name}:</strong> <span class="loading"></span></p>`;
+            
+            dialogueContent.scrollTop = dialogueContent.scrollHeight;
+            
+            const customQuestionInput = document.getElementById('custom-question-input');
+            const customQuestionSubmit = document.getElementById('custom-question-submit');
+            
+            dialogueOptions.style.pointerEvents = 'none';
+            dialogueOptions.style.opacity = '0.5';
+            customQuestionInput.disabled = true;
+            customQuestionSubmit.disabled = true;
+            
+            // Simple fallback responses (replace with your AI integration)
+            let responseText = generateFallbackResponse(currentCharacter, option);
+            
+            setTimeout(() => {
+                currentCharacter.userData.conversations.push({
+                    user: option,
+                    response: responseText
+                });
+                
+                dialogueContent.innerHTML = dialogueContent.innerHTML.replace(
+                    '<span class="loading"></span>',
+                    responseText
+                );
+                
+                dialogueContent.scrollTop = dialogueContent.scrollHeight;
+                
+                if (Math.random() < 0.2) {
+                    createFloatingText('💡', currentCharacter.position);
+                }
+                
+                const newOptions = generateDialogueOptions(currentCharacter);
+                dialogueOptions.innerHTML = '';
+                
+                newOptions.forEach(opt => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'dialogue-option';
+                    optionDiv.textContent = opt;
+                    optionDiv.onclick = () => selectOption(opt);
+                    dialogueOptions.appendChild(optionDiv);
+                });
+                
+                dialogueOptions.style.pointerEvents = 'auto';
+                dialogueOptions.style.opacity = '1';
+                customQuestionInput.disabled = false;
+                customQuestionSubmit.disabled = false;
+                customQuestionInput.focus();
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        function generateFallbackResponse(character, question) {
+            const responses = {
+                'Alex Chen': [
+                    "That's a great question! As lead developer, I focus on architecture and code quality. Think of it like building a skyscraper - you need a solid foundation.",
+                    "Interesting! I always approach problems systematically. First, I write a test that fails, then make it pass. It's like debugging life itself!",
+                    "You know, the best code is like poetry - elegant, concise, and impossible to understand six months later. Just kidding about that last part!"
+                ],
+                'Sarah Kim': [
+                    "Great question! UX design is all about empathy. I spend my day thinking like our users - sometimes I even dream in wireframes!",
+                    "That's fascinating! Every pixel has a purpose. I see the world as one big user interface waiting to be optimized.",
+                    "You know what's funny? I organize my grocery list by user journey. Produce → Dairy → Checkout. It's more efficient that way!"
+                ],
+                'Mike Torres': [
+                    "Excellent question! Data science is like detective work, but instead of fingerprints, I follow correlation coefficients and p-values.",
+                    "That's a statistically significant question! I love finding patterns in chaos. Data doesn't lie, but it sure knows how to whisper.",
+                    "Fun fact: I once got excited about a 0.97 R-squared value at a dinner party. The correlation between that and awkward silence was perfect."
+                ],
+                'Jamie Liu': [
+                    "Strategic question! As a PM, I think in sprints and user stories. This conversation would be: 'As a visitor, I want to chat with Jamie so I can learn about product management.'",
+                    "That's roadmap-worthy thinking! I love connecting user needs with business goals. It's like being a translator between engineers and humans.",
+                    "Here's a PM secret: everything is a two-week sprint if you believe hard enough. Even cooking dinner can be agile!"
+                ]
+            };
+            
+            const characterResponses = responses[character.userData.name] || [
+                "That's a thoughtful question! I really enjoy the collaborative aspect of working here.",
+                "Great question! Every day brings new challenges and opportunities to learn.",
+                "Interesting perspective! I find that the best solutions come from working together as a team."
+            ];
+            
+            return characterResponses[Math.floor(Math.random() * characterResponses.length)];
+        }
+        
+        // Close dialogue with Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                dialogueBox.style.display = 'none';
+                currentCharacter = null;
+                if (document.pointerLockElement === renderer.domElement) {
+                    document.exitPointerLock();
+                }
+            }
+        });
+        
+        // Custom question handlers
+        const customQuestionInput = document.getElementById('custom-question-input');
+        const customQuestionSubmit = document.getElementById('custom-question-submit');
+        
+        customQuestionSubmit.addEventListener('click', () => {
+            const customQuestion = customQuestionInput.value.trim();
+            if (customQuestion && currentCharacter) {
+                selectOption(customQuestion);
+                customQuestionInput.value = '';
+            }
+        });
+        
+        customQuestionInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const customQuestion = customQuestionInput.value.trim();
+                if (customQuestion && currentCharacter) {
+                    selectOption(customQuestion);
+                    customQuestionInput.value = '';
+                }
+            }
+        });
+        
+        /* ==========================================================================
+           MAIN ANIMATION LOOP
+           60fps game loop handling all updates and rendering
+           ========================================================================== */
+        
+        let lastTime = 0; // Track time for delta calculations
+        
+        /**
+         * Main animation function - runs 60 times per second
+         * Handles all game updates: physics, AI, controls, rendering
+         * @param {number} currentTime - Current timestamp from requestAnimationFrame
+         */
+        function animate(currentTime) {
+            requestAnimationFrame(animate); // Schedule next frame
+            
+            // Calculate delta time for frame-rate independent movement
+            const deltaTime = (currentTime - lastTime) / 1000; // Convert to seconds
+            lastTime = currentTime;
+            
+            // Update lighting animations
+            animateLighting();
+            
+            // Update player movement
+            player.velocity.set(0, 0, 0);
+            
+            if (!player.isDancing && dialogueBox.style.display !== 'block') {
+                if (keys['w']) player.velocity.z = player.speed;
+                if (keys['s']) player.velocity.z = -player.speed;
+                if (keys['a']) player.velocity.x = -player.speed;
+                if (keys['d']) player.velocity.x = player.speed;
+            }
+            
+            // Arrow key camera controls
+            const lookSpeed = 0.05;
+            if (dialogueBox.style.display !== 'block') {
+                if (keys['ArrowLeft']) {
+                    mouseX += lookSpeed;
+                }
+                if (keys['ArrowRight']) {
+                    mouseX -= lookSpeed;
+                }
+            }
+            
+            // Update camera rotation
+            if (!player.isDancing && dialogueBox.style.display !== 'block') {
+                camera.rotation.y = mouseX;
+                camera.rotation.x = 0;
+            }
+            
+            // Apply movement in camera direction
+            const forward = new THREE.Vector3(0, 0, -1);
+            forward.applyQuaternion(camera.quaternion);
+            forward.y = 0;
+            forward.normalize();
+            
+            const right = new THREE.Vector3(1, 0, 0);
+            right.applyQuaternion(camera.quaternion);
+            right.y = 0;
+            right.normalize();
+            
+            player.position.add(forward.multiplyScalar(player.velocity.z));
+            player.position.add(right.multiplyScalar(player.velocity.x));
+            
+            // Keep player in bounds (extended for corridor)
+            player.position.x = Math.max(-18, Math.min(78, player.position.x)); // Extended to end of corridor
+            player.position.z = Math.max(-18, Math.min(18, player.position.z));
+            
+            // Dancing animation
+            if (player.isDancing && dialogueBox.style.display !== 'block') {
+                camera.position.y = player.position.y + Math.sin(Date.now() * 0.01) * 0.2;
+                camera.rotation.z = Math.sin(Date.now() * 0.01) * 0.1;
+                camera.rotation.y = mouseX;
+                camera.rotation.x = 0;
+            } else {
+                camera.position.copy(player.position);
+                camera.rotation.z = 0;
+                if (dialogueBox.style.display !== 'block') {
+                    camera.rotation.y = mouseX;
+                    camera.rotation.x = 0;
+                }
+            }
+            
+            // Update character movement
+            characters.forEach(character => {
+                updateCharacterMovement(character, deltaTime);
+                
+                if (character.userData.isDancing) {
+                    character.rotation.y += 0.1;
+                    character.position.y = Math.abs(Math.sin(Date.now() * 0.01)) * 0.3;
+                    
+                    character.userData.leftArm.rotation.z = Math.sin(Date.now() * 0.01) * 0.5 + Math.PI / 8;
+                    character.userData.rightArm.rotation.z = -Math.sin(Date.now() * 0.01) * 0.5 - Math.PI / 8;
+                }
+            });
+            
+            /* ==========================================================================
+               PHYSICS SIMULATION UPDATE
+               Real-time physics for interactive objects
+               ========================================================================== */
+            
+            // UPDATE BALL PHYSICS
+            const ballData = ball.userData;
+            
+            // Apply gravitational acceleration (constant downward force)
+            ballData.velocity.y += ballData.gravity;
+            
+            // Apply air resistance and ground friction
+            ballData.velocity.multiplyScalar(ballData.friction);
+            
+            // Update ball position based on velocity
+            ball.position.add(ballData.velocity);
+            
+            // Ground collision (with some bounce tolerance)
+            if (ball.position.y <= ballData.radius) {
+                ball.position.y = ballData.radius;
+                if (ballData.velocity.y < 0) {
+                    ballData.velocity.y = -ballData.velocity.y * ballData.bounce;
+                    ballData.isGrounded = true;
+                    
+                    // Create bounce effect
+                    if (Math.abs(ballData.velocity.y) > 0.05) {
+                        createFloatingText('Bounce!', ball.position);
+                    }
+                } else {
+                    ballData.isGrounded = true;
+                }
+            } else {
+                ballData.isGrounded = false;
+            }
+            
+            // Wall collisions
+            const wallBounce = 18 - ballData.radius;
+            if (Math.abs(ball.position.x) > wallBounce) {
+                ball.position.x = Math.sign(ball.position.x) * wallBounce;
+                ballData.velocity.x = -ballData.velocity.x * ballData.bounce;
+                createFloatingText('Bonk!', ball.position);
+            }
+            if (Math.abs(ball.position.z) > wallBounce) {
+                ball.position.z = Math.sign(ball.position.z) * wallBounce;
+                ballData.velocity.z = -ballData.velocity.z * ballData.bounce;
+                createFloatingText('Smack!', ball.position);
+            }
+            
+            /* ==========================================================================
+               PLAYER-BALL INTERACTION SYSTEM
+               2D collision detection for realistic ball kicking
+               ========================================================================== */
+            
+            // COLLISION DETECTION
+            // Use 2D distance calculation (ignore Y axis) since:
+            // - Player is tall (1.6 units) and ball is on ground (0.3 units)
+            // - Only horizontal distance matters for kicking
+            const playerPos2D = new THREE.Vector2(player.position.x, player.position.z);
+            const ballPos2D = new THREE.Vector2(ball.position.x, ball.position.z);
+            const playerBallDistance2D = playerPos2D.distanceTo(ballPos2D);
+            
+            // Define collision boundaries
+            const playerRadius = 0.5; // Player's collision radius
+            const combinedRadius = playerRadius + ballData.radius; // Total collision distance
+            
+            // Update kick cooldown timer (prevents spam kicking)
+            if (ballData.kickCooldown > 0) {
+                ballData.kickCooldown -= deltaTime;
+            }
+            
+            // Check if player is close enough to kick ball
+            const isColliding = playerBallDistance2D <= combinedRadius;
+            
+            // KICK PHYSICS CALCULATION
+            if (isColliding && ballData.kickCooldown <= 0) {
+                // Calculate kick direction vector (from player to ball)
+                const kickDirection = new THREE.Vector3()
+                    .subVectors(ball.position, player.position);
+                
+                // Only process kick if there's meaningful separation
+                if (kickDirection.length() > 0.1) {
+                    kickDirection.normalize(); // Convert to unit vector
+                    
+                    // DYNAMIC KICK STRENGTH SYSTEM
+                    // Base strength + bonus for player movement speed
+                    const playerMovementSpeed = player.velocity.length();
+                    const baseKickStrength = 0.4;                    // Minimum kick power
+                    const movementBonus = playerMovementSpeed * 2;   // Running = harder kick
+                    const totalKickStrength = baseKickStrength + movementBonus;
+                    
+                    // APPLY KICK FORCES
+                    // Add horizontal kick force
+                    ballData.velocity.add(kickDirection.multiplyScalar(totalKickStrength));
+                    ballData.velocity.y += 0.15; // Add upward component for realistic arc
+                    
+                    // KICK COOLDOWN (prevent rapid-fire kicking)
+                    ballData.kickCooldown = 0.3; // 300ms between kicks
+                    
+                    // VISUAL AND AUDIO FEEDBACK
+                    createFloatingText('KICK!', ball.position); // Show floating text
+                    
+                    // Console logging for debugging
+                    console.log(`🦶 KICK! Distance: ${playerBallDistance2D.toFixed(2)}, Strength: ${totalKickStrength.toFixed(2)}`);
+                    
+                    // Extra effects for powerful kicks
+                    if (totalKickStrength > 0.6) {
+                        createFloatingText('💥', ball.position); // Show impact effect
+                    }
+                }
+            }
+            
+            // Add some rotation based on movement
+            ball.rotation.x += ballData.velocity.z * 0.1;
+            ball.rotation.z -= ballData.velocity.x * 0.1;
+            
+            // Dynamic visual effects based on speed
+            const speed = ballData.velocity.length();
+            
+            // Adjust glow intensity based on speed
+            const glowLight = ball.children[0]; // The point light we added
+            if (glowLight) {
+                glowLight.intensity = 0.3 + speed * 2;
+                glowLight.distance = 3 + speed * 5;
+            }
+            
+            // Adjust material emissive based on speed
+            ballMaterial.emissiveIntensity = 0.1 + speed * 0.5;
+            
+            // Color shift based on speed (red to yellow when fast)
+            if (speed > 0.3) {
+                ballMaterial.color.setHSL(0.1 - speed * 0.1, 1, 0.5); // Red to yellow
+                ballMaterial.emissive.setHSL(0.1 - speed * 0.1, 1, 0.2);
+            } else {
+                ballMaterial.color.setHex(0xff4444); // Default red
+                ballMaterial.emissive.setHex(0x331111);
+            }
+            
+            // Add trail effect for fast movement
+            if (speed > 0.4 && Math.random() < 0.3) {
+                const trailPos = ball.position.clone();
+                trailPos.add(new THREE.Vector3(
+                    (Math.random() - 0.5) * 0.5,
+                    (Math.random() - 0.5) * 0.5,
+                    (Math.random() - 0.5) * 0.5
+                ));
+                createFloatingText('✨', trailPos);
+            }
+            
+            // Check for nearby characters
+            nearbyCharacter = null;
+            let minDistance = Infinity;
+            
+            characters.forEach(character => {
+                const distance = player.position.distanceTo(character.position);
+                if (distance < 3 && distance < minDistance) {
+                    minDistance = distance;
+                    nearbyCharacter = character;
+                }
+            });
+            
+            // Show/hide interaction prompt
+            if (nearbyCharacter && !currentCharacter) {
+                interactionPrompt.style.display = 'block';
+                interactionPrompt.textContent = `Press E to talk to ${nearbyCharacter.userData.name}`;
+            } else {
+                interactionPrompt.style.display = 'none';
+            }
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+        // Mouse look
+        let mouseX = 0;
+        
+        document.addEventListener('mousemove', (e) => {
+            if (document.pointerLockElement === renderer.domElement && dialogueBox.style.display !== 'block') {
+                mouseX += e.movementX * 0.002;
+            }
+        });
+        
+        // Ball throwing mechanics
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        
+        renderer.domElement.addEventListener('click', (event) => {
+            if (!dialogueBox.style.display || dialogueBox.style.display === 'none') {
+                // Check if we clicked on the ball first
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+                
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObject(ball);
+                
+                if (intersects.length > 0) {
+                    // Clicked on ball - throw it!
+                    const throwDirection = new THREE.Vector3(0, 0, -1);
+                    throwDirection.applyQuaternion(camera.quaternion);
+                    throwDirection.normalize();
+                    
+                    // Add throw force
+                    const throwStrength = 0.5;
+                    ball.userData.velocity.add(throwDirection.multiplyScalar(throwStrength));
+                    ball.userData.velocity.y += 0.3; // Add upward arc
+                    
+                    createFloatingText('THROW!', ball.position);
+                } else {
+                    // Normal pointer lock request
+                    renderer.domElement.requestPointerLock();
+                }
+            }
+        });
+        
+        animate(0);
+        
+        console.log('Controls: WASD to move, E to interact, SPACE to dance, ESC to exit dialogues');
+        console.log('Explore the office and corridor - interact with characters and objects!');
+    </script>
+</body>
+</html>

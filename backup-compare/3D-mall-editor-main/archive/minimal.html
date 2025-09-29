@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Minimal Test</title>
+    <style>body { margin: 0; background: #222; color: white; font-family: Arial; }</style>
+</head>
+<body>
+    <h1>Basic Test</h1>
+    <div id="status">Loading...</div>
+    
+    <script>
+        console.log('JavaScript is working');
+        document.getElementById('status').textContent = 'JavaScript working! Time: ' + new Date();
+        
+        // Test THREE.js loading
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        script.onload = function() {
+            console.log('THREE.js loaded, version:', THREE.REVISION);
+            document.getElementById('status').textContent = 'THREE.js loaded! Version: ' + THREE.REVISION;
+        };
+        script.onerror = function() {
+            console.error('Failed to load THREE.js');
+            document.getElementById('status').textContent = 'Failed to load THREE.js';
+        };
+        document.head.appendChild(script);
+    </script>
+</body>
+</html>

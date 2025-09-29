@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Test - Step 5A: Component Removal</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: monospace; }
+        #info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 5px;
+            max-width: 350px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 9px;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #0f0;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            border-radius: 5px;
+            font-size: 11px;
+        }
+        .btn-group {
+            margin: 8px 0;
+        }
+        .btn {
+            background: #333;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 5px 10px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: monospace;
+            font-size: 10px;
+        }
+        .btn:hover { background: #0f0; color: #000; }
+        .btn:disabled { 
+            background: #222; 
+            color: #666; 
+            cursor: not-allowed;
+            border-color: #666;
+        }
+        .btn.danger { border-color: #f44; color: #f44; }
+        .btn.danger:hover { background: #f44; color: #fff; }
+        #toggle-info {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: #0f0;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h3>🗑️ Component Removal Test</h3>
+        
+        <div class="btn-group">
+            <strong>Remove Walls:</strong><br>
+            <button class="btn danger" onclick="removeComponent('north-wall')">Remove North Wall</button>
+            <button class="btn danger" onclick="removeComponent('south-wall')">Remove South Wall</button><br>
+            <button class="btn danger" onclick="removeComponent('east-wall')">Remove East Wall</button>
+            <button class="btn danger" onclick="removeComponent('west-wall')">Remove West Wall</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Remove Objects:</strong><br>
+            <button class="btn danger" onclick="removeComponent('floor')">Remove Floor</button>
+            <button class="btn danger" onclick="removeComponent('debugBall')">Remove Debug Ball</button><br>
+            <button class="btn danger" onclick="removeComponent('referencePole')">Remove Ref Pole</button>
+        </div>
+        
+        <div class="btn-group">
+            <strong>Controls:</strong><br>
+            <button class="btn" onclick="resetRoom()">🔄 Reset Room</button>
+            <button class="btn" onclick="removeAll()">💀 Remove All</button>
+        </div>
+        
+        <div style="margin-top: 10px; font-size: 9px;">
+            <strong>Objects in scene:</strong> <span id="object-count">0</span>
+        </div>
+    </div>
+
+    <div id="toggle-info" onclick="toggleInfo()">HIDE INFO</div>
+    <div id="info">
+        <h3>🧪 Dynamic Removal Testing</h3>
+        <div id="status">Loading...</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Complete component set
+        const EMBEDDED_COMPONENTS = {
+            "components": {
+                "referencePole": {
+                    "model": "cylinder",
+                    "size": [0.1, 0.1, 1, 8],
+                    "material": { "type": "MeshBasicMaterial", "color": "#000000" },
+                    "properties": { "castShadow": false, "receiveShadow": false },
+                    "collision": false,
+                    "agentEditable": { "color": true }
+                },
+                "debugBall": {
+                    "model": "sphere",
+                    "size": [0.3, 16, 16],
+                    "material": {
+                        "type": "MeshStandardMaterial", "color": "#44ff44", "roughness": 0.3,
+                        "metalness": 0.2, "transparent": true, "opacity": 0.8,
+                        "emissive": "#114411", "emissiveIntensity": 0.2
+                    },
+                    "properties": { "castShadow": true, "receiveShadow": true },
+                    "collision": true,
+                    "agentEditable": { "color": true, "emissive": true, "emissiveIntensity": true }
+                },
+                "floor": {
+                    "model": "plane", "size": [10, 8],
+                    "rotation": [-1.5707963267948966, 0, 0],
+                    "material": { "type": "MeshStandardMaterial", "color": "#90EE90", "roughness": 0.6, "metalness": 0.1 },
+                    "properties": { "receiveShadow": true },
+                    "collision": true,
+                    "agentEditable": { "color": true, "roughness": true }
+                },
+                "wall": {
+                    "model": "plane", "size": [10, 8],
+                    "material": { "type": "MeshStandardMaterial", "color": "#f8f8f8", "roughness": 0.9, "metalness": 0.1 },
+                    "properties": { "castShadow": false, "receiveShadow": true },
+                    "collision": true,
+                    "agentEditable": { "color": true, "roughness": true }
+                }
+            }
+        };
+
+        // Enhanced factory with removal capabilities
+        class DynamicComponentFactory {
+            constructor() {
+                this.registry = EMBEDDED_COMPONENTS;
+                this.createdObjects = new Map(); // Track all created objects
+            }
+            
+            createMaterial(materialConfig) {
+                const materialTypes = {
+                    'MeshStandardMaterial': THREE.MeshStandardMaterial,
+                    'MeshBasicMaterial': THREE.MeshBasicMaterial
+                };
+                
+                const MaterialClass = materialTypes[materialConfig.type] || THREE.MeshStandardMaterial;
+                const params = {};
+                
+                Object.entries(materialConfig).forEach(([key, value]) => {
+                    if (key === 'type') return;
+                    if (key === 'color' || key === 'emissive') {
+                        if (typeof value === 'string' && value.startsWith('#')) {
+                            params[key] = new THREE.Color(value);
+                        } else {
+                            params[key] = value;
+                        }
+                    } else {
+                        params[key] = value;
+                    }
+                });
+                
+                return new MaterialClass(params);
+            }
+            
+            createGeometry(type, dimensions) {
+                switch (type) {
+                    case 'cylinder': return new THREE.CylinderGeometry(...dimensions);
+                    case 'sphere': return new THREE.SphereGeometry(...dimensions);
+                    case 'plane': return new THREE.PlaneGeometry(...dimensions);
+                    default: return new THREE.BoxGeometry(1, 1, 1);
+                }
+            }
+            
+            createComponent(componentType, config, scene) {
+                const componentDef = this.registry.components[componentType];
+                if (!componentDef) {
+                    console.error(`Component type '${componentType}' not found`);
+                    return null;
+                }
+                
+                const size = config.size || componentDef.size;
+                const geometry = this.createGeometry(componentDef.model, size);
+                const material = this.createMaterial(componentDef.material);
+                const mesh = new THREE.Mesh(geometry, material);
+                
+                if (config.position) mesh.position.set(...config.position);
+                if (componentDef.rotation) mesh.rotation.set(...componentDef.rotation);
+                if (config.rotation) mesh.rotation.set(...config.rotation);
+                
+                if (componentDef.properties) {
+                    Object.entries(componentDef.properties).forEach(([prop, value]) => {
+                        mesh[prop] = value;
+                    });
+                }
+                
+                // Enhanced metadata with unique ID
+                const uniqueId = config.id || `${componentType}-${Date.now()}`;
+                mesh.userData = {
+                    componentType: componentType,
+                    compass: config.compass || null,
+                    agentEditable: componentDef.agentEditable || {},
+                    createdBy: 'DynamicComponentFactory',
+                    id: uniqueId,
+                    createdAt: Date.now()
+                };
+                
+                // Add to scene and tracking
+                scene.add(mesh);
+                this.createdObjects.set(uniqueId, mesh);
+                
+                console.log(`Created ${componentType} with ID: ${uniqueId}`);
+                return mesh;
+            }
+            
+            // NEW: Remove component by ID or type
+            removeComponent(identifier, scene) {
+                let meshToRemove = null;
+                let keyToRemove = null;
+                
+                // Find by ID first
+                for (let [key, mesh] of this.createdObjects) {
+                    if (key === identifier || mesh.userData.id === identifier) {
+                        meshToRemove = mesh;
+                        keyToRemove = key;
+                        break;
+                    }
+                }
+                
+                // Find by component type or semantic name
+                if (!meshToRemove) {
+                    const semanticMap = {
+                        'floor': (obj) => obj.userData.componentType === 'floor',
+                        'north-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'north',
+                        'south-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'south',
+                        'east-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'east',
+                        'west-wall': (obj) => obj.userData.componentType === 'wall' && obj.userData.compass === 'west',
+                        'referencePole': (obj) => obj.userData.componentType === 'referencePole',
+                        'debugBall': (obj) => obj.userData.componentType === 'debugBall'
+                    };
+                    
+                    if (semanticMap[identifier]) {
+                        for (let [key, mesh] of this.createdObjects) {
+                            if (semanticMap[identifier](mesh)) {
+                                meshToRemove = mesh;
+                                keyToRemove = key;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (meshToRemove) {
+                    // Clean up geometry and material
+                    meshToRemove.geometry.dispose();
+                    if (meshToRemove.material.dispose) {
+                        meshToRemove.material.dispose();
+                    }
+                    
+                    // Remove from scene
+                    scene.remove(meshToRemove);
+                    
+                    // Remove from tracking
+                    this.createdObjects.delete(keyToRemove);
+                    
+                    console.log(`Removed component: ${identifier}`);
+                    return true;
+                } else {
+                    console.warn(`Component not found: ${identifier}`);
+                    return false;
+                }
+            }
+            
+            // NEW: Get count of objects
+            getObjectCount() {
+                return this.createdObjects.size;
+            }
+            
+            // NEW: Remove all components
+            removeAllComponents(scene) {
+                const keys = Array.from(this.createdObjects.keys());
+                keys.forEach(key => {
+                    this.removeComponent(key, scene);
+                });
+                console.log('Removed all components');
+            }
+        }
+
+        // Global variables
+        const status = document.getElementById('status');
+        const objectCount = document.getElementById('object-count');
+        let factory;
+        let scene, camera, renderer;
+        
+        function updateStatus(message, isError = false) {
+            console.log(message);
+            status.innerHTML += `<br>${isError ? '❌' : '✅'} ${message}`;
+        }
+        
+        function updateObjectCount() {
+            if (factory) {
+                objectCount.textContent = factory.getObjectCount();
+            }
+        }
+
+        // Scene setup
+        function initScene() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(6, 5, 6);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(8, 8, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            updateStatus("Scene initialized");
+        }
+
+        // Create initial room
+        function createInitialRoom() {
+            factory = new DynamicComponentFactory();
+            
+            // Create all components with unique IDs
+            factory.createComponent('referencePole', { id: 'ref-pole', position: [0, 0.5, 0] }, scene);
+            factory.createComponent('debugBall', { id: 'debug-ball', position: [2, 0.3, 1] }, scene);
+            factory.createComponent('floor', { id: 'floor', position: [0, 0, 0] }, scene);
+            
+            // Create walls
+            factory.createComponent('wall', { 
+                id: 'north-wall', position: [0, 4, 4], rotation: [0, Math.PI, 0], compass: 'north' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'south-wall', position: [0, 4, -4], rotation: [0, 0, 0], compass: 'south' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'east-wall', position: [5, 4, 0], rotation: [0, -Math.PI/2, 0], 
+                size: [8, 8], compass: 'east' 
+            }, scene);
+            factory.createComponent('wall', { 
+                id: 'west-wall', position: [-5, 4, 0], rotation: [0, Math.PI/2, 0], 
+                size: [8, 8], compass: 'west' 
+            }, scene);
+            
+            updateStatus(`Initial room created with ${factory.getObjectCount()} components`);
+            updateObjectCount();
+        }
+
+        // Component removal function
+        function removeComponent(identifier) {
+            if (factory && factory.removeComponent(identifier, scene)) {
+                updateStatus(`Removed: ${identifier}`);
+                updateObjectCount();
+            } else {
+                updateStatus(`Failed to remove: ${identifier}`, true);
+            }
+        }
+
+        // Reset room function
+        function resetRoom() {
+            if (factory) {
+                factory.removeAllComponents(scene);
+                updateObjectCount();
+                updateStatus("All components removed");
+                
+                setTimeout(() => {
+                    createInitialRoom();
+                    updateStatus("Room reset complete");
+                }, 100);
+            }
+        }
+
+        // Remove all function
+        function removeAll() {
+            if (factory) {
+                factory.removeAllComponents(scene);
+                updateObjectCount();
+                updateStatus("All components removed - empty scene");
+            }
+        }
+
+        // Initialize everything
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                updateStatus(`THREE.js loaded (r${THREE.REVISION})`);
+                initScene();
+                createInitialRoom();
+                updateStatus("🗑️ REMOVAL TESTING READY");
+                updateStatus("Click buttons to remove components!");
+            } else {
+                updateStatus("❌ THREE.js failed to load", true);
+            }
+        }, 1000);
+        
+        // Render loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+        
+        // UI functions
+        function toggleInfo() {
+            const info = document.getElementById('info');
+            const toggle = document.getElementById('toggle-info');
+            if (info.style.display === 'none') {
+                info.style.display = 'block';
+                toggle.textContent = 'HIDE INFO';
+            } else {
+                info.style.display = 'none';
+                toggle.textContent = 'SHOW INFO';
+            }
+        }
+
+        // Mouse controls
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);
+        });
+    </script>
+</body>
+</html>

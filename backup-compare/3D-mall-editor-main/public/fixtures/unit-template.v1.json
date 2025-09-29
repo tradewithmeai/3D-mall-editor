@@ -1,0 +1,38 @@
+{
+  "meta": {
+    "schema": "unit-template.v1",
+    "version": "1.0",
+    "parent": {
+      "schema": "mall-template.v1",
+      "id": "test-mall-001"
+    }
+  },
+  "id": "test-unit-001",
+  "rect": {
+    "x": 10,
+    "y": 10,
+    "w": 8,
+    "h": 6
+  },
+  "rooms": [
+    {
+      "id": "room-001",
+      "gridRect": {
+        "x": 11,
+        "y": 11,
+        "w": 3,
+        "h": 2
+      }
+    },
+    {
+      "id": "room-002",
+      "gridRect": {
+        "x": 15,
+        "y": 11,
+        "w": 2,
+        "h": 3
+      }
+    }
+  ],
+  "created": "2025-09-25T12:00:00.000Z"
+}

@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diana Test Harness - Clean Modular Integration</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Courier New', monospace; }
+        
+        #log-panel {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 400px;
+            height: 380px;
+            background: rgba(0, 20, 0, 0.95);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 10px;
+            color: #0f0;
+            font-size: 10px;
+            overflow-y: auto;
+        }
+        
+        #control-panel {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 340px;
+            background: rgba(0, 20, 0, 0.95);
+            border: 1px solid #0f0;
+            border-radius: 5px;
+            padding: 15px;
+            color: #0f0;
+            font-size: 11px;
+        }
+        
+        .section {
+            margin: 10px 0;
+            border-top: 1px solid #0a4;
+            padding-top: 8px;
+        }
+        
+        .section h4 {
+            margin: 0 0 8px 0;
+            color: #4f4;
+        }
+        
+        .btn {
+            background: #001100;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 9px;
+        }
+        
+        .btn:hover {
+            background: #0f0;
+            color: #000;
+        }
+        
+        .btn.parse { border-color: #ff0; color: #ff0; }
+        .btn.parse:hover { background: #ff0; color: #000; }
+        
+        .btn.exec { border-color: #f4f; color: #f4f; }
+        .btn.exec:hover { background: #f4f; color: #000; }
+        
+        #command-input {
+            width: 100%;
+            background: #001100;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 6px;
+            border-radius: 3px;
+            font-family: inherit;
+            font-size: 10px;
+            margin: 5px 0;
+        }
+        
+        .log-entry {
+            margin: 2px 0;
+            padding: 3px;
+            border-left: 2px solid #0a4;
+            background: rgba(0, 40, 0, 0.3);
+        }
+        
+        .log-intent { border-left-color: #ff0; }
+        .log-parse { border-left-color: #4af; }
+        .log-exec { border-left-color: #f4f; }
+        .log-result { border-left-color: #0f0; }
+        .log-error { border-left-color: #f44; background: rgba(60, 0, 0, 0.3); }
+        
+        .diana-response {
+            background: rgba(80, 0, 80, 0.4);
+            border-left: 3px solid #f4f;
+            padding: 5px;
+            margin: 5px 0;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div id="control-panel">
+        <h3>🤖 Diana Test Harness</h3>
+        
+        <div class="section">
+            <h4>Natural Language Input</h4>
+            <input type="text" id="command-input" placeholder="e.g., 'make walls red' or 'add a desk'" 
+                   onkeypress="handleEnter(event)">
+            <button class="btn" onclick="processCommand()">Execute</button>
+        </div>
+        
+        <div class="section">
+            <h4>Sample Commands</h4>
+            <button class="btn" onclick="testCommand('add wall')">Add Wall</button>
+            <button class="btn" onclick="testCommand('change wall color red')">Red Walls</button>
+            <button class="btn" onclick="testCommand('remove referencePole')">Remove Pole</button><br>
+            <button class="btn" onclick="testCommand('add desk')">Add Desk</button>
+            <button class="btn" onclick="testCommand('make walls blue')">Blue Walls</button>
+            <button class="btn" onclick="testCommand('remove all furniture')">Clear Furniture</button>
+        </div>
+        
+        <div class="section">
+            <h4>Component Testing</h4>
+            <button class="btn parse" onclick="testParser()">Test Parser</button>
+            <button class="btn exec" onclick="testExecutor()">Test Executor</button>
+            <button class="btn" onclick="testRegistry()">Test Registry</button>
+        </div>
+        
+        <div class="section">
+            <h4>Scene Analysis</h4>
+            <button class="btn" onclick="describeScene()">Describe Scene</button>
+            <button class="btn" onclick="analyzeObjects()">Analyze Objects</button>
+            <button class="btn" onclick="explainLastTransform()">Explain Last Change</button>
+        </div>
+        
+        <div class="section">
+            <h4>System</h4>
+            <button class="btn" onclick="resetScene()">Reset Scene</button>
+            <button class="btn" onclick="clearLog()">Clear Log</button>
+        </div>
+    </div>
+
+    <div id="log-panel">
+        <h4>🔍 Diana Execution Log</h4>
+        <div id="log-content"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // ============================================================================
+        // 1. SCENE REGISTRY - Track all factory-created objects with semantic tags
+        // ============================================================================
+        class SceneRegistry {
+            constructor() {
+                this.objects = new Map(); // id -> object metadata
+                this.semanticIndex = new Map(); // semantic name -> ids
+                this.typeIndex = new Map(); // type -> ids
+                this.lastTransform = null;
+            }
+            
+            register(object, metadata) {
+                const id = metadata.id || object.userData.id;
+                
+                const entry = {
+                    object: object,
+                    id: id,
+                    type: metadata.type || object.userData.componentType,
+                    semantic: metadata.semantic,
+                    compass: metadata.compass,
+                    isAdded: metadata.isAdded || false,
+                    createdAt: Date.now(),
+                    tags: metadata.tags || []
+                };
+                
+                this.objects.set(id, entry);
+                
+                // Build semantic index
+                if (entry.semantic) {
+                    if (!this.semanticIndex.has(entry.semantic)) {
+                        this.semanticIndex.set(entry.semantic, new Set());
+                    }
+                    this.semanticIndex.get(entry.semantic).add(id);
+                }
+                
+                // Build type index
+                if (!this.typeIndex.has(entry.type)) {
+                    this.typeIndex.set(entry.type, new Set());
+                }
+                this.typeIndex.get(entry.type).add(id);
+                
+                log(`Registry: Added ${entry.type} (${id})`, 'parse');
+                return entry;
+            }
+            
+            unregister(id) {
+                const entry = this.objects.get(id);
+                if (!entry) return false;
+                
+                // Remove from indices
+                if (entry.semantic && this.semanticIndex.has(entry.semantic)) {
+                    this.semanticIndex.get(entry.semantic).delete(id);
+                }
+                if (this.typeIndex.has(entry.type)) {
+                    this.typeIndex.get(entry.type).delete(id);
+                }
+                
+                this.objects.delete(id);
+                log(`Registry: Removed ${entry.type} (${id})`, 'parse');
+                return true;
+            }
+            
+            find(identifier) {
+                // Direct ID lookup
+                if (this.objects.has(identifier)) {
+                    return this.objects.get(identifier);
+                }
+                
+                // Semantic lookup
+                if (this.semanticIndex.has(identifier)) {
+                    const ids = this.semanticIndex.get(identifier);
+                    const firstId = ids.values().next().value;
+                    return this.objects.get(firstId);
+                }
+                
+                return null;
+            }
+            
+            findByType(type) {
+                if (!this.typeIndex.has(type)) return [];
+                const ids = this.typeIndex.get(type);
+                return Array.from(ids).map(id => this.objects.get(id));
+            }
+            
+            getAllObjects() {
+                return Array.from(this.objects.values());
+            }
+            
+            getStats() {
+                const stats = {
+                    total: this.objects.size,
+                    byType: {},
+                    semantic: Array.from(this.semanticIndex.keys()),
+                    added: 0
+                };
+                
+                for (let entry of this.objects.values()) {
+                    stats.byType[entry.type] = (stats.byType[entry.type] || 0) + 1;
+                    if (entry.isAdded) stats.added++;
+                }
+                
+                return stats;
+            }
+            
+            recordTransform(action, target, details) {
+                this.lastTransform = {
+                    timestamp: Date.now(),
+                    action: action,
+                    target: target,
+                    details: details
+                };
+            }
+        }
+
+        // ============================================================================
+        // 2. COMMAND PARSER - Natural language to structured commands
+        // ============================================================================
+        class CommandParser {
+            constructor() {
+                this.patterns = [
+                    // ADD patterns
+                    {
+                        pattern: /^add\s+(a\s+)?(\w+)$/i,
+                        type: 'add',
+                        extract: (match) => ({ objectType: match[2] })
+                    },
+                    {
+                        pattern: /^create\s+(a\s+)?(\w+)$/i,
+                        type: 'add',
+                        extract: (match) => ({ objectType: match[2] })
+                    },
+                    
+                    // REMOVE patterns
+                    {
+                        pattern: /^remove\s+(\w+)$/i,
+                        type: 'remove',
+                        extract: (match) => ({ target: match[1] })
+                    },
+                    {
+                        pattern: /^delete\s+(\w+)$/i,
+                        type: 'remove',
+                        extract: (match) => ({ target: match[1] })
+                    },
+                    {
+                        pattern: /^remove\s+all\s+(\w+)$/i,
+                        type: 'remove_all',
+                        extract: (match) => ({ objectType: match[1] })
+                    },
+                    
+                    // MODIFY COLOR patterns
+                    {
+                        pattern: /^make\s+(\w+)\s+(\w+)$/i,
+                        type: 'modify_color',
+                        extract: (match) => ({ target: match[1], color: match[2] })
+                    },
+                    {
+                        pattern: /^change\s+(\w+)\s+color\s+(\w+)$/i,
+                        type: 'modify_color',
+                        extract: (match) => ({ target: match[1], color: match[2] })
+                    },
+                    {
+                        pattern: /^(\w+)\s+color\s+(\w+)$/i,
+                        type: 'modify_color',
+                        extract: (match) => ({ target: match[1], color: match[2] })
+                    },
+                    
+                    // MODIFY MATERIAL patterns
+                    {
+                        pattern: /^make\s+(\w+)\s+(glossy|rough|metal)$/i,
+                        type: 'modify_material',
+                        extract: (match) => ({ target: match[1], material: match[2] })
+                    }
+                ];
+                
+                this.colorMap = {
+                    'red': '#ff0000', 'blue': '#0000ff', 'green': '#00ff00',
+                    'yellow': '#ffff00', 'purple': '#800080', 'orange': '#ffa500',
+                    'pink': '#ffc0cb', 'white': '#ffffff', 'black': '#000000',
+                    'grey': '#808080', 'gray': '#808080'
+                };
+            }
+            
+            parse(input) {
+                const cleanInput = input.trim();
+                log(`Parsing: "${cleanInput}"`, 'intent');
+                
+                for (let { pattern, type, extract } of this.patterns) {
+                    const match = cleanInput.match(pattern);
+                    if (match) {
+                        const params = extract(match);
+                        
+                        // Resolve colors
+                        if (params.color && this.colorMap[params.color.toLowerCase()]) {
+                            params.color = this.colorMap[params.color.toLowerCase()];
+                        }
+                        
+                        const command = {
+                            type: type,
+                            originalInput: cleanInput,
+                            params: params,
+                            timestamp: Date.now()
+                        };
+                        
+                        log(`Parsed as: ${type} with params ${JSON.stringify(params)}`, 'parse');
+                        return command;
+                    }
+                }
+                
+                log(`No pattern matched for: "${cleanInput}"`, 'error');
+                return {
+                    type: 'unknown',
+                    originalInput: cleanInput,
+                    params: {},
+                    error: 'Command not recognized'
+                };
+            }
+            
+            getAvailableCommands() {
+                return [
+                    'add desk', 'add chair', 'add wall',
+                    'remove referencePole', 'remove debugBall',
+                    'make walls red', 'change wall color blue',
+                    'wall color green', 'make walls glossy'
+                ];
+            }
+        }
+
+        // ============================================================================
+        // 3. COMMAND EXECUTOR - Execute structured commands via factory
+        // ============================================================================
+        class CommandExecutor {
+            constructor(factory, registry) {
+                this.factory = factory;
+                this.registry = registry;
+            }
+            
+            execute(command) {
+                log(`Executing: ${command.type}`, 'exec');
+                
+                try {
+                    switch (command.type) {
+                        case 'add':
+                            return this.executeAdd(command.params);
+                        case 'remove':
+                            return this.executeRemove(command.params);
+                        case 'remove_all':
+                            return this.executeRemoveAll(command.params);
+                        case 'modify_color':
+                            return this.executeModifyColor(command.params);
+                        case 'modify_material':
+                            return this.executeModifyMaterial(command.params);
+                        default:
+                            throw new Error(`Unknown command type: ${command.type}`);
+                    }
+                } catch (error) {
+                    log(`Execution error: ${error.message}`, 'error');
+                    return { success: false, error: error.message };
+                }
+            }
+            
+            executeAdd(params) {
+                const { objectType } = params;
+                
+                // Generate smart position
+                const position = this.generatePosition(objectType);
+                
+                const object = this.factory.addComponent(objectType, {
+                    position: position,
+                    scene: scene
+                });
+                
+                if (object) {
+                    // Register with semantic tags
+                    this.registry.register(object, {
+                        id: object.userData.id,
+                        type: objectType,
+                        semantic: objectType,
+                        isAdded: true,
+                        tags: ['user-added']
+                    });
+                    
+                    this.registry.recordTransform('add', objectType, { position });
+                    
+                    log(`Added ${objectType} at [${position.map(p => p.toFixed(1)).join(', ')}]`, 'result');
+                    return { success: true, action: 'add', object: objectType, position };
+                } else {
+                    throw new Error(`Failed to create ${objectType}`);
+                }
+            }
+            
+            executeRemove(params) {
+                const { target } = params;
+                
+                const entry = this.registry.find(target);
+                if (!entry) {
+                    throw new Error(`Object '${target}' not found`);
+                }
+                
+                // Remove from scene
+                const success = this.factory.removeComponent(entry.id, scene);
+                if (success) {
+                    this.registry.unregister(entry.id);
+                    this.registry.recordTransform('remove', target, { id: entry.id });
+                    
+                    log(`Removed ${target} (${entry.id})`, 'result');
+                    return { success: true, action: 'remove', target: target };
+                } else {
+                    throw new Error(`Failed to remove ${target}`);
+                }
+            }
+            
+            executeRemoveAll(params) {
+                const { objectType } = params;
+                
+                const entries = this.registry.findByType(objectType);
+                let removedCount = 0;
+                
+                for (let entry of entries) {
+                    if (entry.isAdded) { // Only remove user-added items
+                        if (this.factory.removeComponent(entry.id, scene)) {
+                            this.registry.unregister(entry.id);
+                            removedCount++;
+                        }
+                    }
+                }
+                
+                this.registry.recordTransform('remove_all', objectType, { count: removedCount });
+                
+                log(`Removed ${removedCount} ${objectType} objects`, 'result');
+                return { success: true, action: 'remove_all', objectType, count: removedCount };
+            }
+            
+            executeModifyColor(params) {
+                const { target, color } = params;
+                
+                // Handle plurals (walls -> wall)
+                const targetType = target.endsWith('s') ? target.slice(0, -1) : target;
+                
+                if (targetType === 'wall') {
+                    // Modify all walls
+                    const walls = ['north-wall', 'south-wall', 'east-wall', 'west-wall'];
+                    let modifiedCount = 0;
+                    
+                    for (let wallSemantic of walls) {
+                        const entry = this.registry.find(wallSemantic);
+                        if (entry && this.factory.setColor(entry.id, color)) {
+                            modifiedCount++;
+                        }
+                    }
+                    
+                    this.registry.recordTransform('modify_color', 'walls', { color, count: modifiedCount });
+                    
+                    log(`Changed ${modifiedCount} walls to ${color}`, 'result');
+                    return { success: true, action: 'modify_color', target: 'walls', color, count: modifiedCount };
+                } else {
+                    // Single object
+                    const entry = this.registry.find(target);
+                    if (!entry) {
+                        throw new Error(`Object '${target}' not found`);
+                    }
+                    
+                    if (this.factory.setColor(entry.id, color)) {
+                        this.registry.recordTransform('modify_color', target, { color });
+                        
+                        log(`Changed ${target} color to ${color}`, 'result');
+                        return { success: true, action: 'modify_color', target, color };
+                    } else {
+                        throw new Error(`Failed to change color of ${target}`);
+                    }
+                }
+            }
+            
+            executeModifyMaterial(params) {
+                const { target, material } = params;
+                
+                // Material property mapping
+                const materialProps = {
+                    'glossy': { roughness: 0.1, metalness: 0.2 },
+                    'rough': { roughness: 0.9, metalness: 0.0 },
+                    'metal': { roughness: 0.3, metalness: 0.7, color: '#C0C0C0' }
+                };
+                
+                const props = materialProps[material];
+                if (!props) {
+                    throw new Error(`Unknown material: ${material}`);
+                }
+                
+                if (target === 'walls' || target === 'wall') {
+                    const walls = ['north-wall', 'south-wall', 'east-wall', 'west-wall'];
+                    let modifiedCount = 0;
+                    
+                    for (let wallSemantic of walls) {
+                        const entry = this.registry.find(wallSemantic);
+                        if (entry && this.factory.modifyMaterialProperties(entry.id, props)) {
+                            modifiedCount++;
+                        }
+                    }
+                    
+                    this.registry.recordTransform('modify_material', 'walls', { material, count: modifiedCount });
+                    
+                    log(`Applied ${material} material to ${modifiedCount} walls`, 'result');
+                    return { success: true, action: 'modify_material', target: 'walls', material, count: modifiedCount };
+                }
+                
+                throw new Error('Material modification only supported for walls currently');
+            }
+            
+            generatePosition(objectType) {
+                const floorLevel = 0.05;
+                
+                switch (objectType) {
+                    case 'desk':
+                        return [(Math.random() - 0.5) * 6, floorLevel + 0.4, (Math.random() - 0.5) * 4];
+                    case 'chair':
+                        return [(Math.random() - 0.5) * 6, floorLevel + 0.45, (Math.random() - 0.5) * 4];
+                    case 'wall':
+                        // Add wall at random position (this is a test - normally walls are structural)
+                        return [0, 4, (Math.random() - 0.5) * 6];
+                    default:
+                        return [(Math.random() - 0.5) * 6, floorLevel + 0.3, (Math.random() - 0.5) * 4];
+                }
+            }
+        }
+
+        // ============================================================================
+        // 4. DIANA AGENT - Personality and reporting layer
+        // ============================================================================
+        class DianaAgent {
+            constructor(parser, executor, registry) {
+                this.parser = parser;
+                this.executor = executor;
+                this.registry = registry;
+                this.personality = "helpful";
+                this.speechEnabled = false; // Hook for future speech synthesis
+            }
+            
+            processCommand(input) {
+                log(`Diana received: "${input}"`, 'intent');
+                
+                // Parse command
+                const command = this.parser.parse(input);
+                if (command.type === 'unknown') {
+                    return this.handleUnknownCommand(input);
+                }
+                
+                // Execute command
+                const result = this.executor.execute(command);
+                
+                // Generate response
+                return this.generateResponse(command, result);
+            }
+            
+            generateResponse(command, result) {
+                if (!result.success) {
+                    const response = `I couldn't ${command.type.replace('_', ' ')} - ${result.error}`;
+                    this.respond(response);
+                    return response;
+                }
+                
+                let response;
+                switch (result.action) {
+                    case 'add':
+                        response = `I've added a ${result.object} to the scene at position [${result.position.map(p => p.toFixed(1)).join(', ')}].`;
+                        break;
+                    case 'remove':
+                        response = `I've removed the ${result.target} from the scene.`;
+                        break;
+                    case 'remove_all':
+                        response = `I've removed all ${result.count} ${result.objectType} objects.`;
+                        break;
+                    case 'modify_color':
+                        if (result.count) {
+                            response = `I've changed ${result.count} ${result.target} to ${result.color}.`;
+                        } else {
+                            response = `I've changed the ${result.target} color to ${result.color}.`;
+                        }
+                        break;
+                    case 'modify_material':
+                        response = `I've applied ${result.material} material to ${result.count} ${result.target}.`;
+                        break;
+                    default:
+                        response = `I've completed the ${result.action} operation.`;
+                }
+                
+                this.respond(response);
+                return response;
+            }
+            
+            handleUnknownCommand(input) {
+                const suggestions = this.parser.getAvailableCommands();
+                const response = `I didn't understand "${input}". Try commands like: ${suggestions.slice(0, 3).join(', ')}.`;
+                this.respond(response);
+                return response;
+            }
+            
+            respond(message) {
+                const logEl = document.getElementById('log-content');
+                const div = document.createElement('div');
+                div.className = 'diana-response';
+                div.innerHTML = `🤖 Diana: ${message}`;
+                logEl.appendChild(div);
+                logEl.scrollTop = logEl.scrollHeight;
+                
+                // Optional: Speech synthesis hook
+                if (this.speechEnabled && 'speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(message);
+                    utterance.rate = 0.8;
+                    speechSynthesis.speak(utterance);
+                }
+            }
+        }
+
+        // ============================================================================
+        // 5. SCENE ANALYSIS HELPERS
+        // ============================================================================
+        function describeScene() {
+            const stats = registry.getStats();
+            const objects = registry.getAllObjects();
+            
+            let description = `Scene contains ${stats.total} objects:\n`;
+            
+            for (let [type, count] of Object.entries(stats.byType)) {
+                description += `• ${count} ${type}${count > 1 ? 's' : ''}\n`;
+            }
+            
+            description += `\nUser-added items: ${stats.added}\n`;
+            description += `Semantic references: ${stats.semantic.join(', ')}`;
+            
+            log(description, 'result');
+            diana.respond(`I can see ${stats.total} objects in the scene. ${stats.added > 0 ? `You've added ${stats.added} items. ` : ''}The space looks well-organized!`);
+        }
+        
+        function analyzeObjects() {
+            const objects = registry.getAllObjects();
+            
+            log('=== OBJECT ANALYSIS ===', 'result');
+            for (let obj of objects) {
+                const pos = obj.object.position;
+                log(`${obj.type} (${obj.id}): [${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}] ${obj.isAdded ? '[USER-ADDED]' : '[ORIGINAL]'}`, 'result');
+            }
+            
+            diana.respond(`I've analyzed all ${objects.length} objects and logged their positions and types.`);
+        }
+        
+        function explainLastTransform() {
+            const transform = registry.lastTransform;
+            if (!transform) {
+                log('No recent transformations', 'result');
+                diana.respond("I haven't made any recent changes to the scene.");
+                return;
+            }
+            
+            const elapsed = Date.now() - transform.timestamp;
+            const timeStr = elapsed < 60000 ? `${Math.floor(elapsed/1000)}s ago` : `${Math.floor(elapsed/60000)}m ago`;
+            
+            let explanation = `Last change (${timeStr}): ${transform.action} on ${transform.target}`;
+            if (transform.details) {
+                explanation += ` - ${JSON.stringify(transform.details)}`;
+            }
+            
+            log(explanation, 'result');
+            diana.respond(`The last change I made was ${transform.action} on ${transform.target} ${timeStr}.`);
+        }
+
+        // ============================================================================
+        // 6. COMPONENT FACTORY - Minimal factory for Diana harness
+        // ============================================================================
+        class TestFactory {
+            constructor() {
+                this.components = {
+                    desk: { model: 'box', size: [1.5, 0.8, 0.1], color: '#8B4513' },
+                    chair: { model: 'box', size: [0.5, 0.5, 0.9], color: '#2F2F2F' },
+                    wall: { model: 'plane', size: [10, 8], color: '#f8f8f8' },
+                    lamp: { model: 'cylinder', size: [0.15, 0.15, 0.8, 8], color: '#FFD700' }
+                };
+                this.createdObjects = new Map();
+                this.nextId = 1;
+            }
+            
+            addComponent(type, options = {}) {
+                const def = this.components[type];
+                if (!def) {
+                    log(`Unknown component type: ${type}`, 'error');
+                    return null;
+                }
+                
+                // Create geometry
+                let geometry;
+                switch (def.model) {
+                    case 'box': geometry = new THREE.BoxGeometry(...def.size); break;
+                    case 'plane': geometry = new THREE.PlaneGeometry(...def.size); break;
+                    case 'cylinder': geometry = new THREE.CylinderGeometry(...def.size); break;
+                    default: geometry = new THREE.BoxGeometry(1, 1, 1);
+                }
+                
+                // Create material
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: new THREE.Color(def.color),
+                    roughness: 0.6,
+                    metalness: 0.1
+                });
+                
+                // Create mesh
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(...(options.position || [0, 0, 0]));
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                
+                // Set metadata
+                const id = `test-${type}-${this.nextId++}`;
+                mesh.userData = {
+                    id: id,
+                    componentType: type,
+                    createdBy: 'TestFactory'
+                };
+                
+                // Add to scene
+                options.scene.add(mesh);
+                this.createdObjects.set(id, mesh);
+                
+                return mesh;
+            }
+            
+            removeComponent(id, scene) {
+                const mesh = this.createdObjects.get(id);
+                if (!mesh) return false;
+                
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+                scene.remove(mesh);
+                this.createdObjects.delete(id);
+                
+                return true;
+            }
+            
+            setColor(id, color) {
+                const mesh = this.createdObjects.get(id);
+                if (!mesh) return false;
+                
+                mesh.material.color = new THREE.Color(color);
+                mesh.material.needsUpdate = true;
+                return true;
+            }
+            
+            modifyMaterialProperties(id, props) {
+                const mesh = this.createdObjects.get(id);
+                if (!mesh) return false;
+                
+                Object.entries(props).forEach(([key, value]) => {
+                    if (key === 'color') {
+                        mesh.material.color = new THREE.Color(value);
+                    } else {
+                        mesh.material[key] = value;
+                    }
+                });
+                
+                mesh.material.needsUpdate = true;
+                return true;
+            }
+        }
+
+        // ============================================================================
+        // 7. LOGGING SYSTEM
+        // ============================================================================
+        function log(message, type = 'result') {
+            console.log(`[${type.toUpperCase()}] ${message}`);
+            
+            const logEl = document.getElementById('log-content');
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            
+            const timestamp = new Date().toLocaleTimeString();
+            div.innerHTML = `[${timestamp}] ${message}`;
+            
+            logEl.appendChild(div);
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        // ============================================================================
+        // 8. GLOBAL SETUP AND INITIALIZATION
+        // ============================================================================
+        let scene, camera, renderer;
+        let factory, registry, parser, executor, diana;
+
+        function initScene() {
+            // Basic Three.js scene setup
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xf5f5f5);
+            
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(6, 5, 6);
+            camera.lookAt(0, 2, 0);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            document.body.appendChild(renderer.domElement);
+            
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+            scene.add(ambientLight);
+            
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.6);
+            directionalLight.position.set(8, 8, 5);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            log('Scene initialized', 'result');
+        }
+
+        function initDiana() {
+            // Initialize all components
+            factory = new TestFactory();
+            registry = new SceneRegistry();
+            parser = new CommandParser();
+            executor = new CommandExecutor(factory, registry);
+            diana = new DianaAgent(parser, executor, registry);
+            
+            // Create initial scene objects
+            createBasicRoom();
+            
+            log('Diana test harness initialized', 'result');
+            diana.respond("Hello! I'm Diana. I can help you modify this 3D scene with natural language commands. Try typing something like 'add desk' or 'make walls red'!");
+        }
+
+        function createBasicRoom() {
+            // Create basic room structure
+            const floor = createFloor();
+            registry.register(floor, {
+                id: 'floor',
+                type: 'floor',
+                semantic: 'floor',
+                isAdded: false
+            });
+            
+            const walls = createWalls();
+            walls.forEach((wall, index) => {
+                const compass = ['north', 'south', 'east', 'west'][index];
+                registry.register(wall, {
+                    id: `${compass}-wall`,
+                    type: 'wall',
+                    semantic: `${compass}-wall`,
+                    compass: compass,
+                    isAdded: false
+                });
+            });
+            
+            // Add reference objects
+            const pole = createReferencePole();
+            registry.register(pole, {
+                id: 'referencePole',
+                type: 'referencePole',
+                semantic: 'referencePole',
+                isAdded: false
+            });
+        }
+
+        function createFloor() {
+            const geometry = new THREE.PlaneGeometry(10, 8);
+            const material = new THREE.MeshStandardMaterial({ color: 0x90EE90 });
+            const floor = new THREE.Mesh(geometry, material);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            floor.userData = { id: 'floor', componentType: 'floor' };
+            scene.add(floor);
+            return floor;
+        }
+
+        function createWalls() {
+            const walls = [];
+            const positions = [[0, 4, 4], [0, 4, -4], [5, 4, 0], [-5, 4, 0]];
+            const rotations = [[0, Math.PI, 0], [0, 0, 0], [0, -Math.PI/2, 0], [0, Math.PI/2, 0]];
+            const sizes = [[10, 8], [10, 8], [8, 8], [8, 8]];
+            
+            positions.forEach((pos, i) => {
+                const geometry = new THREE.PlaneGeometry(...sizes[i]);
+                const material = new THREE.MeshStandardMaterial({ color: 0xf8f8f8 });
+                const wall = new THREE.Mesh(geometry, material);
+                wall.position.set(...pos);
+                wall.rotation.set(...rotations[i]);
+                wall.receiveShadow = true;
+                wall.userData = { id: `wall-${i}`, componentType: 'wall' };
+                scene.add(wall);
+                walls.push(wall);
+            });
+            
+            return walls;
+        }
+
+        function createReferencePole() {
+            const geometry = new THREE.CylinderGeometry(0.1, 0.1, 1, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const pole = new THREE.Mesh(geometry, material);
+            pole.position.set(0, 0.5, 0);
+            pole.userData = { id: 'referencePole', componentType: 'referencePole' };
+            scene.add(pole);
+            return pole;
+        }
+
+        // ============================================================================
+        // 9. UI EVENT HANDLERS
+        // ============================================================================
+        function handleEnter(event) {
+            if (event.key === 'Enter') {
+                processCommand();
+            }
+        }
+
+        function processCommand() {
+            const input = document.getElementById('command-input');
+            const command = input.value.trim();
+            
+            if (command) {
+                diana.processCommand(command);
+                input.value = '';
+            }
+        }
+
+        function testCommand(command) {
+            log(`Testing command: "${command}"`, 'intent');
+            diana.processCommand(command);
+        }
+
+        function testParser() {
+            log('=== PARSER TEST ===', 'parse');
+            const testCommands = [
+                'add desk', 'remove referencePole', 'make walls red',
+                'change wall color blue', 'create chair', 'unknown command'
+            ];
+            
+            testCommands.forEach(cmd => {
+                const result = parser.parse(cmd);
+                log(`"${cmd}" -> ${result.type} ${JSON.stringify(result.params)}`, 'parse');
+            });
+        }
+
+        function testExecutor() {
+            log('=== EXECUTOR TEST ===', 'exec');
+            
+            // Test add command
+            const addCmd = parser.parse('add desk');
+            const addResult = executor.execute(addCmd);
+            log(`Add result: ${JSON.stringify(addResult)}`, 'exec');
+        }
+
+        function testRegistry() {
+            log('=== REGISTRY TEST ===', 'parse');
+            const stats = registry.getStats();
+            log(`Registry stats: ${JSON.stringify(stats)}`, 'parse');
+            
+            const objects = registry.getAllObjects();
+            log(`Objects: ${objects.map(o => `${o.type}(${o.id})`).join(', ')}`, 'parse');
+        }
+
+        function resetScene() {
+            // Clear log
+            document.getElementById('log-content').innerHTML = '';
+            
+            // Reinitialize
+            initDiana();
+            log('Scene reset complete', 'result');
+        }
+
+        function clearLog() {
+            document.getElementById('log-content').innerHTML = '';
+        }
+
+        // ============================================================================
+        // 10. INITIALIZATION AND RENDER LOOP
+        // ============================================================================
+        setTimeout(() => {
+            if (typeof THREE !== 'undefined') {
+                log(`THREE.js loaded (r${THREE.REVISION})`, 'result');
+                initScene();
+                initDiana();
+                log('🤖 Diana Test Harness Ready', 'result');
+            } else {
+                log('THREE.js failed to load', 'error');
+            }
+        }, 1000);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Basic mouse controls
+        let mouseX = 0, mouseY = 0;
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+            mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
+            
+            const radius = 8;
+            camera.position.x = Math.cos(mouseX * Math.PI) * radius;
+            camera.position.z = Math.sin(mouseX * Math.PI) * radius;
+            camera.position.y = 3 + mouseY * 3;
+            camera.lookAt(0, 2, 0);
+        });
+    </script>
+</body>
+</html>

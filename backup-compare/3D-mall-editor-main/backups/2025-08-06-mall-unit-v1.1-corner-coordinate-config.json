@@ -1,0 +1,48 @@
+{
+  "metadata": {
+    "version": "1.1",
+    "type": "mall-unit",
+    "description": "Mall unit with corner-based coordinate system - SW corner origin",
+    "created": "2025-08-05",
+    "coordinateSystem": "corner-based",
+    "originDescription": "Southwest corner at [0,0,0] - user-friendly positioning"
+  },
+  "origin": [0, 0, 0],
+  "dimensions": {
+    "width": 20,
+    "depth": 20, 
+    "height": 4,
+    "units": "meters"
+  },
+  "boundaries": {
+    "minX": 0,
+    "maxX": 20,
+    "minZ": 0,
+    "maxZ": 20,
+    "minY": 0,
+    "maxY": 4
+  },
+  "threeJsConversion": {
+    "centerOffset": {
+      "x": -10,
+      "z": -10,
+      "description": "Offset to convert corner-based coords to Three.js center-based"
+    }
+  },
+  "constraints": {
+    "minRoomSize": 2,
+    "maxRoomSize": 18,
+    "wallThickness": 0.2,
+    "floorThickness": 0.1
+  },
+  "materials": {
+    "boundary": {
+      "color": "#ffff00",
+      "opacity": 0.3,
+      "wireframe": true
+    },
+    "floor": {
+      "color": "#cccccc"
+    }
+  }
+}

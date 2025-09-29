@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Working Three.js</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #000;
+        }
+        
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        console.log('🔧 Starting minimal Three.js test...');
+        
+        // Check if THREE.js loaded
+        if (typeof THREE === 'undefined') {
+            console.error('❌ THREE.js failed to load!');
+            document.body.innerHTML = '<h1 style="color: red;">THREE.js failed to load</h1>';
+            throw new Error('THREE.js not loaded');
+        }
+        
+        console.log('✅ THREE.js version:', THREE.REVISION);
+        
+        // Scene setup - EXACT same as main file
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf5f5f5);
+        console.log('✅ Scene created');
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 8, 20);
+        camera.lookAt(0, 0, 0);
+        console.log('✅ Camera created at:', camera.position);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+        console.log('✅ Renderer created and added to DOM');
+        
+        // Add test objects - EXACT same as main file
+        const testCube = new THREE.Mesh(
+            new THREE.BoxGeometry(2, 2, 2),
+            new THREE.MeshBasicMaterial({ color: 0xff0000 })
+        );
+        testCube.position.set(0, 1, 0);
+        scene.add(testCube);
+        console.log('✅ Red test cube added');
+        
+        const testGround = new THREE.Mesh(
+            new THREE.PlaneGeometry(50, 50),
+            new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        );
+        testGround.rotation.x = -Math.PI / 2;
+        testGround.position.y = 0;
+        scene.add(testGround);
+        console.log('✅ Green ground plane added');
+        
+        // Basic lighting
+        const ambientLight = new THREE.AmbientLight(0xf0f8ff, 0.4);
+        scene.add(ambientLight);
+        console.log('✅ Ambient light added');
+        
+        // Animation loop - EXACT same as main file
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            testCube.rotation.x += 0.01;
+            testCube.rotation.y += 0.01;
+            
+            renderer.render(scene, camera);
+        }
+        
+        // Start animation
+        animate();
+        
+        console.log('✅ Animation started - you should see a rotating red cube on green ground!');
+        console.log('If you see this message but still black screen, there is a deeper rendering issue');
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+        
+    </script>
+</body>
+</html>

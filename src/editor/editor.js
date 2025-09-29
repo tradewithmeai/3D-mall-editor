@@ -1,16 +1,7 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
-import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
-import { toScene3D } from './core/ExportBuilder3D.js';
+import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
-import { SceneRules } from './core/SceneRules.js';
-import { validateScene3D } from './core/validateScene3D.js';
-
-// Debug logging control
-const DEBUG = false;
-function debug(...args) {
-    if (DEBUG) console.log(...args);
-}
 
 class FloorplanEditor {
     constructor() {
@@ -21,11 +12,6 @@ class FloorplanEditor {
         this.cellSize = 20;
         this.currentTool = 'empty';
         this.isDrawing = false;
-
-        // State for new tools
-        this.dragRectStart = null; // {x, y} grid coordinates for drag rect tool
-        this.wallSegmentStart = null; // {x, y} grid coordinates for first wall segment point
-        this.currentMouseGrid = null; // {x, y} grid coordinates of current mouse position
         
         // Hard data separation: sceneModel (user content) vs overlayModel (template constraints)
         this.sceneModel = {
@@ -131,7 +117,7 @@ class FloorplanEditor {
     }
 
     resizeTemplateModels() {
-        debug('[DEBUG] resizeTemplateModels: Resizing template arrays to match grid:', this.gridWidth, 'x', this.gridHeight);
+        console.log('[DEBUG] resizeTemplateModels: Resizing template arrays to match grid:', this.gridWidth, 'x', this.gridHeight);
 
         // Resize scene model arrays
         this.sceneModel.grid = this.createEmptyGrid();
@@ -231,7 +217,7 @@ class FloorplanEditor {
         this.horizontalEdges = this.sceneModel.horizontalEdges;
         this.verticalEdges = this.sceneModel.verticalEdges;
 
-        debug('[DEBUG] resizeTemplateModels: Completed resizing');
+        console.log('[DEBUG] resizeTemplateModels: Completed resizing');
     }
 
     clearScene() {
@@ -256,7 +242,7 @@ class FloorplanEditor {
 
     // Parse template content and populate template layer for ghosted rendering
     parseTemplateContent(templateData, dto) {
-        debug('[DEBUG] parseTemplateContent: Entry:', {
+        console.log('[DEBUG] parseTemplateContent: Entry:', {
             templateDataKeys: Object.keys(templateData),
             dtoType: dto.type,
             hasSceneData: !!templateData.sceneData,
@@ -270,7 +256,7 @@ class FloorplanEditor {
         if (hasParent) {
             // This is a child template - move current template to parent layer if it exists
             if (this.currentTemplateModel.hasContent) {
-                debug('[DEBUG] parseTemplateContent: Moving current template to parent layer');
+                console.log('[DEBUG] parseTemplateContent: Moving current template to parent layer');
                 // Deep copy current template to parent layer
                 this.parentTemplateModel.grid = this.currentTemplateModel.grid.map(row => [...row]);
                 this.parentTemplateModel.horizontalEdges = this.currentTemplateModel.horizontalEdges.map(row => [...row]);
@@ -304,20 +290,20 @@ class FloorplanEditor {
 
         // For mall templates, check for embedded scene content
         if (dto.type === 'mall') {
-            debug('[DEBUG] parseTemplateContent: Processing mall template');
+            console.log('[DEBUG] parseTemplateContent: Processing mall template');
             if (templateData.sceneData) {
-                debug('[DEBUG] parseTemplateContent: Found sceneData, parsing...');
+                console.log('[DEBUG] parseTemplateContent: Found sceneData, parsing...');
                 // Parse scene data (tiles and edges) into template layer
                 this.parseSceneDataIntoTemplateLayer(templateData.sceneData);
-                debug('[DEBUG] parseTemplateContent: Parsed mall scene data into ghosted layer');
+                console.log('[DEBUG] parseTemplateContent: Parsed mall scene data into ghosted layer');
             } else if (templateData.instances && Array.isArray(templateData.instances)) {
-                debug('[DEBUG] parseTemplateContent: Found instances, parsing...');
+                console.log('[DEBUG] parseTemplateContent: Found instances, parsing...');
                 // Legacy: handle instances format
                 this.parseInstancesIntoTemplateLayer(templateData.instances);
                 this.templateModel.hasContent = true;
-                debug('[DEBUG] parseTemplateContent: Parsed mall instances into ghosted layer');
+                console.log('[DEBUG] parseTemplateContent: Parsed mall instances into ghosted layer');
             } else {
-                debug('[DEBUG] parseTemplateContent: No scene data or instances, creating boundary');
+                console.log('[DEBUG] parseTemplateContent: No scene data or instances, creating boundary');
                 // Create ghosted boundary representation from mall structure
                 this.createGhostedMallBoundary(dto);
             }
@@ -325,33 +311,33 @@ class FloorplanEditor {
 
         // For gallery/unit templates, handle scene data or create boundary from rect
         if (dto.type === 'unit') {
-            debug('[DEBUG] parseTemplateContent: Processing gallery/unit template');
+            console.log('[DEBUG] parseTemplateContent: Processing gallery/unit template');
             if (templateData.sceneData) {
                 // Parse scene data if available
                 this.parseSceneDataIntoTemplateLayer(templateData.sceneData);
-                debug('[DEBUG] parseTemplateContent: Parsed gallery scene data into ghosted layer');
+                console.log('[DEBUG] parseTemplateContent: Parsed gallery scene data into ghosted layer');
             } else if (dto.rect) {
-                debug('[DEBUG] parseTemplateContent: Creating gallery boundary from rect:', dto.rect);
-                debug('[DEBUG] parseTemplateContent: Grid dimensions before boundary creation:', this.gridWidth, 'x', this.gridHeight);
+                console.log('[DEBUG] parseTemplateContent: Creating gallery boundary from rect:', dto.rect);
+                console.log('[DEBUG] parseTemplateContent: Grid dimensions before boundary creation:', this.gridWidth, 'x', this.gridHeight);
 
                 // Create ghosted boundary from gallery rect
                 this.createGhostedRectOutline(dto.rect);
                 this.currentTemplateModel.hasContent = true;
 
-                debug('[DEBUG] parseTemplateContent: Gallery boundary created, currentTemplateModel.hasContent:', this.currentTemplateModel.hasContent);
-                debug('[DEBUG] parseTemplateContent: Template states after gallery boundary:', {
+                console.log('[DEBUG] parseTemplateContent: Gallery boundary created, currentTemplateModel.hasContent:', this.currentTemplateModel.hasContent);
+                console.log('[DEBUG] parseTemplateContent: Template states after gallery boundary:', {
                     parentHasContent: this.parentTemplateModel.hasContent,
                     currentHasContent: this.currentTemplateModel.hasContent
                 });
             } else {
-                debug('[DEBUG] parseTemplateContent: No sceneData or rect found for gallery template');
+                console.log('[DEBUG] parseTemplateContent: No sceneData or rect found for gallery template');
             }
         }
     }
 
     // Parse template content using Template Relationship Manager result
     parseTemplateContentWithRelationships(relationshipResult) {
-        debug('[DEBUG] parseTemplateContentWithRelationships: Entry:', relationshipResult);
+        console.log('[DEBUG] parseTemplateContentWithRelationships: Entry:', relationshipResult);
 
         // Clear existing template layers
         this.parentTemplateModel.grid = this.createEmptyGrid();
@@ -366,27 +352,27 @@ class FloorplanEditor {
 
         // Process parent template if it exists
         if (relationshipResult.hasParent && relationshipResult.parent) {
-            debug('[DEBUG] parseTemplateContentWithRelationships: Processing parent template');
+            console.log('[DEBUG] parseTemplateContentWithRelationships: Processing parent template');
             const parentData = relationshipResult.parent.templateData;
             const parentDto = relationshipResult.parent.dto;
 
             // Parse parent template content into parent layer
             this.parseTemplateIntoLayer(parentData, parentDto, 'parent');
-            debug('[DEBUG] parseTemplateContentWithRelationships: Parent template parsed');
+            console.log('[DEBUG] parseTemplateContentWithRelationships: Parent template parsed');
         }
 
         // Process current template
         if (relationshipResult.current) {
-            debug('[DEBUG] parseTemplateContentWithRelationships: Processing current template');
+            console.log('[DEBUG] parseTemplateContentWithRelationships: Processing current template');
             const currentData = relationshipResult.current.templateData;
             const currentDto = relationshipResult.current.dto;
 
             // Parse current template content into current layer
             this.parseTemplateIntoLayer(currentData, currentDto, 'current');
-            debug('[DEBUG] parseTemplateContentWithRelationships: Current template parsed');
+            console.log('[DEBUG] parseTemplateContentWithRelationships: Current template parsed');
         }
 
-        debug('[DEBUG] parseTemplateContentWithRelationships: Complete. Template states:', {
+        console.log('[DEBUG] parseTemplateContentWithRelationships: Complete. Template states:', {
             parentHasContent: this.parentTemplateModel.hasContent,
             currentHasContent: this.currentTemplateModel.hasContent
         });
@@ -394,7 +380,7 @@ class FloorplanEditor {
 
     // Parse template data into a specific layer (parent or current)
     parseTemplateIntoLayer(templateData, dto, layer) {
-        debug(`[DEBUG] parseTemplateIntoLayer: Processing ${layer} layer:`, {
+        console.log(`[DEBUG] parseTemplateIntoLayer: Processing ${layer} layer:`, {
             templateType: dto.type,
             hasSceneData: !!templateData.sceneData,
             hasInstances: !!templateData.instances
@@ -408,69 +394,56 @@ class FloorplanEditor {
 
         // Check if template has instances (scene content)
         if (templateData.instances && Array.isArray(templateData.instances)) {
-            debug(`[DEBUG] parseTemplateIntoLayer: Parsing ${templateData.instances.length} instances into ${layer} layer`);
+            console.log(`[DEBUG] parseTemplateIntoLayer: Parsing ${templateData.instances.length} instances into ${layer} layer`);
             this.parseInstancesIntoLayer(templateData.instances, layer);
             targetModel.hasContent = true;
         }
 
         // For mall templates, check for embedded scene content
         if (dto.type === 'mall') {
-            debug(`[DEBUG] parseTemplateIntoLayer: Processing mall template in ${layer} layer`);
+            console.log(`[DEBUG] parseTemplateIntoLayer: Processing mall template in ${layer} layer`);
             if (templateData.sceneData) {
-                debug(`[DEBUG] parseTemplateIntoLayer: Found sceneData, parsing into ${layer} layer`);
+                console.log(`[DEBUG] parseTemplateIntoLayer: Found sceneData, parsing into ${layer} layer`);
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (templateData.instances && Array.isArray(templateData.instances)) {
-                debug(`[DEBUG] parseTemplateIntoLayer: Found instances, parsing into ${layer} layer`);
+                console.log(`[DEBUG] parseTemplateIntoLayer: Found instances, parsing into ${layer} layer`);
                 this.parseInstancesIntoLayer(templateData.instances, layer);
                 targetModel.hasContent = true;
             } else {
-                debug(`[DEBUG] parseTemplateIntoLayer: No scene data or instances, creating boundary in ${layer} layer`);
+                console.log(`[DEBUG] parseTemplateIntoLayer: No scene data or instances, creating boundary in ${layer} layer`);
                 this.createGhostedMallBoundaryInLayer(dto, layer);
             }
         }
 
         // For gallery/unit templates, handle scene data or create boundary from rect
         if (dto.type === 'unit') {
-            debug(`[DEBUG] parseTemplateIntoLayer: Processing gallery/unit template in ${layer} layer`);
+            console.log(`[DEBUG] parseTemplateIntoLayer: Processing gallery/unit template in ${layer} layer`);
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (dto.rect) {
-                debug(`[DEBUG] parseTemplateIntoLayer: Creating gallery boundary from rect in ${layer} layer:`, dto.rect);
+                console.log(`[DEBUG] parseTemplateIntoLayer: Creating gallery boundary from rect in ${layer} layer:`, dto.rect);
                 this.createGhostedRectOutlineInLayer(dto.rect, layer);
                 targetModel.hasContent = true;
             } else {
-                debug(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for gallery template in ${layer} layer`);
+                console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for gallery template in ${layer} layer`);
             }
         }
 
         // For room templates, handle scene data or create boundary from rect
         if (dto.type === 'room') {
-            debug(`[DEBUG] parseTemplateIntoLayer: Processing room template in ${layer} layer`);
+            console.log(`[DEBUG] parseTemplateIntoLayer: Processing room template in ${layer} layer`);
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLayer(templateData.sceneData, layer);
             } else if (dto.rect) {
-                debug(`[DEBUG] parseTemplateIntoLayer: Creating room boundary from rect in ${layer} layer:`, dto.rect);
+                console.log(`[DEBUG] parseTemplateIntoLayer: Creating room boundary from rect in ${layer} layer:`, dto.rect);
                 this.createGhostedRectOutlineInLayer(dto.rect, layer);
                 targetModel.hasContent = true;
             } else {
-                debug(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for room template in ${layer} layer`);
-            }
-        }
-        // For object templates, handle scene data or create boundary from rect
-        if (dto.type === 'object') {
-            debug(`[DEBUG] parseTemplateIntoLayer: Processing object template in ${layer} layer`);
-            if (templateData.sceneData) {
-                this.parseSceneDataIntoLayer(templateData.sceneData, layer);
-            } else if (dto.rect) {
-                debug(`[DEBUG] parseTemplateIntoLayer: Creating object boundary from rect in ${layer} layer:`, dto.rect);
-                this.createGhostedRectOutlineInLayer(dto.rect, layer);
-                targetModel.hasContent = true;
-            } else {
-                debug(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for object template in ${layer} layer`);
+                console.log(`[DEBUG] parseTemplateIntoLayer: No sceneData or rect found for room template in ${layer} layer`);
             }
         }
 
-        debug(`[DEBUG] parseTemplateIntoLayer: Completed ${layer} layer processing. hasContent:`, targetModel.hasContent);
+        console.log(`[DEBUG] parseTemplateIntoLayer: Completed ${layer} layer processing. hasContent:`, targetModel.hasContent);
     }
 
     // Convert scene instances to template grid representation (layer-aware)
@@ -496,7 +469,7 @@ class FloorplanEditor {
 
     // Convert scene data (tiles and edges) to template grid representation (layer-aware)
     parseSceneDataIntoLayer(sceneData, layer = 'current') {
-        debug(`[DEBUG] parseSceneDataIntoLayer: Entry with sceneData in ${layer} layer:`, sceneData);
+        console.log(`[DEBUG] parseSceneDataIntoLayer: Entry with sceneData in ${layer} layer:`, sceneData);
 
         const targetModel = layer === 'parent' ? this.parentTemplateModel : this.currentTemplateModel;
         let floorsAdded = 0;
@@ -505,39 +478,39 @@ class FloorplanEditor {
 
         // Parse floor tiles
         if (sceneData.tiles && sceneData.tiles.floor) {
-            debug(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.tiles.floor.length} floor tiles in ${layer} layer`);
+            console.log(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.tiles.floor.length} floor tiles in ${layer} layer`);
             sceneData.tiles.floor.forEach(([x, y]) => {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                     targetModel.grid[y][x] = 'floor';
                     floorsAdded++;
                 } else {
-                    debug(`[DEBUG] parseSceneDataIntoLayer: Floor tile out of bounds in ${layer} layer:`, [x, y]);
+                    console.log(`[DEBUG] parseSceneDataIntoLayer: Floor tile out of bounds in ${layer} layer:`, [x, y]);
                 }
             });
         }
 
         // Parse horizontal edges
         if (sceneData.edges && sceneData.edges.horizontal) {
-            debug(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.horizontal.length} horizontal edges in ${layer} layer`);
+            console.log(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.horizontal.length} horizontal edges in ${layer} layer`);
             sceneData.edges.horizontal.forEach(([x, y]) => {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                     targetModel.horizontalEdges[y][x] = true;
                     hEdgesAdded++;
                 } else {
-                    debug(`[DEBUG] parseSceneDataIntoLayer: H-edge out of bounds in ${layer} layer:`, [x, y]);
+                    console.log(`[DEBUG] parseSceneDataIntoLayer: H-edge out of bounds in ${layer} layer:`, [x, y]);
                 }
             });
         }
 
         // Parse vertical edges
         if (sceneData.edges && sceneData.edges.vertical) {
-            debug(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.vertical.length} vertical edges in ${layer} layer`);
+            console.log(`[DEBUG] parseSceneDataIntoLayer: Processing ${sceneData.edges.vertical.length} vertical edges in ${layer} layer`);
             sceneData.edges.vertical.forEach(([x, y]) => {
                 if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
                     targetModel.verticalEdges[y][x] = true;
                     vEdgesAdded++;
                 } else {
-                    debug(`[DEBUG] parseSceneDataIntoLayer: V-edge out of bounds in ${layer} layer:`, [x, y]);
+                    console.log(`[DEBUG] parseSceneDataIntoLayer: V-edge out of bounds in ${layer} layer:`, [x, y]);
                 }
             });
         }
@@ -547,7 +520,7 @@ class FloorplanEditor {
             targetModel.hasContent = true;
         }
 
-        debug(`[DEBUG] parseSceneDataIntoLayer: Conversion complete for ${layer} layer:`, {
+        console.log(`[DEBUG] parseSceneDataIntoLayer: Conversion complete for ${layer} layer:`, {
             floorsAdded,
             hEdgesAdded,
             vEdgesAdded,
@@ -583,7 +556,7 @@ class FloorplanEditor {
         const { x, y, w, h } = rect;
         let edgesAdded = 0;
 
-        debug(`[DEBUG] createGhostedRectOutlineInLayer: Creating outline for rect ${JSON.stringify(rect)} in ${layer} layer`);
+        console.log(`[DEBUG] createGhostedRectOutlineInLayer: Creating outline for rect ${JSON.stringify(rect)} in ${layer} layer`);
 
         // Top edge
         for (let i = 0; i < w; i++) {
@@ -621,27 +594,154 @@ class FloorplanEditor {
             targetModel.hasContent = true;
         }
 
-        debug(`[DEBUG] createGhostedRectOutlineInLayer: Created ${edgesAdded} edges in ${layer} layer`);
+        console.log(`[DEBUG] createGhostedRectOutlineInLayer: Created ${edgesAdded} edges in ${layer} layer`);
     }
 
-    // Convert scene instances to template grid representation (legacy wrapper)
+    // Convert scene instances to template grid representation
     parseInstancesIntoTemplateLayer(instances) {
-        this.parseInstancesIntoLayer(instances, 'current');
+        instances.forEach(instance => {
+            if (instance.position && instance.type) {
+                const [worldX, worldY, worldZ] = instance.position;
+                const gridX = Math.floor(worldX / 2);
+                const gridY = Math.floor(worldZ / 2);
+
+                if (gridX >= 0 && gridX < this.gridWidth && gridY >= 0 && gridY < this.gridHeight) {
+                    if (instance.type === 'lobbyFloor') {
+                        this.templateModel.grid[gridY][gridX] = 'floor';
+                    }
+                    // Handle wall instances by adding edges
+                    // This is simplified - you might need more sophisticated wall detection
+                }
+            }
+        });
     }
 
-    // Convert scene data (tiles and edges) to template grid representation (legacy wrapper)
+    // Convert scene data (tiles and edges) to template grid representation
     parseSceneDataIntoTemplateLayer(sceneData) {
-        this.parseSceneDataIntoLayer(sceneData, 'current');
+        console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Entry with sceneData:', sceneData);
+
+        let floorsAdded = 0;
+        let hEdgesAdded = 0;
+        let vEdgesAdded = 0;
+
+        // Parse floor tiles
+        if (sceneData.tiles && sceneData.tiles.floor) {
+            console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Processing', sceneData.tiles.floor.length, 'floor tiles');
+            sceneData.tiles.floor.forEach(([x, y]) => {
+                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+                    this.currentTemplateModel.grid[y][x] = 'floor';
+                    floorsAdded++;
+                } else {
+                    console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Floor tile out of bounds:', [x, y]);
+                }
+            });
+        }
+
+        // Parse horizontal edges
+        if (sceneData.edges && sceneData.edges.horizontal) {
+            console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Processing', sceneData.edges.horizontal.length, 'horizontal edges');
+            sceneData.edges.horizontal.forEach(([x, y]) => {
+                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+                    this.currentTemplateModel.horizontalEdges[y][x] = true;
+                    hEdgesAdded++;
+                } else {
+                    console.log('[DEBUG] parseSceneDataIntoTemplateLayer: H-edge out of bounds:', [x, y]);
+                }
+            });
+        }
+
+        // Parse vertical edges
+        if (sceneData.edges && sceneData.edges.vertical) {
+            console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Processing', sceneData.edges.vertical.length, 'vertical edges');
+            sceneData.edges.vertical.forEach(([x, y]) => {
+                if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+                    this.currentTemplateModel.verticalEdges[y][x] = true;
+                    vEdgesAdded++;
+                } else {
+                    console.log('[DEBUG] parseSceneDataIntoTemplateLayer: V-edge out of bounds:', [x, y]);
+                }
+            });
+        }
+
+        // Set hasContent flag if we actually added anything
+        if (floorsAdded > 0 || hEdgesAdded > 0 || vEdgesAdded > 0) {
+            this.currentTemplateModel.hasContent = true;
+        }
+
+        console.log('[DEBUG] parseSceneDataIntoTemplateLayer: Conversion complete:', {
+            floorsAdded,
+            hEdgesAdded,
+            vEdgesAdded,
+            currentTemplateHasContent: this.currentTemplateModel.hasContent
+        });
     }
 
-    // Create ghosted boundary representation for mall templates without scene content (legacy wrapper)
+    // Create ghosted boundary representation for mall templates without scene content
     createGhostedMallBoundary(dto) {
-        this.createGhostedMallBoundaryInLayer(dto, 'current');
+        // If mall has units, create ghosted outlines for each unit
+        if (dto.units && dto.units.length > 0) {
+            dto.units.forEach(unit => {
+                if (unit.rect) {
+                    this.createGhostedRectOutline(unit.rect);
+                }
+            });
+            this.currentTemplateModel.hasContent = true;
+            console.log('Created ghosted unit boundaries for', dto.units.length, 'units');
+        }
+        // If mall has rect but no units, create ghosted outline for the mall area
+        else if (dto.rect) {
+            this.createGhostedRectOutline(dto.rect);
+            this.currentTemplateModel.hasContent = true;
+            console.log('Created ghosted mall boundary from rect:', dto.rect);
+        }
     }
 
-    // Create a ghosted outline (border only) for a rectangle (legacy wrapper)
+    // Create a ghosted outline (border only) for a rectangle
     createGhostedRectOutline(rect) {
-        this.createGhostedRectOutlineInLayer(rect, 'current');
+        const { x, y, w, h } = rect;
+        let edgesAdded = 0;
+
+        console.log('[DEBUG] createGhostedRectOutline: Creating boundary for rect:', rect);
+        console.log('[DEBUG] createGhostedRectOutline: Grid bounds check:', {
+            gridWidth: this.gridWidth,
+            gridHeight: this.gridHeight,
+            rectBounds: { left: x, top: y, right: x + w, bottom: y + h }
+        });
+
+        // Create border edges for the rectangle (not fill the interior)
+        // Top border
+        for (let i = 0; i < w && y >= 0 && y < this.gridHeight; i++) {
+            if (x + i >= 0 && x + i < this.gridWidth) {
+                this.currentTemplateModel.horizontalEdges[y][x + i] = true;
+                edgesAdded++;
+            }
+        }
+
+        // Bottom border
+        for (let i = 0; i < w && y + h >= 0 && y + h < this.gridHeight; i++) {
+            if (x + i >= 0 && x + i < this.gridWidth) {
+                this.currentTemplateModel.horizontalEdges[y + h][x + i] = true;
+                edgesAdded++;
+            }
+        }
+
+        // Left border
+        for (let i = 0; i < h && x >= 0 && x < this.gridWidth; i++) {
+            if (y + i >= 0 && y + i < this.gridHeight) {
+                this.currentTemplateModel.verticalEdges[y + i][x] = true;
+                edgesAdded++;
+            }
+        }
+
+        // Right border
+        for (let i = 0; i < h && x + w >= 0 && x + w < this.gridWidth; i++) {
+            if (y + i >= 0 && y + i < this.gridHeight) {
+                this.currentTemplateModel.verticalEdges[y + i][x + w] = true;
+                edgesAdded++;
+            }
+        }
+
+        console.log('[DEBUG] createGhostedRectOutline: Created', edgesAdded, 'boundary edges');
     }
 
     setupEventListeners() {
@@ -652,23 +752,23 @@ class FloorplanEditor {
                 e.target.classList.add('active');
                 this.currentTool = e.target.dataset.tool;
                 document.getElementById('current-tool').textContent = this.currentTool;
-
-                // Clear tool states when switching tools
-                this.clearToolStates();
             });
         });
         
         // Canvas mouse events
         this.canvas.addEventListener('mousedown', (e) => {
-            this.handleMouseDown(e);
+            this.isDrawing = true;
+            this.handleMouseAction(e);
         });
-
+        
         this.canvas.addEventListener('mousemove', (e) => {
-            this.handleMouseMove(e);
+            if (this.isDrawing) {
+                this.handleMouseAction(e);
+            }
         });
-
-        this.canvas.addEventListener('mouseup', (e) => {
-            this.handleMouseUp(e);
+        
+        this.canvas.addEventListener('mouseup', () => {
+            this.isDrawing = false;
         });
         
         this.canvas.addEventListener('mouseleave', () => {
@@ -797,225 +897,21 @@ class FloorplanEditor {
         });
     }
     
-    handleMouseDown(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const gridX = Math.floor(mouseX / this.cellSize);
-        const gridY = Math.floor(mouseY / this.cellSize);
-
-        // Handle unit selection in mall mode first
-        if (this.handleUnitSelection(mouseX, mouseY)) {
-            return; // Unit was selected, skip other actions
-        }
-
-        switch (this.currentTool) {
-            case 'dragRect':
-                // Start drag rectangle
-                this.dragRectStart = { x: gridX, y: gridY };
-                break;
-
-            case 'wallSegment':
-                if (this.wallSegmentStart === null) {
-                    // First click - store start point
-                    this.wallSegmentStart = { x: gridX, y: gridY };
-                    this.render(); // Re-render to show preview
-                } else {
-                    // Second click - complete wall segment
-                    this.completeWallSegment(gridX, gridY);
-                }
-                break;
-
-            default:
-                // Traditional tools - start drawing
-                this.isDrawing = true;
-                this.handleMouseAction(e);
-                break;
-        }
-    }
-
-    handleMouseMove(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
-        const gridX = Math.floor(mouseX / this.cellSize);
-        const gridY = Math.floor(mouseY / this.cellSize);
-
-        // Update current mouse position for previews
-        this.currentMouseGrid = { x: gridX, y: gridY };
-
-        switch (this.currentTool) {
-            case 'dragRect':
-                if (this.dragRectStart !== null) {
-                    // Show preview while dragging
-                    this.render();
-                }
-                break;
-
-            case 'wallSegment':
-                if (this.wallSegmentStart !== null) {
-                    // Show preview line
-                    this.render();
-                }
-                break;
-
-            default:
-                // Traditional tools - continue drawing if started
-                if (this.isDrawing) {
-                    this.handleMouseAction(e);
-                }
-                break;
-        }
-    }
-
-    handleMouseUp(e) {
-        switch (this.currentTool) {
-            case 'dragRect':
-                if (this.dragRectStart !== null) {
-                    const rect = this.canvas.getBoundingClientRect();
-                    const mouseX = e.clientX - rect.left;
-                    const mouseY = e.clientY - rect.top;
-                    const gridX = Math.floor(mouseX / this.cellSize);
-                    const gridY = Math.floor(mouseY / this.cellSize);
-
-                    this.completeDragRect(gridX, gridY);
-                }
-                break;
-
-            default:
-                // Traditional tools - stop drawing
-                this.isDrawing = false;
-                break;
-        }
-    }
-
-    // Legacy method for traditional tools
     handleMouseAction(e) {
         const rect = this.canvas.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
+
+        // Handle unit selection in mall mode
+        if (this.handleUnitSelection(mouseX, mouseY)) {
+            return; // Unit was selected, skip painting
+        }
 
         if (this.currentTool === 'wall-edge' || this.currentTool === 'erase') {
             this.handleEdgePaint(mouseX, mouseY);
         } else {
             this.handleTilePaint(mouseX, mouseY);
         }
-    }
-
-    completeDragRect(endX, endY) {
-        if (this.dragRectStart === null) return;
-
-        const startX = this.dragRectStart.x;
-        const startY = this.dragRectStart.y;
-
-        // Calculate bounds
-        const minX = Math.min(startX, endX);
-        const maxX = Math.max(startX, endX);
-        const minY = Math.min(startY, endY);
-        const maxY = Math.max(startY, endY);
-
-        let placed = 0;
-        let skipped = 0;
-
-        // Fill rectangle with floor tiles
-        for (let y = minY; y <= maxY; y++) {
-            for (let x = minX; x <= maxX; x++) {
-                if (this.isWithinTemplateBounds(x, y, 'tile')) {
-                    // Only place if different from current state
-                    if (this.sceneModel.grid[y] && this.sceneModel.grid[y][x] !== 'floor') {
-                        this.setGridCell(x, y, 'floor');
-                        placed++;
-                    }
-                } else {
-                    skipped++;
-                }
-            }
-        }
-
-        // Clear drag state
-        this.dragRectStart = null;
-
-        // Log bounds information
-        console.info('[BOUNDS]', { tool: 'rect', placed, skipped });
-
-        // Re-render
-        this.render();
-    }
-
-    completeWallSegment(endX, endY) {
-        if (this.wallSegmentStart === null) return;
-
-        const startX = this.wallSegmentStart.x;
-        const startY = this.wallSegmentStart.y;
-
-        // Check if it's a straight line (horizontal or vertical)
-        if (startX !== endX && startY !== endY) {
-            // Diagonal - show error and reject
-            this.showToast('warning', 'Invalid Wall', 'Walls must be straight');
-            this.wallSegmentStart = null;
-            this.render();
-            return;
-        }
-
-        let placed = 0;
-        let skipped = 0;
-
-        if (startX === endX) {
-            // Vertical wall
-            const minY = Math.min(startY, endY);
-            const maxY = Math.max(startY, endY);
-
-            for (let y = minY; y <= maxY; y++) {
-                if (this.isWithinTemplateBounds(startX, y, 'edge')) {
-                    // Check bounds for vertical edge
-                    if (startX >= 0 && startX < this.gridWidth && y >= 0 && y < this.gridHeight) {
-                        if (!this.sceneModel.verticalEdges[y][startX]) {
-                            this.sceneModel.verticalEdges[y][startX] = true;
-                            placed++;
-                        }
-                    }
-                } else {
-                    skipped++;
-                }
-            }
-        } else if (startY === endY) {
-            // Horizontal wall
-            const minX = Math.min(startX, endX);
-            const maxX = Math.max(startX, endX);
-
-            for (let x = minX; x <= maxX; x++) {
-                if (this.isWithinTemplateBounds(x, startY, 'edge')) {
-                    // Check bounds for horizontal edge
-                    if (x >= 0 && x < this.gridWidth && startY >= 0 && startY < this.gridHeight) {
-                        if (!this.sceneModel.horizontalEdges[startY][x]) {
-                            this.sceneModel.horizontalEdges[startY][x] = true;
-                            placed++;
-                        }
-                    }
-                } else {
-                    skipped++;
-                }
-            }
-        }
-
-        // Clear wall segment state
-        this.wallSegmentStart = null;
-
-        // Log bounds information
-        console.info('[BOUNDS]', { tool: 'wall-run', placed, skipped });
-
-        // Re-render
-        this.render();
-    }
-
-    clearToolStates() {
-        // Clear all tool-specific state
-        this.dragRectStart = null;
-        this.wallSegmentStart = null;
-        this.isDrawing = false;
-
-        // Re-render to clear any previews
-        this.render();
     }
 
     handleUnitSelection(mouseX, mouseY) {
@@ -1082,7 +978,6 @@ class FloorplanEditor {
         if (limitEditsLabel) {
             limitEditsLabel.style.display = shouldShowUnitExport ? 'inline-block' : 'none';
         }
-
 
         // Ensure Export → Mall Template is always enabled (no gating)
         const exportMallItem = document.getElementById('export-mall-template-item');
@@ -1252,7 +1147,7 @@ class FloorplanEditor {
         // Get current template layers from relationship manager
         const layers = this.templateRelationshipManager.getCurrentLayers();
 
-        debug('[DEBUG] renderGhostedContent: Using template layers from relationship manager:', {
+        console.log('[DEBUG] renderGhostedContent: Using template layers from relationship manager:', {
             hasParent: layers.hasParent,
             hierarchy: layers.hierarchy?.length || 0,
             levels: layers.levels || 0
@@ -1260,7 +1155,7 @@ class FloorplanEditor {
 
         // Render multi-level hierarchy if available
         if (layers.hierarchy && layers.hierarchy.length > 0) {
-            debug('[DEBUG] renderGhostedContent: Rendering multi-level hierarchy:',
+            console.log('[DEBUG] renderGhostedContent: Rendering multi-level hierarchy:',
                 layers.hierarchy.map(t => t.dto.type));
 
             // Render each level in the hierarchy
@@ -1268,7 +1163,7 @@ class FloorplanEditor {
                 const templateType = template.dto?.type || 'unknown';
                 const isCurrentLevel = index === layers.hierarchy.length - 1;
 
-                debug(`[DEBUG] renderGhostedContent: Rendering hierarchy level ${index}: ${templateType}`,
+                console.log(`[DEBUG] renderGhostedContent: Rendering hierarchy level ${index}: ${templateType}`,
                     isCurrentLevel ? '(current)' : '(parent)');
 
                 // Convert to legacy template model format for rendering
@@ -1277,9 +1172,7 @@ class FloorplanEditor {
                 // Choose colors and opacity based on template type and position
                 if (isCurrentLevel) {
                     // Current template - higher opacity and distinct colors per type
-                    if (templateType === 'object') {
-                        this.renderTemplateLayer(templateModel, '#ccddff', '#0066cc', 0.8); // Blue object
-                    } else if (templateType === 'room') {
+                    if (templateType === 'room') {
                         this.renderTemplateLayer(templateModel, '#ccddff', '#0066cc', 0.8); // Blue room
                     } else if (templateType === 'unit') {
                         this.renderTemplateLayer(templateModel, '#ccffcc', '#00aa00', 0.8); // Green gallery/unit
@@ -1289,34 +1182,27 @@ class FloorplanEditor {
                         this.renderTemplateLayer(templateModel, '#ccffcc', '#00aa00', 0.8); // Default green
                     }
                 } else {
-                    // Parent/ancestor templates - progressive grey shades (darker = further back)
-                    const hierarchyDepth = layers.hierarchy.length - 1; // Index of current (last) template
-                    const distanceFromCurrent = hierarchyDepth - index; // How far back this template is
-
-                    // Progressive grey opacity: closer ancestors are lighter, farther ones darker
-                    // Level 0 (deepest): darkest grey (0.15)
-                    // Level 1: medium grey (0.25)
-                    // Level 2: light grey (0.35)
-                    const opacity = 0.15 + (distanceFromCurrent * 0.1);
-                    this.renderTemplateLayer(templateModel, '#cccccc', '#999999', opacity); // Progressive grey ancestors
+                    // Parent/ancestor templates - grey with lower opacity
+                    const opacity = 0.3 + (index * 0.1); // Slightly more opacity for closer ancestors
+                    this.renderTemplateLayer(templateModel, '#cccccc', '#999999', opacity);
                 }
             });
         }
 
         // Fallback to legacy models if relationship manager doesn't have data
         if (!layers.hierarchy || layers.hierarchy.length === 0) {
-            debug('[DEBUG] renderGhostedContent: No hierarchy data, falling back to legacy models');
+            console.log('[DEBUG] renderGhostedContent: No hierarchy data, falling back to legacy models');
 
             // Render parent template layer (grey, lower opacity)
             if (this.parentTemplateModel.hasContent) {
-                debug('[DEBUG] renderGhostedContent: Rendering legacy parent template layer (grey)');
+                console.log('[DEBUG] renderGhostedContent: Rendering legacy parent template layer (grey)');
                 this.renderTemplateLayer(this.parentTemplateModel, '#cccccc', '#999999', 0.4); // Grey parent
             }
 
             // Render current template layer with type-specific colors
             if (this.currentTemplateModel.hasContent) {
                 const templateType = this.currentDto?.type || 'unknown';
-                debug('[DEBUG] renderGhostedContent: Rendering legacy current template layer:', templateType);
+                console.log('[DEBUG] renderGhostedContent: Rendering legacy current template layer:', templateType);
 
                 // Use type-specific colors
                 if (templateType === 'room') {
@@ -1332,7 +1218,7 @@ class FloorplanEditor {
         }
 
         // Debug: Log template states
-        debug('[DEBUG] renderGhostedContent: Template states:', {
+        console.log('[DEBUG] renderGhostedContent: Template states:', {
             relationshipManager: {
                 hasParent: layers.hasParent,
                 parentHasContent: layers.parent ? true : false,
@@ -1369,7 +1255,7 @@ class FloorplanEditor {
 
     // Parse template content into a legacy model structure
     parseTemplateContentIntoLegacyModel(templateData, dto, targetModel) {
-        debug('[DEBUG] parseTemplateContentIntoLegacyModel: Processing:', {
+        console.log('[DEBUG] parseTemplateContentIntoLegacyModel: Processing:', {
             templateType: dto.type,
             hasSceneData: !!templateData.sceneData,
             hasInstances: !!templateData.instances
@@ -1405,15 +1291,6 @@ class FloorplanEditor {
 
         // For room templates, handle scene data or create boundary from rect
         if (dto.type === 'room') {
-            if (templateData.sceneData) {
-                this.parseSceneDataIntoLegacyModel(templateData.sceneData, targetModel);
-            } else if (dto.rect) {
-                this.createGhostedRectOutlineInLegacyModel(dto.rect, targetModel);
-                targetModel.hasContent = true;
-            }
-        }
-        // For object templates, handle scene data or create boundary from rect
-        if (dto.type === 'object') {
             if (templateData.sceneData) {
                 this.parseSceneDataIntoLegacyModel(templateData.sceneData, targetModel);
             } else if (dto.rect) {
@@ -1591,7 +1468,7 @@ class FloorplanEditor {
             }
         }
 
-        debug('[DEBUG] renderTemplateLayer: Rendered', {
+        console.log('[DEBUG] renderTemplateLayer: Rendered', {
             floors: floorsRendered,
             hEdges: hEdgesRendered,
             vEdges: vEdgesRendered,
@@ -1604,10 +1481,10 @@ class FloorplanEditor {
     }
 
     render() {
-        debug('[DEBUG] render: Starting render cycle');
-        debug('[DEBUG] render: Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
-        debug('[DEBUG] render: Grid dimensions:', this.gridWidth, 'x', this.gridHeight);
-        debug('[DEBUG] render: Template states:', {
+        console.log('[DEBUG] render: Starting render cycle');
+        console.log('[DEBUG] render: Canvas dimensions:', this.canvas.width, 'x', this.canvas.height);
+        console.log('[DEBUG] render: Grid dimensions:', this.gridWidth, 'x', this.gridHeight);
+        console.log('[DEBUG] render: Template states:', {
             parentHasContent: this.parentTemplateModel?.hasContent,
             currentHasContent: this.currentTemplateModel?.hasContent,
             showTemplate: this.showTemplate,
@@ -1637,79 +1514,8 @@ class FloorplanEditor {
         if (!this.overlayModel.templateData) {
             this.renderUnitOverlay();
         }
-
-        // Render tool previews
-        this.renderToolPreviews();
     }
-
-    renderToolPreviews() {
-        if (!this.currentMouseGrid) return;
-
-        // Preview for drag rectangle tool
-        if (this.currentTool === 'dragRect' && this.dragRectStart !== null) {
-            this.renderDragRectPreview(
-                this.dragRectStart.x,
-                this.dragRectStart.y,
-                this.currentMouseGrid.x,
-                this.currentMouseGrid.y
-            );
-        }
-
-        // Preview for wall segment tool
-        if (this.currentTool === 'wallSegment' && this.wallSegmentStart !== null) {
-            this.renderWallSegmentPreview(
-                this.wallSegmentStart.x,
-                this.wallSegmentStart.y,
-                this.currentMouseGrid.x,
-                this.currentMouseGrid.y
-            );
-        }
-    }
-
-    renderDragRectPreview(startX, startY, endX, endY) {
-        const minX = Math.min(startX, endX);
-        const maxX = Math.max(startX, endX);
-        const minY = Math.min(startY, endY);
-        const maxY = Math.max(startY, endY);
-
-        // Draw preview rectangle
-        this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(139, 69, 19, 0.8)'; // Brown outline
-        this.ctx.fillStyle = 'rgba(139, 69, 19, 0.3)'; // Semi-transparent brown fill
-        this.ctx.lineWidth = 2;
-
-        const pixelX = minX * this.cellSize;
-        const pixelY = minY * this.cellSize;
-        const pixelW = (maxX - minX + 1) * this.cellSize;
-        const pixelH = (maxY - minY + 1) * this.cellSize;
-
-        this.ctx.fillRect(pixelX, pixelY, pixelW, pixelH);
-        this.ctx.strokeRect(pixelX, pixelY, pixelW, pixelH);
-        this.ctx.restore();
-    }
-
-    renderWallSegmentPreview(startX, startY, endX, endY) {
-        // Only show preview for straight lines
-        if (startX !== endX && startY !== endY) {
-            return; // Don't preview diagonal lines
-        }
-
-        this.ctx.save();
-        this.ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)'; // Red preview line
-        this.ctx.lineWidth = 3;
-
-        const startPixelX = startX * this.cellSize + this.cellSize / 2;
-        const startPixelY = startY * this.cellSize + this.cellSize / 2;
-        const endPixelX = endX * this.cellSize + this.cellSize / 2;
-        const endPixelY = endY * this.cellSize + this.cellSize / 2;
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(startPixelX, startPixelY);
-        this.ctx.lineTo(endPixelX, endPixelY);
-        this.ctx.stroke();
-        this.ctx.restore();
-    }
-
+    
     renderEdges() {
         // Render edges as thick black lines
         this.ctx.strokeStyle = '#000';
@@ -1848,7 +1654,7 @@ class FloorplanEditor {
                 this.ctx.fillStyle = '#00BCD4';
                 this.ctx.globalAlpha = 0.8;
                 this.ctx.font = '14px Arial';
-                const roomCount = dto.children?.length || 0;
+                const roomCount = dto.rooms?.length || 0;
                 this.ctx.fillText(`Unit Template (${roomCount} rooms)`, 10, 25);
                 this.ctx.restore();
                 break;
@@ -1858,7 +1664,7 @@ class FloorplanEditor {
                 // No longer draw overlay boundaries - ghosted content defines the area
 
                 // Draw each zone.rect if present
-                dto.children?.forEach(z => {
+                dto.zones?.forEach(z => {
                     drawRect(z.rect, {
                         dashed: true,
                         colour: '#4CAF50', // Green
@@ -1871,7 +1677,7 @@ class FloorplanEditor {
                 this.ctx.fillStyle = '#4CAF50';
                 this.ctx.globalAlpha = 0.8;
                 this.ctx.font = '14px Arial';
-                const zoneCount = dto.children?.length || 0;
+                const zoneCount = dto.zones?.length || 0;
                 this.ctx.fillText(`Room Template (${zoneCount} zones)`, 10, 25);
                 this.ctx.restore();
                 break;
@@ -1908,64 +1714,6 @@ class FloorplanEditor {
         this.showToast('success', 'Cleared', 'All content and templates cleared');
     }
 
-    /**
-     * Unified grid resizing for all template types
-     * @param {Object} dto - Template DTO
-     */
-    resizeGridForTemplate(dto) {
-        debug('[DEBUG] resizeGridForTemplate:', { type: dto.type, rect: dto.rect, gridSize: dto.gridSize });
-
-        const oldGridWidth = this.gridWidth;
-        const oldGridHeight = this.gridHeight;
-
-        // Different resize behavior based on template type
-        switch (dto.type) {
-            case 'mall':
-                // Mall templates: ensure grid covers all units or use explicit gridSize
-                if (dto.gridSize) {
-                    this.gridWidth = dto.gridSize.width || this.gridWidth;
-                    this.gridHeight = dto.gridSize.height || this.gridHeight;
-                } else if (dto.rect) {
-                    // Use mall rect if available
-                    this.gridWidth = Math.max(dto.rect.x + dto.rect.w, this.gridWidth);
-                    this.gridHeight = Math.max(dto.rect.y + dto.rect.h, this.gridHeight);
-                }
-                break;
-
-            case 'unit':
-            case 'room':
-            case 'object':
-                // Child templates: resize grid to template dimensions for constrained editing
-                if (dto.rect && dto.rect.w > 0 && dto.rect.h > 0) {
-                    this.gridWidth = dto.rect.w;
-                    this.gridHeight = dto.rect.h;
-                    debug('[DEBUG] Child template: resized grid to template dimensions');
-                } else {
-                    console.warn('[DEBUG] Child template has invalid rect, keeping current grid size');
-                }
-                break;
-
-            case 'scene':
-                // Scene: no resizing needed, keep current dimensions
-                break;
-
-            default:
-                console.warn('[DEBUG] Unknown template type for grid resize:', dto.type);
-        }
-
-        // Only resize arrays if dimensions actually changed
-        if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
-            debug('[DEBUG] Grid dimensions changed:', {
-                from: { width: oldGridWidth, height: oldGridHeight },
-                to: { width: this.gridWidth, height: this.gridHeight }
-            });
-            this.resizeTemplateModels();
-            this.render();
-        } else {
-            debug('[DEBUG] Grid dimensions unchanged, skipping resize');
-        }
-    }
-
     clearTemplate() {
         this.overlayModel = { templateData: null, bounds: null, constraints: null };
         this.showTemplate = false;
@@ -1976,7 +1724,7 @@ class FloorplanEditor {
         this.limitToActiveUnit = false; // Reset limit checkbox
 
         // Clear Template Relationship Manager
-        debug('[DEBUG] clearTemplate: Clearing Template Relationship Manager');
+        console.log('[DEBUG] clearTemplate: Clearing Template Relationship Manager');
         this.templateRelationshipManager.clearAll();
 
         // Clear both template layers
@@ -2214,17 +1962,11 @@ class FloorplanEditor {
     // Convert scene.v1 format to editor state
     fromSceneV1(sceneData) {
         // Validate basic structure
-        const errors = [];
         if (!sceneData.meta || sceneData.meta.schema !== "scene.v1") {
-            errors.push('Invalid scene.v1 format');
+            throw new Error('Invalid scene.v1 format');
         }
         if (!sceneData.grid) {
-            errors.push('Missing grid data in scene.v1');
-        }
-
-        if (errors.length > 0) {
-            this.handleTemplateErrors(errors, 'loading', 'scene');
-            return;
+            throw new Error('Missing grid data in scene.v1');
         }
 
         // Update grid dimensions
@@ -2277,12 +2019,6 @@ class FloorplanEditor {
             case 'room-template':
                 this.exportAsRoomTemplate();
                 break;
-            case 'object-template':
-                this.exportAsObjectTemplate();
-                break;
-            case 'scene-3d':
-                this.exportAsScene3D();
-                break;
             case 'clear-all':
                 this.clearAll();
                 break;
@@ -2319,13 +2055,13 @@ class FloorplanEditor {
         const unitTemplate = buildUnitTemplate({
             id: selectedUnit.id || 'unit',
             rect: selectedUnit.rect,
-            rooms: selectedUnit.children || [],
+            rooms: selectedUnit.rooms || [],
             parentMallId: dto.id
         });
 
         // Download the unit template
         const fileName = `${selectedUnit.id || 'unit'}-template.json`;
-        this.exportWithWarnings(fileName, unitTemplate, 'gallery-template');
+        this.downloadJSON(fileName, unitTemplate);
         this.showToast('success', 'Gallery Template Exported', `Exported gallery template: ${selectedUnit.id || 'gallery'}`);
     }
 
@@ -2354,7 +2090,7 @@ class FloorplanEditor {
 
         if (!Number.isFinite(gridSize.width) || !Number.isFinite(gridSize.height) ||
             gridSize.width <= 0 || gridSize.height <= 0) {
-            this.handleTemplateErrors(['Invalid grid size'], 'export', 'mall');
+            this.showToast('error', 'Mall Export Failed', 'Invalid grid size');
             return;
         }
 
@@ -2376,18 +2112,18 @@ class FloorplanEditor {
 
         // Add current scene content for ghosted rendering when template is loaded back
         const sceneData = this.toSceneV1();
-        debug('[DEBUG] Export: toSceneV1() returned:', sceneData);
+        console.log('[DEBUG] Export: toSceneV1() returned:', sceneData);
         if (sceneData && (sceneData.tiles?.floor?.length > 0 ||
                           sceneData.edges?.horizontal?.length > 0 ||
                           sceneData.edges?.vertical?.length > 0)) {
             out.sceneData = sceneData;
-            debug('[DEBUG] Export: Added scene data to mall template:', {
+            console.log('[DEBUG] Export: Added scene data to mall template:', {
                 floors: sceneData.tiles?.floor?.length || 0,
                 hEdges: sceneData.edges?.horizontal?.length || 0,
                 vEdges: sceneData.edges?.vertical?.length || 0
             });
         } else {
-            debug('[DEBUG] Export: No scene data to add - scene is empty');
+            console.log('[DEBUG] Export: No scene data to add - scene is empty');
         }
 
         // Compute safe filename with timestamp
@@ -2402,7 +2138,7 @@ class FloorplanEditor {
         console.assert(out?.grid || out?.gridSize, 'Mall export: grid/gridSize missing');
 
         // Download JSON using unified helper
-        this.exportWithWarnings(filename, out, 'mall-template');
+        this.downloadJSON(filename, out);
 
         // Log for diagnostics:
         console.info('[EXPORT:mall] built', {
@@ -2422,7 +2158,7 @@ class FloorplanEditor {
 
         // Validate minimum unit requirement
         if (units.length === 0) {
-            this.handleTemplateErrors(['No units detected; draw floor tiles first.'], 'export', 'mall');
+            alert('No units detected; draw floor tiles first.');
             console.warn('Export blocked: No units found in current design');
             return;
         }
@@ -2437,10 +2173,10 @@ class FloorplanEditor {
 
         const mallId = mallTemplate.id || 'mall';
         const filename = `${mallId}.json`;
-        this.exportWithWarnings(filename, mallTemplate, 'mall-template');
+        this.downloadJSON(filename, mallTemplate);
 
         console.log('Exported mall template:', mallTemplate);
-        this.showToast('success', 'Mall Template Exported', `Mall template saved (${units.length} galleries detected). Ready for template loading workflow.`);
+        alert(`Mall template saved (${units.length} galleries detected)\\nReady for template loading workflow`);
     }
 
 
@@ -2509,63 +2245,6 @@ class FloorplanEditor {
     }
 
     // Export as Gallery Template format with parent relationship
-    /**
-     * Unified export method for child templates (gallery, room, object)
-     * @param {Object} config - Export configuration
-     */
-    exportChildTemplate(config) {
-        const dto = this.overlayModel?.templateData;
-
-        // Validate parent template type is correct
-        if (!dto || dto.type !== config.requiredParentType) {
-            this.handleTemplateErrors(
-                [`Load a ${config.parentTypeName} template first to export ${config.templateName.toLowerCase()}s`],
-                `${config.templateName} Export`,
-                config.templateName.toLowerCase()
-            );
-            return;
-        }
-
-        // Get current template ID from relationship manager
-        const layers = this.templateRelationshipManager.getCurrentLayers();
-        const currentParentId = layers.current?.id || dto.id || config.fallbackParentId;
-        debug(`[DEBUG] ${config.templateName} export - Parent template ID:`, currentParentId);
-
-        // Get the current scene content (what the user actually drew)
-        const sceneData = this.toSceneV1();
-
-        // Check if there's any content to export
-        if (!sceneData ||
-            (!sceneData.tiles?.floor?.length &&
-             !sceneData.edges?.horizontal?.length &&
-             !sceneData.edges?.vertical?.length)) {
-            this.handleTemplateErrors(
-                [`Nothing to export — draw inside the ${config.parentTypeName} area first`],
-                `${config.templateName} Export`,
-                config.templateName.toLowerCase()
-            );
-            return;
-        }
-
-        // Build template with actual scene content
-        const suggestedId = `${config.templateName.toLowerCase()}-${Date.now()}`;
-        const out = config.buildFunction({
-            id: suggestedId,
-            rect: { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
-            [config.childrenProperty]: [],
-            [config.parentIdProperty]: currentParentId
-        });
-
-        // Add the actual scene content so it renders exactly as drawn
-        out.sceneData = sceneData;
-
-        const filename = `${out.id}.${config.schemaName}.json`;
-        this.exportWithWarnings(filename, out, 'object-template');
-
-        console.log(`Exported ${config.templateName.toLowerCase()} template:`, out);
-        this.showToast('success', `${config.templateName} Exported`, `${config.templateName} template saved as ${filename}`);
-    }
-
     exportAsGalleryTemplate() {
         const dto = this.overlayModel?.templateData;
 
@@ -2575,15 +2254,15 @@ class FloorplanEditor {
             const out = buildUnitTemplate({
                 id: dto?.id || 'unit',
                 rect: dto?.rect || { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight },
-                rooms: dto?.children || [],
+                rooms: dto?.rooms || [],
                 parentMallId: dto?.parentMallId
             });
 
             const filename = `${out.id || 'unit'}.unit-template.v1.json`;
-            this.exportWithWarnings(filename, out, 'gallery-template');
+            this.downloadJSON(filename, out);
 
             console.log('Exported gallery template:', out);
-            this.showToast('success', 'Gallery Template Exported', `Gallery template exported as ${filename}`);
+            alert(`Gallery template exported as ${filename}`);
             return;
         }
 
@@ -2598,7 +2277,7 @@ class FloorplanEditor {
 
         // Must have a loaded mall template to get parent reference
         if (!dto || dto.type !== 'mall') {
-            this.handleTemplateErrors(['Load a mall template first to export galleries'], 'export', 'gallery');
+            this.showToast('error', 'Gallery Export Failed', 'Load a mall template first to export galleries');
             return;
         }
 
@@ -2610,7 +2289,7 @@ class FloorplanEditor {
             (!sceneData.tiles?.floor?.length &&
              !sceneData.edges?.horizontal?.length &&
              !sceneData.edges?.vertical?.length)) {
-            this.handleTemplateErrors(['Nothing to export — draw inside the mall area first'], 'export', 'gallery');
+            this.showToast('warning', 'Nothing to Export', 'Nothing to export — draw inside the mall area first');
             return;
         }
 
@@ -2627,7 +2306,7 @@ class FloorplanEditor {
         out.sceneData = sceneData;
 
         const filename = `${out.id}.unit-template.v1.json`;
-        this.exportWithWarnings(filename, out, 'gallery-template');
+        this.downloadJSON(filename, out);
 
         console.info('[EXPORT:unit] Simple export with scene data', {
             floorTiles: sceneData.tiles?.floor?.length || 0,
@@ -2697,79 +2376,53 @@ class FloorplanEditor {
 
     // Export as Room Template format with parent relationship
     exportAsRoomTemplate() {
-        this.exportChildTemplate({
-            requiredParentType: 'unit',
-            parentTypeName: 'gallery',
-            templateName: 'Room',
-            fallbackParentId: 'gallery',
-            buildFunction: buildRoomTemplate,
-            childrenProperty: 'zones',
-            parentIdProperty: 'parentUnitId', // ExportBuilder parameter name
-            schemaName: 'room-template.v1'
-        });
-    }
+        const dto = this.overlayModel?.templateData;
 
-    // Export as Object Template format with parent relationship to room
-    exportAsObjectTemplate() {
-        this.exportChildTemplate({
-            requiredParentType: 'room',
-            parentTypeName: 'room',
-            templateName: 'Object',
-            fallbackParentId: 'room',
-            buildFunction: buildObjectTemplate,
-            childrenProperty: 'items',
-            parentIdProperty: 'parentRoomId',
-            schemaName: 'object-template.v1'
-        });
-    }
-
-    // Export as Scene (3D Pipe) format per Interface Contract v1
-    async exportAsScene3D() {
-        // Generate a safe ID for the filename
-        const baseName = this.overlayModel?.templateData?.meta?.name ||
-                        this.overlayModel?.templateData?.id ||
-                        'scene';
-        const safeId = String(baseName).trim().toLowerCase()
-                        .replace(/[^a-z0-9-_]+/g, '-')
-                        .replace(/^-+|-+$/g, '') || 'scene';
-
-        // Build scene.3d.v1 JSON using ExportBuilder3D
-        const scene3D = toScene3D(this.sceneModel, this.cellSize, safeId);
-
-        // Generate filename per Interface Contract v1
-        const filename = `${safeId}.scene.3d.v1.json`;
-
-        // Log export details
-        console.info('[EXPORT:3d]', {
-            filename,
-            tiles: scene3D.tiles.floor.length,
-            hEdges: scene3D.edges.horizontal.length,
-            vEdges: scene3D.edges.vertical.length,
-            units: scene3D.units
-        });
-
-        // Validate against scene.3d.v1 schema
-        try {
-            const validation = await validateScene3D(scene3D);
-
-            // Log validation results
-            console.info('[VALIDATION]', { phase: 'export', errors: validation.count });
-
-            if (validation.count > 0) {
-                // Show validation errors modal
-                this.showValidationErrorsModal(validation.errors, filename, scene3D);
-                return;
-            }
-        } catch (error) {
-            console.error('[VALIDATION] Schema validation failed:', error);
-            this.showToast('error', 'Validation Error', 'Schema validation failed - exporting anyway');
+        // Preconditions: overlayModel.templateData?.type === 'unit' (gallery authoring session)
+        if (!dto || dto.type !== 'unit') {
+            this.showToast('error', 'Room Export Failed', 'Load a gallery template first to export rooms');
+            return;
         }
 
-        // Export using existing warning system (valid or validation failed)
-        this.exportWithWarnings(filename, scene3D, 'scene-3d');
+        // Get current gallery template ID from relationship manager
+        const layers = this.templateRelationshipManager.getCurrentLayers();
+        const currentGalleryId = layers.current?.id || dto.id || 'gallery';
+        console.log('[DEBUG] Room export - Gallery template ID:', currentGalleryId);
 
-        // Show success message
-        this.showToast('success', '3D Scene Exported', `Scene exported as ${filename} for 3D pipe`);
+        // Get the current scene content (what the user actually drew)
+        const sceneData = this.toSceneV1();
+
+        // Check if there's any content to export
+        if (!sceneData ||
+            (!sceneData.tiles?.floor?.length &&
+             !sceneData.edges?.horizontal?.length &&
+             !sceneData.edges?.vertical?.length)) {
+            this.showToast('warning', 'Nothing to Export', 'Nothing to export — draw inside the gallery area first');
+            return;
+        }
+
+        // Build room template with actual scene content (no rect calculation needed)
+        const suggestedId = `room-${Date.now()}`;
+        const out = buildRoomTemplate({
+            id: suggestedId,
+            rect: { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight }, // Full grid size
+            zones: [],
+            parentUnitId: currentGalleryId // Use actual gallery template ID from relationship manager
+        });
+
+        // Add the actual scene content so it renders exactly as drawn
+        out.sceneData = sceneData;
+
+        const filename = `${out.id}.room-template.v1.json`;
+        this.downloadJSON(filename, out);
+
+        console.info('[EXPORT:room] Simple export with scene data', {
+            floorTiles: sceneData.tiles?.floor?.length || 0,
+            hEdges: sceneData.edges?.horizontal?.length || 0,
+            vEdges: sceneData.edges?.vertical?.length || 0,
+            parentGalleryId: currentGalleryId
+        });
+        this.showToast('success', 'Room Template Exported', `Exported room from current edits: ${filename}`);
     }
 
     // Generate room features from current editor content
@@ -3001,7 +2654,7 @@ class FloorplanEditor {
             vEdges: vEdges
         });
 
-        this.exportWithWarnings('scene.json', sceneData, 'scene');
+        this.downloadJSON('scene.json', sceneData);
 
         console.log('Exported scene.v1:', sceneData);
     }
@@ -3021,7 +2674,6 @@ class FloorplanEditor {
             <option value="mall-template">Export as Mall Template</option>
             <option value="gallery-template">Export as Gallery Template</option>
             <option value="room-template">Export as Room Template</option>
-            <option value="object-template" id="export-object-template-item">Export as Object Template</option>
             <option disabled>──────────</option>
             <option value="clear-all">Clear All</option>
             <option value="clear-grid">Clear Grid</option>
@@ -3058,10 +2710,10 @@ class FloorplanEditor {
 
             // Only clear scene for parent templates, preserve template data for child templates
             if (!hasParent) {
-                debug('[DEBUG] Parent template - clearing scene');
+                console.log('[DEBUG] Parent template - clearing scene');
                 this.clearScene();
             } else {
-                debug('[DEBUG] Child template - preserving parent data, only clearing scene grid');
+                console.log('[DEBUG] Child template - preserving parent data, only clearing scene grid');
                 // Only clear scene grid, preserve template models for parent-child relationship
                 this.sceneModel.grid = this.createEmptyGrid();
                 this.sceneModel.horizontalEdges = this.createEmptyEdgeSet(this.gridWidth, this.gridHeight);
@@ -3115,11 +2767,44 @@ class FloorplanEditor {
                     tiles: jsonData.tiles || { floor: [] },
                     edges: jsonData.edges || { horizontal: [], vertical: [] }
                 });
-                this.showToast('success', 'Scene Loaded', 'Scene.v1 file imported successfully');
+                alert('Scene.v1 file imported successfully');
             } else {
                 // Template loaded as overlay only - no content conversion
-                // Use unified grid resizing method
-                this.resizeGridForTemplate(dto);
+                // Update grid dimensions if template has size info
+                if (dto.rect) {
+                    // Template rect defines position and size, ensure grid covers the full extent
+                    const oldGridWidth = this.gridWidth;
+                    const oldGridHeight = this.gridHeight;
+                    this.gridWidth = Math.max(dto.rect.x + dto.rect.w, this.gridWidth);
+                    this.gridHeight = Math.max(dto.rect.y + dto.rect.h, this.gridHeight);
+                    console.log('[DEBUG] Updated grid dimensions for template rect:', {
+                        rect: dto.rect,
+                        oldGridWidth: oldGridWidth,
+                        oldGridHeight: oldGridHeight,
+                        newGridWidth: this.gridWidth,
+                        newGridHeight: this.gridHeight,
+                        dimensionsChanged: this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight
+                    });
+
+                    // Only resize template model arrays if dimensions actually changed
+                    if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
+                        console.log('[DEBUG] Grid dimensions changed, resizing template models');
+                        this.resizeTemplateModels();
+                    } else {
+                        console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
+                    }
+                } else if (dto.gridSize) {
+                    const oldGridWidth = this.gridWidth;
+                    const oldGridHeight = this.gridHeight;
+                    this.gridWidth = dto.gridSize.width || this.gridWidth;
+                    this.gridHeight = dto.gridSize.height || this.gridHeight;
+
+                    // Only resize template model arrays if dimensions actually changed
+                    if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
+                        console.log('[DEBUG] Grid size changed, resizing template models');
+                        this.resizeTemplateModels();
+                    }
+                }
 
                 // Update template context for legacy compatibility
                 this.templateContext = {
@@ -3128,7 +2813,7 @@ class FloorplanEditor {
                     loadedAt: new Date().toISOString()
                 };
 
-                this.showToast('success', 'Template Loaded', `${dto.type.toUpperCase()} template loaded as overlay constraints. Create content within template boundaries.`);
+                alert(`${dto.type.toUpperCase()} template loaded as overlay constraints. Create content within template boundaries.`);
             }
 
             this.render();
@@ -3136,7 +2821,7 @@ class FloorplanEditor {
             this.updateExportOptions();
 
         } catch (error) {
-            this.handleTemplateErrors([error.message], 'loading', 'unknown');
+            alert('Error reading JSON file: ' + error.message);
             console.error('Import error:', error);
         }
     }
@@ -3171,18 +2856,10 @@ class FloorplanEditor {
                 // Update export dropdown default
                 this.updateExportOptions();
             } else {
-                this.handleTemplateErrors(
-                    ['Invalid template format. Expected "grid" property.'],
-                    'Template Load',
-                    'template'
-                );
+                alert('Invalid template format. Expected "grid" property.');
             }
         } catch (error) {
-            this.handleTemplateErrors(
-                [error.message || 'Unknown error occurred'],
-                'Template Load',
-                'template'
-            );
+            alert('Error loading template: ' + error.message);
             console.error('Template load error:', error);
         }
     }
@@ -3198,7 +2875,7 @@ class FloorplanEditor {
                 toggleBtn.textContent = this.showTemplate ? 'Hide Template' : 'Show Template';
             }
         } else {
-            this.handleTemplateErrors(['No template loaded. Load a template first.'], 'export', 'unknown');
+            alert('No template loaded. Load a template first.');
         }
     }
     
@@ -3228,18 +2905,10 @@ class FloorplanEditor {
                     unitSelect.style.display = 'inline-block';
                 }
             } else {
-                this.handleTemplateErrors(
-                    ['Invalid units index format. Expected "units" array.'],
-                    'Units Index Load',
-                    'units'
-                );
+                alert('Invalid units index format. Expected "units" array.');
             }
         } catch (error) {
-            this.handleTemplateErrors(
-                [error.message || 'Unknown error occurred'],
-                'Units Index Load',
-                'units'
-            );
+            alert('Error loading units index: ' + error.message);
             console.error('Units index load error:', error);
         }
     }
@@ -3362,15 +3031,8 @@ class FloorplanEditor {
         // Use new TemplateLoader to detect and normalize
         const { dto, mode } = loadTemplate(jsonData);
 
-        // Validate template using unified validation system
-        const validationErrors = this.validateTemplate(jsonData, dto.type);
-        if (validationErrors.length > 0) {
-            this.handleTemplateErrors(validationErrors, 'loading', dto.type);
-            return; // Abort loading if validation fails
-        }
-
         // Use Template Relationship Manager to handle parent-child relationships
-        debug('[DEBUG] Loading template through Template Relationship Manager');
+        console.log('[DEBUG] Loading template through Template Relationship Manager');
         const relationshipResult = await this.templateRelationshipManager.loadTemplate(jsonData, dto);
 
         // Clear scene data (user content)
@@ -3381,7 +3043,7 @@ class FloorplanEditor {
         this.overlayModel.templateData = dto;
 
         // Parse template content for ghosted rendering using relationship manager result
-        debug('[DEBUG] Template relationship result:', relationshipResult);
+        console.log('[DEBUG] Template relationship result:', relationshipResult);
         this.parseTemplateContentWithRelationships(relationshipResult);
 
         // Runtime assertions for import
@@ -3422,8 +3084,41 @@ class FloorplanEditor {
             });
         } else {
             // Template loaded as overlay only - no content conversion
-            // Use unified grid resizing method
-            this.resizeGridForTemplate(dto);
+            // Update grid dimensions if template has size info
+            if (dto.rect) {
+                // Template rect defines position and size, ensure grid covers the full extent
+                const oldGridWidth = this.gridWidth;
+                const oldGridHeight = this.gridHeight;
+                this.gridWidth = Math.max(dto.rect.x + dto.rect.w, this.gridWidth);
+                this.gridHeight = Math.max(dto.rect.y + dto.rect.h, this.gridHeight);
+                console.log('[DEBUG] Updated grid dimensions for template rect:', {
+                    rect: dto.rect,
+                    oldGridWidth: oldGridWidth,
+                    oldGridHeight: oldGridHeight,
+                    newGridWidth: this.gridWidth,
+                    newGridHeight: this.gridHeight,
+                    dimensionsChanged: this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight
+                });
+
+                // Only resize template model arrays if dimensions actually changed
+                if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
+                    console.log('[DEBUG] Grid dimensions changed, resizing template models');
+                    this.resizeTemplateModels();
+                } else {
+                    console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
+                }
+            } else if (dto.gridSize) {
+                const oldGridWidth = this.gridWidth;
+                const oldGridHeight = this.gridHeight;
+                this.gridWidth = dto.gridSize.width || this.gridWidth;
+                this.gridHeight = dto.gridSize.height || this.gridHeight;
+
+                // Only resize template model arrays if dimensions actually changed
+                if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
+                    console.log('[DEBUG] Grid size changed, resizing template models');
+                    this.resizeTemplateModels();
+                }
+            }
 
             // Update template context for legacy compatibility
             this.templateContext = {
@@ -3556,31 +3251,53 @@ class FloorplanEditor {
 
 
     validateWithAJV(jsonData, schema) {
-        // Use unified validation system - extract template type from schema
-        const typeMapping = {
-            'scene.v1': 'scene',
-            'mall-template.v1': 'mall',
-            'gallery-template.v1': 'unit', // Note: UI shows "gallery" but schema uses unit
-            'unit-template.v1': 'unit',
-            'room-template.v1': 'room',
-            'object-template.v1': 'object',
-            'unit-design.v1': 'unit'
-        };
+        // For now, we'll do basic structural validation
+        // In a full implementation, we would load the actual AJV schemas
+        const supportedSchemas = ['scene.v1', 'mall-template.v1', 'gallery-template.v1', 'room-template.v1', 'unit-design.v1'];
 
-        const templateType = typeMapping[schema];
-        if (!templateType) {
-            this.handleTemplateErrors([`Unsupported schema: ${schema}`], 'validation', 'unknown');
-            return false;
+        if (!supportedSchemas.includes(schema)) {
+            throw new Error(`Unsupported schema: ${schema}`);
         }
 
-        const validationErrors = this.validateTemplate(jsonData, templateType);
-        if (validationErrors.length > 0) {
-            this.handleTemplateErrors(validationErrors, 'validation', templateType);
-            return false;
+        // Basic validation for each schema type
+        switch (schema) {
+            case 'scene.v1':
+                if (!jsonData.grid || !jsonData.tiles || !jsonData.edges) {
+                    throw new Error('Invalid scene.v1: missing required sections (grid, tiles, edges)');
+                }
+                break;
+
+            case 'mall-template.v1':
+                if (!jsonData.id || !jsonData.grid || !jsonData.units || !Array.isArray(jsonData.units)) {
+                    throw new Error('Invalid mall-template.v1: missing required fields (id, grid, units array)');
+                }
+                if (jsonData.units.length === 0) {
+                    throw new Error('Invalid mall-template.v1: units array cannot be empty');
+                }
+                // Validate each unit has required fields
+                jsonData.units.forEach((unit, index) => {
+                    if (!unit.id || !unit.rect || typeof unit.rect.x !== 'number' ||
+                        typeof unit.rect.y !== 'number' || typeof unit.rect.w !== 'number' ||
+                        typeof unit.rect.h !== 'number') {
+                        throw new Error(`Invalid mall-template.v1: unit[${index}] missing required rect fields (x, y, w, h)`);
+                    }
+                });
+                break;
+
+            case 'gallery-template.v1':
+                if (!jsonData.id || !jsonData.parentMallId || !jsonData.rect) {
+                    throw new Error('Invalid gallery-template.v1: missing required fields (id, parentMallId, rect)');
+                }
+                break;
+
+            case 'unit-design.v1':
+                if (!jsonData.id || !jsonData.parentUnitId) {
+                    throw new Error('Invalid unit-design.v1: missing required fields (id, parentUnitId)');
+                }
+                break;
         }
 
         console.log(`✅ Schema validation passed: ${schema}`);
-        return true;
     }
 
 
@@ -3749,232 +3466,13 @@ class FloorplanEditor {
 
     // Unified download helper for all JSON exports
     downloadJSON(filename, obj) {
-        console.info('[DOWNLOAD]', { filename });
+        console.info('[DOWNLOAD]', filename);
         const dataStr = JSON.stringify(obj, null, 2);
         const dataBlob = new Blob([dataStr], { type: 'application/json' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(dataBlob);
         link.download = filename;
         link.click();
-    }
-
-    // Warning-aware export handler
-    async exportWithWarnings(filename, dto, exportType) {
-        // Collect validation warnings
-        const warnings = SceneRules.collectWarnings({
-            dto,
-            scene: this.sceneModel,
-            bounds: this.overlayModel?.bounds || null
-        });
-
-        // Log export attempt with warning count
-        console.info('[EXPORT]', { type: exportType, warnings: warnings.length });
-
-        // If warnings exist, show modal for user decision
-        if (warnings.length > 0) {
-            const proceed = await this.showWarningModal(warnings);
-            if (!proceed) {
-                return; // User cancelled
-            }
-        }
-
-        // Proceed with download
-        this.downloadJSON(filename, dto);
-    }
-
-    // Warning modal for export decisions
-    showWarningModal(warnings) {
-        return new Promise((resolve) => {
-            // Create modal overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'warning-modal-overlay';
-            overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            `;
-
-            // Create modal content
-            const modal = document.createElement('div');
-            modal.className = 'warning-modal';
-            modal.style.cssText = `
-                background: white;
-                border-radius: 8px;
-                padding: 20px;
-                max-width: 500px;
-                max-height: 400px;
-                overflow-y: auto;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            `;
-
-            // Modal content HTML
-            modal.innerHTML = `
-                <h3 style="margin: 0 0 15px 0; color: #d97706;">⚠️ Export Warnings</h3>
-                <p style="margin: 0 0 15px 0; color: #6b7280;">
-                    The following issues were detected. You can still export, but 3D conversion may have problems:
-                </p>
-                <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151;">
-                    ${warnings.map(w => `<li style="margin-bottom: 8px;">${w}</li>`).join('')}
-                </ul>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button id="cancel-export" style="
-                        padding: 8px 16px;
-                        border: 1px solid #d1d5db;
-                        background: white;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    ">Cancel</button>
-                    <button id="export-anyway" style="
-                        padding: 8px 16px;
-                        border: 1px solid #d97706;
-                        background: #d97706;
-                        color: white;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    ">Export Anyway</button>
-                </div>
-            `;
-
-            overlay.appendChild(modal);
-            document.body.appendChild(overlay);
-
-            // Handle button clicks
-            const cancelBtn = modal.querySelector('#cancel-export');
-            const exportBtn = modal.querySelector('#export-anyway');
-
-            const cleanup = () => {
-                document.body.removeChild(overlay);
-            };
-
-            cancelBtn.addEventListener('click', () => {
-                cleanup();
-                resolve(false);
-            });
-
-            exportBtn.addEventListener('click', () => {
-                cleanup();
-                resolve(true);
-            });
-
-            // Close on overlay click
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    cleanup();
-                    resolve(false);
-                }
-            });
-        });
-    }
-
-    // Validation errors modal for schema violations
-    showValidationErrorsModal(errors, filename, scene3D) {
-        return new Promise((resolve) => {
-            // Create modal overlay
-            const overlay = document.createElement('div');
-            overlay.className = 'validation-modal-overlay';
-            overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: rgba(0, 0, 0, 0.5);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-            `;
-
-            // Create modal content
-            const modal = document.createElement('div');
-            modal.className = 'validation-modal';
-            modal.style.cssText = `
-                background: white;
-                border-radius: 8px;
-                padding: 20px;
-                max-width: 600px;
-                max-height: 500px;
-                overflow-y: auto;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            `;
-
-            // Show first 5 errors as requested
-            const displayErrors = errors.slice(0, 5);
-            const hasMoreErrors = errors.length > 5;
-
-            // Modal content HTML
-            modal.innerHTML = `
-                <h3 style="margin: 0 0 15px 0; color: #dc2626;">❌ Schema Validation Errors</h3>
-                <p style="margin: 0 0 15px 0; color: #6b7280;">
-                    The generated scene.3d.v1 JSON has ${errors.length} validation error${errors.length === 1 ? '' : 's'}.
-                    You can still export, but the file may not be valid:
-                </p>
-                <ul style="margin: 0 0 20px 0; padding-left: 20px; color: #374151; font-family: monospace; font-size: 12px;">
-                    ${displayErrors.map(err => `
-                        <li style="margin-bottom: 8px;">
-                            <strong>${err.path}</strong>: ${err.msg}
-                        </li>
-                    `).join('')}
-                    ${hasMoreErrors ? `<li style="margin-top: 10px; color: #6b7280;">... and ${errors.length - 5} more errors</li>` : ''}
-                </ul>
-                <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button id="cancel-validation" style="
-                        padding: 8px 16px;
-                        border: 1px solid #d1d5db;
-                        background: white;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    ">Cancel</button>
-                    <button id="export-anyway-validation" style="
-                        padding: 8px 16px;
-                        border: 1px solid #dc2626;
-                        background: #dc2626;
-                        color: white;
-                        border-radius: 4px;
-                        cursor: pointer;
-                    ">Export Anyway</button>
-                </div>
-            `;
-
-            overlay.appendChild(modal);
-            document.body.appendChild(overlay);
-
-            // Handle button clicks
-            const cancelBtn = modal.querySelector('#cancel-validation');
-            const exportBtn = modal.querySelector('#export-anyway-validation');
-
-            const cleanup = () => {
-                document.body.removeChild(overlay);
-            };
-
-            cancelBtn.addEventListener('click', () => {
-                cleanup();
-                resolve(false);
-            });
-
-            exportBtn.addEventListener('click', () => {
-                cleanup();
-                // Proceed with export using existing warning system
-                this.exportWithWarnings(filename, scene3D, 'scene-3d');
-                this.showToast('success', '3D Scene Exported', `Scene exported as ${filename} despite validation errors`);
-                resolve(true);
-            });
-
-            // Close on overlay click
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    cleanup();
-                    resolve(false);
-                }
-            });
-        });
     }
 
     // Toast Notification System
@@ -4058,8 +3556,8 @@ class FloorplanEditor {
                 break;
 
             case 'unit':
-                if (templateData.children) {
-                    const room = templateData.children.find(room => {
+                if (templateData.rooms) {
+                    const room = templateData.rooms.find(room => {
                         if (room.gridRect) {
                             const { x: rx, y: ry, w: rw, h: rh } = room.gridRect;
                             return x >= rx && x < rx + rw && y >= ry && y < ry + rh;
@@ -4114,147 +3612,6 @@ class FloorplanEditor {
         console.log(`Template bounds violation at (${x},${y}) for ${editType}: ${message}`);
     }
 
-
-    /**
-     * Unified validation system for all template types
-     * @param {Object} template - Template to validate
-     * @param {string} expectedType - Expected template type (mall|unit|room|object)
-     * @returns {Array} - Array of error messages, empty if valid
-     */
-    validateTemplate(template, expectedType) {
-        const errors = [];
-
-        // Basic structure validation
-        if (!template || typeof template !== 'object') {
-            errors.push('Template must be a valid object');
-            return errors;
-        }
-
-        // Schema validation based on expected type
-        const schemaMap = {
-            'mall': 'mall-template.v1',
-            'unit': 'unit-template.v1',
-            'room': 'room-template.v1',
-            'object': 'object-template.v1'
-        };
-
-        const expectedSchema = schemaMap[expectedType];
-        if (expectedSchema && template.meta?.schema !== expectedSchema) {
-            errors.push(`Template must have meta.schema = "${expectedSchema}"`);
-        }
-
-        // Common required fields for all templates
-        if (!template.id || typeof template.id !== 'string') {
-            errors.push('Template must have a valid string ID');
-        }
-
-        // Type-specific validation
-        switch (expectedType) {
-            case 'mall':
-                this.validateMallSpecificFields(template, errors);
-                break;
-            case 'unit':
-            case 'room':
-            case 'object':
-                this.validateChildTemplateFields(template, expectedType, errors);
-                break;
-        }
-
-        return errors;
-    }
-
-    /**
-     * Validate mall-specific fields
-     * @param {Object} template - Mall template
-     * @param {Array} errors - Error array to populate
-     */
-    validateMallSpecificFields(template, errors) {
-        // Grid validation
-        if (!template.grid || typeof template.grid !== 'object') {
-            errors.push('Mall template must have a grid property');
-        } else {
-            if (typeof template.grid.width !== 'number' || template.grid.width <= 0) {
-                errors.push('Mall grid width must be a positive number');
-            }
-            if (typeof template.grid.height !== 'number' || template.grid.height <= 0) {
-                errors.push('Mall grid height must be a positive number');
-            }
-        }
-
-        // Units validation
-        if (!Array.isArray(template.units)) {
-            errors.push('Mall template must have a units array');
-        } else if (template.units.length > 0) {
-            // Only validate unit structure if units exist (empty arrays are allowed)
-            template.units.forEach((unit, index) => {
-                if (!unit.id) {
-                    errors.push(`Unit ${index} must have an ID`);
-                }
-                if (!unit.rect || !this.isValidRect(unit.rect)) {
-                    errors.push(`Unit ${index} must have a valid rect`);
-                }
-            });
-        }
-    }
-
-    /**
-     * Validate child template fields (unit/room/object)
-     * @param {Object} template - Child template
-     * @param {string} type - Template type
-     * @param {Array} errors - Error array to populate
-     */
-    validateChildTemplateFields(template, type, errors) {
-        // Rect validation
-        if (!template.rect || !this.isValidRect(template.rect)) {
-            errors.push(`${type} template must have a valid rect`);
-        }
-
-        // Parent relationship validation
-        if (!template.meta?.parent?.id) {
-            errors.push(`${type} template must have a parent reference (meta.parent.id)`);
-        }
-
-        // Children array validation (rooms/zones/items -> standardized to children)
-        const childrenProperty = 'children';
-        if (template[childrenProperty] && !Array.isArray(template[childrenProperty])) {
-            errors.push(`${type} template ${childrenProperty} must be an array if present`);
-        }
-    }
-
-    /**
-     * Validate rectangle object
-     * @param {Object} rect - Rectangle to validate
-     * @returns {boolean} - True if valid
-     */
-    isValidRect(rect) {
-        return rect &&
-               typeof rect.x === 'number' &&
-               typeof rect.y === 'number' &&
-               typeof rect.w === 'number' && rect.w > 0 &&
-               typeof rect.h === 'number' && rect.h > 0;
-    }
-
-    /**
-     * Unified error handling for template operations
-     * @param {Array} errors - Array of error messages
-     * @param {string} operation - Operation that failed (e.g., 'Template Load', 'Export')
-     * @param {string} templateType - Type of template
-     */
-    handleTemplateErrors(errors, operation, templateType = '') {
-        if (errors.length === 0) return;
-
-        const title = `${operation} Failed`;
-        const message = errors.length === 1
-            ? errors[0]
-            : `Multiple issues found:\n• ${errors.join('\n• ')}`;
-
-        this.showToast('error', title, message, {
-            duration: 5000,
-            allowHtml: true
-        });
-
-        console.error(`[VALIDATION] ${title}:`, errors);
-    }
 
     // Template hierarchy validation methods
     validateMallTemplate(mallTemplate) {
@@ -4327,11 +3684,11 @@ class FloorplanEditor {
             }
         }
 
-        // Validate children structure
-        if (!galleryTemplate.children || !Array.isArray(galleryTemplate.children)) {
-            errors.push('Gallery template must have a children array');
+        // Validate rooms structure
+        if (!galleryTemplate.rooms || !Array.isArray(galleryTemplate.rooms)) {
+            errors.push('Gallery template must have a rooms array');
         } else {
-            galleryTemplate.children.forEach((room, index) => {
+            galleryTemplate.rooms.forEach((room, index) => {
                 if (!room.id || typeof room.id !== 'string') {
                     errors.push(`Room ${index} must have a string ID`);
                 }
@@ -4514,14 +3871,12 @@ class FloorplanEditor {
                     filename = 'room-template.v1.json';
                     break;
                 default:
-                    this.handleTemplateErrors([`Unknown fixture type: ${type}`], 'loading', 'fixture');
-                    return;
+                    throw new Error(`Unknown fixture type: ${type}`);
             }
 
             const response = await fetch(`./fixtures/${filename}`);
             if (!response.ok) {
-                this.handleTemplateErrors([`Failed to load fixture: ${response.status}`], 'loading', 'fixture');
-                return;
+                throw new Error(`Failed to load fixture: ${response.status}`);
             }
 
             const templateData = await response.json();
@@ -4577,7 +3932,7 @@ class FloorplanEditor {
                 const exportedUnit = buildUnitTemplate({
                     id: this.activeUnit.id,
                     rect: this.activeUnit.rect,
-                    rooms: firstUnit.children || [],
+                    rooms: firstUnit.rooms || [],
                     parentMallId: this.overlayModel.templateData.dto.id
                 });
 

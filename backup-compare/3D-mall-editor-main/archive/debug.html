@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1 id="status">Starting debug...</h1>
+    <div id="console"></div>
+    
+    <script>
+        const consoleDiv = document.getElementById('console');
+        const statusDiv = document.getElementById('status');
+        
+        function log(msg) {
+            console.log(msg);
+            consoleDiv.innerHTML += msg + '<br>';
+        }
+        
+        log('1. Basic JavaScript working');
+        statusDiv.textContent = 'JavaScript OK';
+        
+        // Test if we can load external script
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+        
+        script.onload = function() {
+            log('2. THREE.js loaded successfully');
+            log('3. THREE.js version: ' + THREE.REVISION);
+            
+            try {
+                const scene = new THREE.Scene();
+                log('4. Scene created OK');
+                
+                const camera = new THREE.PerspectiveCamera();
+                log('5. Camera created OK');
+                
+                const renderer = new THREE.WebGLRenderer();
+                log('6. WebGL Renderer created OK');
+                
+                statusDiv.textContent = 'ALL TESTS PASSED - Three.js working!';
+                statusDiv.style.color = 'green';
+                
+            } catch (error) {
+                log('ERROR creating Three.js objects: ' + error.message);
+                statusDiv.textContent = 'THREE.js object creation failed';
+                statusDiv.style.color = 'red';
+            }
+        };
+        
+        script.onerror = function() {
+            log('ERROR: Failed to load THREE.js from CDN');
+            statusDiv.textContent = 'THREE.js loading failed';
+            statusDiv.style.color = 'red';
+        };
+        
+        document.head.appendChild(script);
+        
+        setTimeout(() => {
+            if (!window.THREE) {
+                log('TIMEOUT: THREE.js still not loaded after 5 seconds');
+                statusDiv.textContent = 'THREE.js loading timeout';
+                statusDiv.style.color = 'red';
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

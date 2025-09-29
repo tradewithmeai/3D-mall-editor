@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "schema": "gallery-template.v1",
+    "version": "1.0",
+    "name": "Gallery Template gallery-20250925T112017"
+  },
+  "id": "gallery-20250925T112017",
+  "parentMallId": "mall-20250925T110159",
+  "rect": {
+    "x": 9,
+    "y": 6,
+    "w": 7,
+    "h": 11
+  },
+  "rooms": [
+    {
+      "id": "room-1",
+      "gridRect": {
+        "x": 9,
+        "y": 6,
+        "w": 7,
+        "h": 4
+      }
+    }
+  ],
+  "created": "2025-09-25T11:20:17.027Z"
+}

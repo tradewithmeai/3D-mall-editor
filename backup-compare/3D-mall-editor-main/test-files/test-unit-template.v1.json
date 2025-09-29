@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "schema": "unit-template.v1",
+    "version": "1.0",
+    "name": "Sample Unit Template"
+  },
+  "id": "unit-sample-20250924",
+  "parentMallId": "mall-sample-20250924",
+  "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 15,
+    "h": 12
+  },
+  "rooms": [
+    {
+      "id": "room-1",
+      "gridRect": { "x": 1, "y": 1, "w": 6, "h": 4 }
+    },
+    {
+      "id": "room-2",
+      "gridRect": { "x": 8, "y": 1, "w": 5, "h": 6 }
+    },
+    {
+      "id": "room-3",
+      "gridRect": { "x": 1, "y": 6, "w": 12, "h": 4 }
+    }
+  ]
+}
