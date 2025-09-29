@@ -959,18 +959,20 @@ class FloorplanEditor {
 
                 let placed = 0, skipped = 0;
                 if (dy === 0) { // horizontal run along y0
-                    for (let gx = x0; gx <= x1; gx++) {
-                        if (this.isWithinTemplateBounds(gx, y0, 'tile')) {
-                            this.placeWallAt(gx, y0);
+                    // horizontal edge at (gx, y0) spans from (gx,y0) to (gx+1,y0)
+                    for (let gx = x0; gx <= x1 - 1; gx++) {
+                        if (this.isWithinTemplateBounds(gx, y0, 'edge-horizontal')) {
+                            this.addHorizontalEdge(gx, y0);
                             placed++;
                         } else {
                             skipped++;
                         }
                     }
                 } else { // vertical run along x0
-                    for (let gy = y0; gy <= y1; gy++) {
-                        if (this.isWithinTemplateBounds(x0, gy, 'tile')) {
-                            this.placeWallAt(x0, gy);
+                    // vertical edge at (x0, gy) spans from (x0,gy) to (x0,gy+1)
+                    for (let gy = y0; gy <= y1 - 1; gy++) {
+                        if (this.isWithinTemplateBounds(x0, gy, 'edge-vertical')) {
+                            this.addVerticalEdge(x0, gy);
                             placed++;
                         } else {
                             skipped++;
@@ -978,7 +980,7 @@ class FloorplanEditor {
                     }
                 }
 
-                console.info('[BOUNDS]', { tool: 'wall-segment', x0, y0, x1, y1, placed, skipped });
+                console.info('[BOUNDS]', { tool: 'wall-segment', mode: 'edge', x0, y0, x1, y1, placed, skipped });
                 this.wallActive = false;
                 this.wallStart = this.wallCurr = null;
                 this.render();
@@ -1687,31 +1689,41 @@ class FloorplanEditor {
             const y0 = Math.min(this.wallStart.y, this.wallCurr.y);
             const y1 = Math.max(this.wallStart.y, this.wallCurr.y);
 
-            // Loop the same cells we'll commit and draw full-cell preview only for in-bounds cells
-            this.ctx.globalAlpha = 0.35;
-            this.ctx.fillStyle = 'rgba(120, 60, 0, 0.35)'; // Semi-transparent brown/orange
+            // Draw thin line strokes aligned to grid lines
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = '#8a4'; // Preview wall stroke color
 
             if (dy === 0) { // horizontal run along y0
-                for (let gx = x0; gx <= x1; gx++) {
+                // Draw individual line segments for each edge that will be placed
+                for (let gx = x0; gx <= x1 - 1; gx++) {
                     // Same bounds predicate as commit
-                    if (!this.isWithinTemplateBounds(gx, y0, 'tile')) continue;
-                    const px = gx * this.cellSize;
-                    const py = y0 * this.cellSize;
-                    // Draw full cell rectangle, no ±0.5 offsets
-                    this.ctx.fillRect(px, py, this.cellSize, this.cellSize);
+                    if (!this.isWithinTemplateBounds(gx, y0, 'edge-horizontal')) continue;
+
+                    const py = Math.round(y0 * this.cellSize) + 0.5; // crisp horizontal line
+                    const startX = gx * this.cellSize;
+                    const endX = (gx + 1) * this.cellSize;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(startX, py);
+                    this.ctx.lineTo(endX, py);
+                    this.ctx.stroke();
                 }
             } else { // vertical run along x0
-                for (let gy = y0; gy <= y1; gy++) {
+                // Draw individual line segments for each edge that will be placed
+                for (let gy = y0; gy <= y1 - 1; gy++) {
                     // Same bounds predicate as commit
-                    if (!this.isWithinTemplateBounds(x0, gy, 'tile')) continue;
-                    const px = x0 * this.cellSize;
-                    const py = gy * this.cellSize;
-                    // Draw full cell rectangle, no ±0.5 offsets
-                    this.ctx.fillRect(px, py, this.cellSize, this.cellSize);
+                    if (!this.isWithinTemplateBounds(x0, gy, 'edge-vertical')) continue;
+
+                    const px = Math.round(x0 * this.cellSize) + 0.5; // crisp vertical line
+                    const startY = gy * this.cellSize;
+                    const endY = (gy + 1) * this.cellSize;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(px, startY);
+                    this.ctx.lineTo(px, endY);
+                    this.ctx.stroke();
                 }
             }
-
-            this.ctx.globalAlpha = 1.0;
         }
     }
 
@@ -2406,6 +2418,20 @@ class FloorplanEditor {
     placeWallAt(x, y) {
         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
             this.grid[y][x] = 'wall';
+        }
+    }
+
+    // Helper for consistent horizontal edge placement (used by wall segment tool)
+    addHorizontalEdge(x, y) {
+        if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+            this.horizontalEdges[y][x] = true;
+        }
+    }
+
+    // Helper for consistent vertical edge placement (used by wall segment tool)
+    addVerticalEdge(x, y) {
+        if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
+            this.verticalEdges[y][x] = true;
         }
     }
 
