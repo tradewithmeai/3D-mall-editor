@@ -17,7 +17,7 @@ class FloorplanEditor {
 
         // Ensure canvas buffer size matches grid
         this.ensureCanvasBuffer();
-        this.currentTool = 'empty';
+        this.currentTool = 'floor';
         this.isDrawing = false;
 
         // Rectangle tool state
@@ -1168,23 +1168,17 @@ class FloorplanEditor {
             }
 
             // Handle different tile tools
-            if (this.currentTool === 'floor' || this.currentTool === 'empty') {
-                // Floor and empty tools: set cell to the tool type if different
-                if (this.grid[y][x] !== this.currentTool) {
-                    console.log(`[DEBUG] Tile paint: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
-                    this.setGridCell(x, y, this.currentTool);
+            if (this.currentTool === 'floor') {
+                // Floor tool: set cell to floor if different
+                if (this.grid[y][x] !== 'floor') {
+                    this.setGridCell(x, y, 'floor');
                     this.renderCell(x, y);
-                } else {
-                    console.log(`[DEBUG] Tile paint blocked: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
                 }
             } else if (this.currentTool === 'erase') {
                 // Erase tool: remove floor tiles (set to empty)
                 if (this.grid[y][x] === 'floor') {
-                    console.log(`[DEBUG] Erase tool removing floor tile at (${x},${y})`);
                     this.setGridCell(x, y, 'empty');
                     this.renderCell(x, y);
-                } else {
-                    console.log(`[DEBUG] Erase tool: nothing to erase at (${x},${y}), current=${this.grid[y][x]}`);
                 }
             }
         }
