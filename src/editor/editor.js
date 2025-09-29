@@ -931,7 +931,11 @@ class FloorplanEditor {
             this.rectActive = true;
             e.preventDefault();
         } else if (this.currentTool === 'wallSegment') {
-            const { x, y } = this.clientToGrid(e);
+            const coord = this.clientToGrid(e);
+            const edge = this.snapToNearestEdge(coord.px, coord.py);
+            if (!edge) return;
+
+            const { x, y } = edge; // Use edge coordinates instead of cell coordinates
             if (!this.wallActive) {
                 // First click: start wall segment
                 this.wallStart = { x, y };
@@ -960,7 +964,7 @@ class FloorplanEditor {
                 let placed = 0, skipped = 0;
                 if (dy === 0) { // horizontal run along y0 - create edge lines
                     // horizontal edge at (gx, y0) spans from (gx,y0) to (gx+1,y0)
-                    for (let gx = x0; gx <= x1 - 1; gx++) {
+                    for (let gx = x0; gx <= x1; gx++) {
                         if (this.isWithinTemplateBounds(gx, y0, 'edge-horizontal')) {
                             this.addHorizontalEdge(gx, y0);
                             placed++;
@@ -970,7 +974,7 @@ class FloorplanEditor {
                     }
                 } else { // vertical run along x0 - create vertical edge lines
                     // vertical edge at (x0, gy) spans from (x0,gy) to (x0,gy+1)
-                    for (let gy = y0; gy <= y1 - 1; gy++) {
+                    for (let gy = y0; gy <= y1; gy++) {
                         if (this.isWithinTemplateBounds(x0, gy, 'edge-vertical')) {
                             this.addVerticalEdge(x0, gy);
                             placed++;
@@ -999,9 +1003,12 @@ class FloorplanEditor {
             this.rectCurr = { x, y };
             this.render(); // Update preview
         } else if (this.currentTool === 'wallSegment' && this.wallActive) {
-            const { x, y } = this.clientToGrid(e);
-            this.wallCurr = { x, y };
-            this.render(); // Update preview
+            const coord = this.clientToGrid(e);
+            const edge = this.snapToNearestEdge(coord.px, coord.py);
+            if (edge) {
+                this.wallCurr = { x: edge.x, y: edge.y };
+                this.render(); // Update preview
+            }
         } else if (this.isDrawing) {
             this.handleMouseAction(e);
         }
@@ -1696,7 +1703,7 @@ class FloorplanEditor {
 
             if (dy === 0) { // horizontal run along y0
                 // Draw individual line segments for each edge that will be placed
-                for (let gx = x0; gx <= x1 - 1; gx++) {
+                for (let gx = x0; gx <= x1; gx++) {
                     // Same bounds predicate as commit
                     if (!this.isWithinTemplateBounds(gx, y0, 'edge-horizontal')) continue;
 
@@ -1711,7 +1718,7 @@ class FloorplanEditor {
                 }
             } else { // vertical run along x0
                 // Draw individual line segments for each vertical edge that will be placed
-                for (let gy = y0; gy <= y1 - 1; gy++) {
+                for (let gy = y0; gy <= y1; gy++) {
                     // Same bounds predicate as commit
                     if (!this.isWithinTemplateBounds(x0, gy, 'edge-vertical')) continue;
 
