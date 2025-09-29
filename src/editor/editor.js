@@ -1,6 +1,9 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
 import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
+import { toScene3D } from './core/ExportBuilder3D.js';
+import { SceneRules } from './core/SceneRules.js';
+import { validateScene3D } from './core/validateScene3D.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
 import { waitForLoad as waitForRulesLoad } from './core/RulesSwitchboard.js';
 
@@ -2243,6 +2246,9 @@ class FloorplanEditor {
             case 'object-template':
                 this.exportAsObjectTemplate();
                 break;
+            case 'scene-3d':
+                this.handleExportScene3D();
+                break;
             case 'clear-all':
                 this.clearAll();
                 break;
@@ -2373,6 +2379,96 @@ class FloorplanEditor {
         });
 
         this.showToast('success', 'Mall Template Exported', `Exported mall template: ${out.id}`);
+    }
+
+    // Export scene as 3D pipe JSON with warnings and validation
+    async handleExportScene3D() {
+        try {
+            // Guard: Check if required modules are available
+            if (!toScene3D) {
+                this.showToast('error', 'Export Failed', 'ExportBuilder3D not available');
+                console.error('[EXPORT:3d] ExportBuilder3D not available');
+                return;
+            }
+
+            if (!validateScene3D) {
+                this.showToast('error', 'Export Failed', 'validateScene3D not available');
+                console.error('[EXPORT:3d] validateScene3D not available');
+                return;
+            }
+
+            // Generate safe ID from scene model or default
+            const rawId = this.sceneModel?.id || 'scene';
+            const safeId = String(rawId).trim().toLowerCase().replace(/[^a-z0-9-_]+/g, '-').replace(/^-+|-+$/g, '') || 'scene';
+
+            // Build 3D payload using ExportBuilder3D
+            const payload = toScene3D(this.sceneModel, this.cellSize, safeId);
+
+            // Run SceneRules warnings check
+            const warnings = SceneRules.collectWarnings({
+                dto: {},
+                scene: this.sceneModel,
+                bounds: this.overlayModel?.bounds || null
+            });
+
+            // Show warnings modal if any warnings exist
+            if (warnings.length > 0) {
+                const warningText = warnings.slice(0, 3).join('\\n') +
+                    (warnings.length > 3 ? `\\n... and ${warnings.length - 3} more warnings` : '');
+
+                const proceed = confirm(
+                    `Export contains ${warnings.length} warnings:\\n\\n${warningText}\\n\\nExport anyway?`
+                );
+
+                if (!proceed) {
+                    console.info('[EXPORT:3d] Export cancelled due to warnings');
+                    return;
+                }
+            }
+
+            // Run schema validation
+            const { count: errCount, errors } = await validateScene3D(payload);
+
+            // Show validation errors modal if any errors exist
+            if (errCount > 0) {
+                const errorText = errors.slice(0, 5).map(e => `${e.path}: ${e.msg}`).join('\\n') +
+                    (errCount > 5 ? `\\n... and ${errCount - 5} more errors` : '');
+
+                const proceed = confirm(
+                    `Export contains ${errCount} validation errors:\\n\\n${errorText}\\n\\nExport anyway?`
+                );
+
+                if (!proceed) {
+                    console.info('[EXPORT:3d] Export cancelled due to validation errors');
+                    return;
+                }
+            }
+
+            // Console logging as specified
+            console.info('[EXPORT:3d]', {
+                safeId,
+                tiles: payload.tiles.floor.length,
+                hEdges: payload.edges.horizontal.length,
+                vEdges: payload.edges.vertical.length,
+                warnings: warnings.length
+            });
+
+            console.info('[VALIDATION]', {
+                phase: 'export',
+                errors: errCount
+            });
+
+            // Download the payload
+            const filename = `${safeId}.scene.3d.v1.json`;
+            this.downloadJSON(filename, payload);
+
+            // Success notification
+            this.showToast('success', 'Scene 3D Exported', `Exported scene.3d.v1: ${safeId}`);
+
+        } catch (error) {
+            console.error('[EXPORT:3d] Export failed:', error);
+            this.showToast('error', 'Export Failed', `Scene 3D export error: ${error.message}`);
+        }
     }
 
     // Export as Mall Template format for unit splitting workflow
