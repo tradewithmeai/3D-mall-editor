@@ -920,8 +920,12 @@ class FloorplanEditor {
             return; // Unit was selected, skip painting
         }
 
-        if (this.currentTool === 'wall-edge' || this.currentTool === 'erase') {
+        if (this.currentTool === 'wall-edge') {
             this.handleEdgePaint(coord);
+        } else if (this.currentTool === 'erase') {
+            // Erase tool works on both edges and tiles
+            this.handleEdgePaint(coord);  // Try to erase edges first
+            this.handleTilePaint(coord);  // Also try to erase tiles
         } else {
             this.handleTilePaint(coord);
         }
@@ -1163,13 +1167,25 @@ class FloorplanEditor {
                 return;
             }
 
-            // Only allow painting floors and empty tiles - no wall tiles
-            if ((this.currentTool === 'floor' || this.currentTool === 'empty') && this.grid[y][x] !== this.currentTool) {
-                console.log(`[DEBUG] Tile paint: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
-                this.setGridCell(x, y, this.currentTool);
-                this.renderCell(x, y);
-            } else {
-                console.log(`[DEBUG] Tile paint blocked: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
+            // Handle different tile tools
+            if (this.currentTool === 'floor' || this.currentTool === 'empty') {
+                // Floor and empty tools: set cell to the tool type if different
+                if (this.grid[y][x] !== this.currentTool) {
+                    console.log(`[DEBUG] Tile paint: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
+                    this.setGridCell(x, y, this.currentTool);
+                    this.renderCell(x, y);
+                } else {
+                    console.log(`[DEBUG] Tile paint blocked: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
+                }
+            } else if (this.currentTool === 'erase') {
+                // Erase tool: remove floor tiles (set to empty)
+                if (this.grid[y][x] === 'floor') {
+                    console.log(`[DEBUG] Erase tool removing floor tile at (${x},${y})`);
+                    this.setGridCell(x, y, 'empty');
+                    this.renderCell(x, y);
+                } else {
+                    console.log(`[DEBUG] Erase tool: nothing to erase at (${x},${y}), current=${this.grid[y][x]}`);
+                }
             }
         }
     }
