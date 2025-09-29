@@ -1165,8 +1165,11 @@ class FloorplanEditor {
 
             // Only allow painting floors and empty tiles - no wall tiles
             if ((this.currentTool === 'floor' || this.currentTool === 'empty') && this.grid[y][x] !== this.currentTool) {
+                console.log(`[DEBUG] Tile paint: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
                 this.setGridCell(x, y, this.currentTool);
                 this.renderCell(x, y);
+            } else {
+                console.log(`[DEBUG] Tile paint blocked: tool=${this.currentTool}, current=${this.grid[y][x]}, coords=(${x},${y})`);
             }
         }
     }
