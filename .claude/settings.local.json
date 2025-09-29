@@ -50,7 +50,8 @@
       "Bash(git stash:*)",
       "WebFetch(domain:127.0.0.1)",
       "Bash(TZ=UTC date '+%Y-%m-%d %H:%M:%S %Z')",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "Bash(del test-*.js)"
     ],
     "deny": [],
     "ask": []

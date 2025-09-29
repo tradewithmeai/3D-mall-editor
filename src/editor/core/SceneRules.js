@@ -6,6 +6,8 @@
  * - Rule B: Out-of-bounds content (tiles/edges outside parent bounds)
  */
 
+import { isRuleEnabled, getRuleMode } from './RulesSwitchboard.js';
+
 export class SceneRules {
     /**
      * Collect all validation warnings for a scene export
@@ -20,10 +22,14 @@ export class SceneRules {
         const warnings = [];
 
         // Rule A: Unenclosed floor warnings
-        warnings.push(...this.checkUnenclosedFloors(scene, bounds));
+        if (isRuleEnabled('unenclosed-floors')) {
+            warnings.push(...this.checkUnenclosedFloors(scene, bounds));
+        }
 
         // Rule B: Out-of-bounds content warnings
-        warnings.push(...this.checkOutOfBoundsContent(scene, bounds));
+        if (isRuleEnabled('oob-content')) {
+            warnings.push(...this.checkOutOfBoundsContent(scene, bounds));
+        }
 
         return warnings;
     }

@@ -2,6 +2,7 @@ import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
 import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
+import { waitForLoad as waitForRulesLoad } from './core/RulesSwitchboard.js';
 
 class FloorplanEditor {
     constructor() {
@@ -4403,6 +4404,10 @@ class FloorplanEditor {
 }
 
 // Initialize editor when page loads
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize rules switchboard first
+    await waitForRulesLoad();
+
+    // Then create editor
     new FloorplanEditor();
 });

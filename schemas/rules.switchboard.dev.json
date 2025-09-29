@@ -1,0 +1,4 @@
+{
+  "unenclosed-floors": { "enabled": false },
+  "oob-content": { "enabled": true, "mode": "warn" }
+}
