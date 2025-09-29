@@ -10,6 +10,9 @@ class FloorplanEditor {
         this.gridWidth = 60;
         this.gridHeight = 40;
         this.cellSize = 20;
+
+        // Ensure canvas buffer size matches grid
+        this.ensureCanvasBuffer();
         this.currentTool = 'empty';
         this.isDrawing = false;
         
@@ -898,31 +901,27 @@ class FloorplanEditor {
     }
     
     handleMouseAction(e) {
-        const rect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - rect.left;
-        const mouseY = e.clientY - rect.top;
+        const coord = this.clientToGrid(e);
 
         // Handle unit selection in mall mode
-        if (this.handleUnitSelection(mouseX, mouseY)) {
+        if (this.handleUnitSelection(coord)) {
             return; // Unit was selected, skip painting
         }
 
         if (this.currentTool === 'wall-edge' || this.currentTool === 'erase') {
-            this.handleEdgePaint(mouseX, mouseY);
+            this.handleEdgePaint(coord);
         } else {
-            this.handleTilePaint(mouseX, mouseY);
+            this.handleTilePaint(coord);
         }
     }
 
-    handleUnitSelection(mouseX, mouseY) {
+    handleUnitSelection(coord) {
         // Only handle unit selection in mall mode
         if (this.overlayModel?.templateData?.type !== 'mall') {
             return false;
         }
 
-        // Convert mouse coordinates to grid coordinates
-        const gridX = Math.floor(mouseX / this.cellSize);
-        const gridY = Math.floor(mouseY / this.cellSize);
+        const { x: gridX, y: gridY } = coord;
 
         // Check if click is within grid bounds
         if (gridX < 0 || gridX >= this.gridWidth || gridY < 0 || gridY >= this.gridHeight) {
@@ -1015,9 +1014,8 @@ class FloorplanEditor {
         }
     }
 
-    handleTilePaint(mouseX, mouseY) {
-        const x = Math.floor(mouseX / this.cellSize);
-        const y = Math.floor(mouseY / this.cellSize);
+    handleTilePaint(coord) {
+        const { x, y } = coord;
 
         if (x >= 0 && x < this.gridWidth && y >= 0 && y < this.gridHeight) {
             // Check template bounds first
@@ -1034,8 +1032,8 @@ class FloorplanEditor {
         }
     }
     
-    handleEdgePaint(mouseX, mouseY) {
-        const edge = this.snapToNearestEdge(mouseX, mouseY);
+    handleEdgePaint(coord) {
+        const edge = this.snapToNearestEdge(coord.px, coord.py);
         if (!edge) return;
 
         const { type, x, y } = edge;
@@ -1973,6 +1971,7 @@ class FloorplanEditor {
         this.gridWidth = sceneData.grid.width;
         this.gridHeight = sceneData.grid.height;
         this.cellSize = sceneData.grid.cellSize;
+        this.ensureCanvasBuffer();
 
         // Initialize empty grids
         this.grid = this.createEmptyGrid();
@@ -2539,6 +2538,35 @@ class FloorplanEditor {
         };
     }
 
+    // Ensure canvas buffer size matches grid dimensions
+    ensureCanvasBuffer() {
+        const expectedWidth = this.gridWidth * this.cellSize;
+        const expectedHeight = this.gridHeight * this.cellSize;
+
+        if (this.canvas.width !== expectedWidth || this.canvas.height !== expectedHeight) {
+            this.canvas.width = expectedWidth;
+            this.canvas.height = expectedHeight;
+            console.log(`[BUFFER] Canvas buffer resized to ${expectedWidth}x${expectedHeight} (grid: ${this.gridWidth}x${this.gridHeight}, cell: ${this.cellSize}px)`);
+        }
+    }
+
+    // Convert client coordinates to grid position with proper scaling
+    clientToGrid(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        const scaleX = this.canvas.width / rect.width;
+        const scaleY = this.canvas.height / rect.height;
+
+        const px = (e.clientX - rect.left) * scaleX;
+        const py = (e.clientY - rect.top) * scaleY;
+
+        const x = Math.floor(px / this.cellSize);
+        const y = Math.floor(py / this.cellSize);
+
+        console.log(`[INPUT] clientXY=(${e.clientX},${e.clientY}) → canvasPX=(${px.toFixed(1)},${py.toFixed(1)}) → grid=(${x},${y})`);
+
+        return { x, y, px, py };
+    }
+
     // Generate room definitions from current editor content
     generateRoomsFromCurrentContent() {
         const rooms = [];
@@ -2789,6 +2817,7 @@ class FloorplanEditor {
                     // Only resize template model arrays if dimensions actually changed
                     if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
                         console.log('[DEBUG] Grid dimensions changed, resizing template models');
+                        this.ensureCanvasBuffer();
                         this.resizeTemplateModels();
                     } else {
                         console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
@@ -2802,6 +2831,7 @@ class FloorplanEditor {
                     // Only resize template model arrays if dimensions actually changed
                     if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
                         console.log('[DEBUG] Grid size changed, resizing template models');
+                        this.ensureCanvasBuffer();
                         this.resizeTemplateModels();
                     }
                 }
@@ -3103,6 +3133,7 @@ class FloorplanEditor {
                 // Only resize template model arrays if dimensions actually changed
                 if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
                     console.log('[DEBUG] Grid dimensions changed, resizing template models');
+                    this.ensureCanvasBuffer();
                     this.resizeTemplateModels();
                 } else {
                     console.log('[DEBUG] Grid dimensions unchanged, skipping resize');
@@ -3116,6 +3147,7 @@ class FloorplanEditor {
                 // Only resize template model arrays if dimensions actually changed
                 if (this.gridWidth !== oldGridWidth || this.gridHeight !== oldGridHeight) {
                     console.log('[DEBUG] Grid size changed, resizing template models');
+                    this.ensureCanvasBuffer();
                     this.resizeTemplateModels();
                 }
             }
