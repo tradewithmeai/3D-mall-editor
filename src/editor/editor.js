@@ -1,6 +1,6 @@
 import { load as loadTemplate } from './core/TemplateLoader.js';
 import { makeBounds } from './core/TemplateBounds.js';
-import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildSceneV1 } from './core/ExportBuilder.js';
+import { buildMallTemplate, buildUnitTemplate, buildRoomTemplate, buildObjectTemplate, buildSceneV1 } from './core/ExportBuilder.js';
 import { TemplateRelationshipManager } from './core/TemplateRelationshipManager.js';
 
 class FloorplanEditor {
@@ -2239,6 +2239,9 @@ class FloorplanEditor {
             case 'room-template':
                 this.exportAsRoomTemplate();
                 break;
+            case 'object-template':
+                this.exportAsObjectTemplate();
+                break;
             case 'clear-all':
                 this.clearAll();
                 break;
@@ -2673,6 +2676,61 @@ class FloorplanEditor {
         this.showToast('success', 'Room Template Exported', `Exported room from current edits: ${filename}`);
     }
 
+    // Export as Object Template format - includes parent room template data
+    exportAsObjectTemplate() {
+        const dto = this.overlayModel?.templateData;
+
+        // Precondition: overlayModel.templateData?.type === 'room' (room authoring session)
+        if (!dto || dto.type !== 'room') {
+            this.showToast('error', 'Object Export Failed', 'Load a room template first to export objects');
+            return;
+        }
+
+        // Get current room template ID from relationship manager
+        const layers = this.templateRelationshipManager.getCurrentLayers();
+        const currentRoomId = layers.current?.id || dto.id || 'room';
+        console.log('[DEBUG] Object export - Room template ID:', currentRoomId);
+
+        // Get the current scene content (what the user actually drew)
+        const sceneData = this.toSceneV1();
+
+        // Check if there's any content to export
+        if (!sceneData ||
+            (!sceneData.tiles?.floor?.length &&
+             !sceneData.edges?.horizontal?.length &&
+             !sceneData.edges?.vertical?.length)) {
+            this.showToast('warning', 'Nothing to Export', 'Nothing to export — draw inside the room area first');
+            return;
+        }
+
+        // Build object template with actual scene content
+        const suggestedId = `object-${Date.now()}`;
+        const out = buildObjectTemplate({
+            id: suggestedId,
+            rect: { x: 0, y: 0, w: this.gridWidth, h: this.gridHeight }, // Full grid size
+            items: [], // Objects will be inferred from scene content
+            parentRoomId: currentRoomId // Link to parent room template
+        });
+
+        // Add the actual scene content so it renders exactly as drawn
+        out.sceneData = sceneData;
+
+        // Include parent room template data for complete context
+        out.parentTemplateData = this.overlayModel.templateData;
+
+        const filename = `${out.id}.object-template.v1.json`;
+        this.downloadJSON(filename, out);
+
+        console.info('[EXPORT:object] Export with scene data and parent room context', {
+            floorTiles: sceneData.tiles?.floor?.length || 0,
+            hEdges: sceneData.edges?.horizontal?.length || 0,
+            vEdges: sceneData.edges?.vertical?.length || 0,
+            parentRoomId: currentRoomId,
+            parentRoomData: !!out.parentTemplateData
+        });
+        this.showToast('success', 'Object Template Exported', `Exported object from current edits: ${filename}`);
+    }
+
     // Generate room features from current editor content
     generateRoomFeaturesFromCurrentContent() {
         const features = {
@@ -2951,6 +3009,8 @@ class FloorplanEditor {
             <option value="mall-template">Export as Mall Template</option>
             <option value="gallery-template">Export as Gallery Template</option>
             <option value="room-template">Export as Room Template</option>
+            <option value="object-template">Export as Object Template</option>
+            <option value="scene-3d">Scene (3D Pipe)</option>
             <option disabled>──────────</option>
             <option value="clear-all">Clear All</option>
             <option value="clear-grid">Clear Grid</option>
@@ -2964,6 +3024,9 @@ class FloorplanEditor {
         } else if (this.templateType === 'gallery') {
             exportSelect.value = 'room-template'; // Gallery templates typically create room templates
             exportSelect.style.backgroundColor = '#f0f8e8'; // Light green to indicate context
+        } else if (this.templateType === 'room') {
+            exportSelect.value = 'object-template'; // Room templates typically create object templates
+            exportSelect.style.backgroundColor = '#fff0e8'; // Light orange to indicate context
         } else {
             exportSelect.value = 'mall-template'; // Default to mall template export
             exportSelect.style.backgroundColor = ''; // Default styling
