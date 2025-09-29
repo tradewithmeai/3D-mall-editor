@@ -1679,39 +1679,39 @@ class FloorplanEditor {
             const dx = this.wallCurr.x - this.wallStart.x;
             const dy = this.wallCurr.y - this.wallStart.y;
 
-            // Only draw preview for straight lines
-            if (dx === 0 || dy === 0) {
-                const x0 = Math.min(this.wallStart.x, this.wallCurr.x);
-                const x1 = Math.max(this.wallStart.x, this.wallCurr.x);
-                const y0 = Math.min(this.wallStart.y, this.wallCurr.y);
-                const y1 = Math.max(this.wallStart.y, this.wallCurr.y);
+            // Only draw preview for straight lines (show nothing for diagonals)
+            if (!(dx === 0 || dy === 0)) return;
 
-                // Draw semi-transparent overlay over the cells that will be painted
-                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.4)'; // Black with 40% opacity
-                if (dy === 0) { // horizontal run along y0
-                    for (let gx = x0; gx <= x1; gx++) {
-                        const pixelX = gx * this.cellSize;
-                        const pixelY = y0 * this.cellSize;
-                        this.ctx.fillRect(pixelX, pixelY, this.cellSize, this.cellSize);
-                    }
-                } else { // vertical run along x0
-                    for (let gy = y0; gy <= y1; gy++) {
-                        const pixelX = x0 * this.cellSize;
-                        const pixelY = gy * this.cellSize;
-                        this.ctx.fillRect(pixelX, pixelY, this.cellSize, this.cellSize);
-                    }
+            const x0 = Math.min(this.wallStart.x, this.wallCurr.x);
+            const x1 = Math.max(this.wallStart.x, this.wallCurr.x);
+            const y0 = Math.min(this.wallStart.y, this.wallCurr.y);
+            const y1 = Math.max(this.wallStart.y, this.wallCurr.y);
+
+            // Loop the same cells we'll commit and draw full-cell preview only for in-bounds cells
+            this.ctx.globalAlpha = 0.35;
+            this.ctx.fillStyle = 'rgba(120, 60, 0, 0.35)'; // Semi-transparent brown/orange
+
+            if (dy === 0) { // horizontal run along y0
+                for (let gx = x0; gx <= x1; gx++) {
+                    // Same bounds predicate as commit
+                    if (!this.isWithinTemplateBounds(gx, y0, 'tile')) continue;
+                    const px = gx * this.cellSize;
+                    const py = y0 * this.cellSize;
+                    // Draw full cell rectangle, no ±0.5 offsets
+                    this.ctx.fillRect(px, py, this.cellSize, this.cellSize);
                 }
-
-                // Draw border around the selection
-                this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.8)'; // Black with 80% opacity
-                this.ctx.lineWidth = 2;
-                this.ctx.strokeRect(
-                    x0 * this.cellSize,
-                    y0 * this.cellSize,
-                    (x1 - x0 + 1) * this.cellSize,
-                    (y1 - y0 + 1) * this.cellSize
-                );
+            } else { // vertical run along x0
+                for (let gy = y0; gy <= y1; gy++) {
+                    // Same bounds predicate as commit
+                    if (!this.isWithinTemplateBounds(x0, gy, 'tile')) continue;
+                    const px = x0 * this.cellSize;
+                    const py = gy * this.cellSize;
+                    // Draw full cell rectangle, no ±0.5 offsets
+                    this.ctx.fillRect(px, py, this.cellSize, this.cellSize);
+                }
             }
+
+            this.ctx.globalAlpha = 1.0;
         }
     }
 
