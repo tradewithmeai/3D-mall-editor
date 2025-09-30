@@ -20,7 +20,6 @@
                     <button id="tool-erase" class="tool-btn" data-tool="erase">Erase</button>
                 </div>
                 <div class="file-controls">
-                    <button id="import-btn">Import JSON</button>
                     <div class="export-controls">
                         <select id="export-type">
                             <option value="mall-template" id="export-mall-template-item">Export as Mall Template</option>
@@ -52,37 +51,12 @@
                         </div>
                     </div>
                     <button id="toggle-template-btn" style="display: none;">Show Template</button>
-                    <div class="boundary-controls">
-                        <label>
-                            <input type="checkbox" id="show-unit-boundaries" checked>
-                            Show Gallery Boundaries
-                        </label>
-                        <label id="limit-edits-label" style="display: none;">
-                            <input type="checkbox" id="limit-edits-to-active-unit">
-                            Limit edits to active gallery
-                        </label>
-                    </div>
                     <button id="load-units-btn">Load Units Index</button>
                     <select id="unit-select" style="display: none;">
                         <option value="">Select Unit...</option>
                     </select>
                 </div>
 
-                <!-- Test Panel -->
-                <div class="test-panel-controls">
-                    <button id="test-panel-toggle" class="dropdown-btn">
-                        Test Panel ▼
-                    </button>
-                    <div id="test-panel-content" class="dropdown-content">
-                        <div class="test-panel-buttons">
-                            <button id="load-mall-fixture">Load Mall Fixture</button>
-                            <button id="load-gallery-fixture">Load Gallery Fixture</button>
-                            <button id="load-room-fixture">Load Room Fixture</button>
-                            <button id="run-smoke-test">Run Smoke Test</button>
-                        </div>
-                        <div id="test-status" class="test-status">Ready</div>
-                    </div>
-                </div>
             </div>
         </header>
         

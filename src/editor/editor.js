@@ -94,8 +94,6 @@ class FloorplanEditor {
         // Initialize MRU system early to prevent crashes
         this.initializeMRUSystem();
 
-        // Unit boundary preference (default: true)
-        this.showUnitBoundaries = true;
 
         // Initialize Template Relationship Manager
         this.templateRelationshipManager = new TemplateRelationshipManager();
@@ -791,9 +789,6 @@ class FloorplanEditor {
         });
         
         // File operations
-        document.getElementById('import-btn').addEventListener('click', () => {
-            document.getElementById('file-input').click();
-        });
         
         document.getElementById('file-input').addEventListener('change', (e) => {
             this.importJSON(e);
@@ -837,11 +832,6 @@ class FloorplanEditor {
             this.loadUnitsIndex();
         });
 
-        // Unit boundary toggle
-        document.getElementById('show-unit-boundaries')?.addEventListener('change', (e) => {
-            this.showUnitBoundaries = e.target.checked;
-            console.log('Unit boundaries toggled:', this.showUnitBoundaries);
-        });
 
         // Limit edits to active unit toggle
         document.getElementById('limit-edits-to-active-unit')?.addEventListener('change', (e) => {
@@ -854,26 +844,6 @@ class FloorplanEditor {
             this.selectUnit(e.target.value);
         });
 
-        // Test Panel Event Handlers
-        document.getElementById('test-panel-toggle')?.addEventListener('click', () => {
-            this.toggleTestPanel();
-        });
-
-        document.getElementById('load-mall-fixture')?.addEventListener('click', () => {
-            this.loadFixture('mall');
-        });
-
-        document.getElementById('load-gallery-fixture')?.addEventListener('click', () => {
-            this.loadFixture('gallery');
-        });
-
-        document.getElementById('load-room-fixture')?.addEventListener('click', () => {
-            this.loadFixture('room');
-        });
-
-        document.getElementById('run-smoke-test')?.addEventListener('click', () => {
-            this.runSmokeTest();
-        });
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
@@ -4293,24 +4263,10 @@ class FloorplanEditor {
         return true;
     }
 
-    // Test Panel Methods
-    toggleTestPanel() {
-        const content = document.getElementById('test-panel-content');
-        const toggle = document.getElementById('test-panel-toggle');
-
-        if (content.style.display === 'none' || !content.style.display) {
-            content.style.display = 'block';
-            toggle.textContent = 'Test Panel ▲';
-        } else {
-            content.style.display = 'none';
-            toggle.textContent = 'Test Panel ▼';
-        }
-    }
+    // Test Panel Methods - MARKED FOR ANALYSIS: UI removed but hotkey 't' still uses runSmokeTest
 
     async loadFixture(type) {
-        const statusEl = document.getElementById('test-status');
-        statusEl.textContent = `Loading ${type} fixture...`;
-        statusEl.style.color = '#007bff';
+        console.log(`Loading ${type} fixture...`);
 
         try {
             let filename;
@@ -4336,31 +4292,27 @@ class FloorplanEditor {
             const templateData = await response.json();
             this.loadTemplateData(templateData);
 
-            statusEl.textContent = `✅ ${type} fixture loaded`;
-            statusEl.style.color = '#28a745';
+            console.log(`✅ ${type} fixture loaded`);
         } catch (error) {
             console.error(`Failed to load ${type} fixture:`, error);
-            statusEl.textContent = `❌ Failed to load ${type} fixture`;
-            statusEl.style.color = '#dc3545';
+            console.log(`❌ Failed to load ${type} fixture`);
         }
     }
 
     async runSmokeTest() {
-        const statusEl = document.getElementById('test-status');
-        statusEl.textContent = '🧪 Running smoke test...';
-        statusEl.style.color = '#007bff';
+        console.log('🧪 Running smoke test...');
 
         try {
             let testStep = 1;
             const totalSteps = 8;
 
             // Step 1: Load mall fixture
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Loading mall fixture...`;
+            console.log(`[${testStep++}/${totalSteps}] Loading mall fixture...`);
             await this.loadFixture('mall');
             await this.sleep(500);
 
             // Step 2: Test mall export using ExportBuilder
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing mall export...`;
+            console.log(`[${testStep++}/${totalSteps}] Testing mall export...`);
             const mallTemplate = buildMallTemplate({
                 gridWidth: this.gridWidth,
                 gridHeight: this.gridHeight,
@@ -4372,7 +4324,7 @@ class FloorplanEditor {
             await this.sleep(500);
 
             // Step 3: Test mall→unit export workflow
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing mall→unit export...`;
+            console.log(`[${testStep++}/${totalSteps}] Testing mall→unit export...`);
             // Simulate unit selection (first available unit from mall fixture)
             if (this.overlayModel?.templateData?.dto?.units?.length > 0) {
                 const firstUnit = this.overlayModel.templateData.dto.units[0];
@@ -4402,12 +4354,12 @@ class FloorplanEditor {
             await this.sleep(500);
 
             // Step 4: Load gallery fixture
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Loading gallery fixture...`;
+            console.log(`[${testStep++}/${totalSteps}] Loading gallery fixture...`);
             await this.loadFixture('gallery');
             await this.sleep(500);
 
             // Step 5: Test gallery export using ExportBuilder
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing gallery export...`;
+            console.log(`[${testStep++}/${totalSteps}] Testing gallery export...`);
             const galleryTemplate = buildUnitTemplate({
                 id: 'test-gallery',
                 rect: { x: 5, y: 5, w: 10, h: 8 },
@@ -4420,12 +4372,12 @@ class FloorplanEditor {
             await this.sleep(500);
 
             // Step 6: Load room fixture
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Loading room fixture...`;
+            console.log(`[${testStep++}/${totalSteps}] Loading room fixture...`);
             await this.loadFixture('room');
             await this.sleep(500);
 
             // Step 7: Test room export using ExportBuilder
-            statusEl.textContent = `[${testStep++}/${totalSteps}] Testing room export...`;
+            console.log(`[${testStep++}/${totalSteps}] Testing room export...`);
             const roomTemplate = buildRoomTemplate({
                 id: 'test-room',
                 rect: { x: 12, y: 12, w: 4, h: 3 },
@@ -4437,15 +4389,13 @@ class FloorplanEditor {
             console.assert(roomTemplate.meta.parent.schema === 'unit-template.v1', 'Room parent schema mismatch');
 
             // Success!
-            statusEl.textContent = '✅ Smoke test passed!';
-            statusEl.style.color = '#28a745';
+            console.log('✅ Smoke test passed!');
 
             console.log('🎉 End-to-end smoke test completed successfully');
 
         } catch (error) {
             console.error('❌ Smoke test failed:', error);
-            statusEl.textContent = '❌ Smoke test failed';
-            statusEl.style.color = '#dc3545';
+            console.log('❌ Smoke test failed');
         }
     }
 
