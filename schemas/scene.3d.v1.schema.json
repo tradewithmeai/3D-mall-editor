@@ -91,23 +91,19 @@
       "properties": {
         "cellMeters": {
           "type": "number",
-          "minimum": 0,
-          "exclusiveMinimum": true
+          "exclusiveMinimum": 0
         },
         "wallHeightMeters": {
           "type": "number",
-          "minimum": 0,
-          "exclusiveMinimum": true
+          "exclusiveMinimum": 0
         },
         "wallThicknessMeters": {
           "type": "number",
-          "minimum": 0,
-          "exclusiveMinimum": true
+          "exclusiveMinimum": 0
         },
         "floorThicknessMeters": {
           "type": "number",
-          "minimum": 0,
-          "exclusiveMinimum": true
+          "exclusiveMinimum": 0
         },
         "lengthUnit": {
           "type": "string",

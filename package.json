@@ -7,6 +7,7 @@
     "validate:mall": "node scripts/validate-mall.js",
     "split:units": "node scripts/split-mall-into-units.js --out-dir floor-plans/units_generated",
     "promote:unit": "node scripts/promote-unit.js",
+    "test": "node tests/validate-fixtures.js",
     "test:round-trip": "node tests/golden-round-trip.test.js",
     "test:export": "node tests/test-export-functionality.js",
     "test:load-template": "node tests/test-load-template-functionality.js"
