@@ -5,7 +5,7 @@
     "sourceSchema": "scene.v1",
     "created": "2025-10-01T15:47:42.435Z",
     "name": "scene",
-    "axes": "Z_up_XY_ground",
+    "axes": "Y_up_XZ_ground",
     "parity": {
       "tiles": 24,
       "edgesH": 0,

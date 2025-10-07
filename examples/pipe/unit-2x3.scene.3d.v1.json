@@ -5,7 +5,7 @@
     "sourceSchema": "scene.v1",
     "created": "2025-09-28T00:00:00.000Z",
     "name": "unit-2x3",
-    "axes": "Z_up_XY_ground",
+    "axes": "Y_up_XZ_ground",
     "parity": {
       "tiles": 6,
       "edgesH": 4,
@@ -22,7 +22,7 @@
     "wallThicknessMeters": 0.2,
     "floorThicknessMeters": 0.1,
     "lengthUnit": "meters",
-    "coordinateSystem": "right-handed-z-up"
+    "coordinateSystem": "right-handed-y-up"
   },
   "bounds": {
     "min": { "x": 0, "y": 0, "z": 0 },

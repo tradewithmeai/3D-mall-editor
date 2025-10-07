@@ -32,8 +32,8 @@
         },
         "axes": {
           "type": "string",
-          "const": "Z_up_XY_ground",
-          "description": "Explicit coordinate convention for 3D space"
+          "const": "Y_up_XZ_ground",
+          "description": "Explicit coordinate convention for 3D space (Three.js Y-up standard)"
         },
         "parity": {
           "type": "object",
@@ -112,7 +112,7 @@
         "coordinateSystem": {
           "type": "string",
           "enum": ["right-handed-z-up", "right-handed-y-up"],
-          "description": "Coordinate system convention (right-handed-z-up is standard for Z_up_XY_ground)"
+          "description": "Coordinate system convention (right-handed-y-up is standard for Y_up_XZ_ground)"
         }
       },
       "additionalProperties": false

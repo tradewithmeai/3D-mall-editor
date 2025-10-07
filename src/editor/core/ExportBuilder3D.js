@@ -172,7 +172,7 @@ export function toScene3D(sceneModel, cellSize, safeId = 'scene') {
             sourceSchema: "scene.v1",
             created: now,
             name: safeId,
-            axes: "Z_up_XY_ground", // 🔒 EXPLICIT COORDINATE CONVENTION
+            axes: "Y_up_XZ_ground", // 🔒 EXPLICIT COORDINATE CONVENTION (Three.js Y-up)
             parity: parity,
             offsetFormat: "xy_standard", // 🔒 FLAG: Using x/y offset format (not legacy x/z)
             simLimits: { maxTilesX: SIM_MAX_TILES_X, maxTilesY: SIM_MAX_TILES_Y } // 🎯 SIMULATION CONSTRAINTS
@@ -183,7 +183,7 @@ export function toScene3D(sceneModel, cellSize, safeId = 'scene') {
             wallThicknessMeters: 0.2,
             floorThicknessMeters: 0.1,
             lengthUnit: "meters",
-            coordinateSystem: "right-handed-z-up"
+            coordinateSystem: "right-handed-y-up"
         },
         bounds: {
             min: {
@@ -210,8 +210,8 @@ export function toScene3D(sceneModel, cellSize, safeId = 'scene') {
             vertical: normalizedVerticalEdges
         },
         originOffset: {
-            x: 0,
-            y: 0  // 🔒 NEW STANDARD: Use x/y coordinates for 2D offset
+            x: contentBounds.minX,
+            y: contentBounds.minY
         }
     };
 
