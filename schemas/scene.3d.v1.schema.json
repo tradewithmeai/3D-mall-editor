@@ -8,7 +8,7 @@
   "properties": {
     "meta": {
       "type": "object",
-      "required": ["schema", "version", "sourceSchema", "created", "name"],
+      "required": ["schema", "version", "sourceSchema", "created", "name", "axes", "parity"],
       "properties": {
         "schema": {
           "type": "string",
@@ -29,6 +29,58 @@
         "name": {
           "type": "string",
           "minLength": 1
+        },
+        "axes": {
+          "type": "string",
+          "const": "Z_up_XY_ground",
+          "description": "Explicit coordinate convention for 3D space"
+        },
+        "parity": {
+          "type": "object",
+          "required": ["tiles", "edgesH", "edgesV", "floorArea", "edgeLenH", "edgeLenV"],
+          "properties": {
+            "tiles": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total number of floor tiles"
+            },
+            "edgesH": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total number of horizontal edges"
+            },
+            "edgesV": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total number of vertical edges"
+            },
+            "floorArea": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total floor area in grid units"
+            },
+            "edgeLenH": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total horizontal edge length in grid units"
+            },
+            "edgeLenV": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Total vertical edge length in grid units"
+            }
+          },
+          "additionalProperties": false,
+          "description": "Parity summary for cross-checking with simulator"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{8}$",
+          "description": "Deterministic hash of canonicalized tiles and edges"
+        },
+        "compat": {
+          "type": "string",
+          "description": "Compatibility flags for legacy format migrations (e.g., 'originOffset_z_as_y')"
         }
       },
       "additionalProperties": false
@@ -63,7 +115,8 @@
         },
         "coordinateSystem": {
           "type": "string",
-          "const": "right-handed-y-up"
+          "enum": ["right-handed-z-up", "right-handed-y-up"],
+          "description": "Coordinate system convention (right-handed-z-up is standard for Z_up_XY_ground)"
         }
       },
       "additionalProperties": false
@@ -157,12 +210,14 @@
     },
     "originOffset": {
       "type": "object",
-      "required": ["x", "z"],
+      "required": ["x", "y"],
       "properties": {
-        "x": { "type": "number" },
-        "z": { "type": "number" }
+        "x": { "type": "number", "description": "X offset in ground plane" },
+        "y": { "type": "number", "description": "Y offset in ground plane (Z_up_XY_ground standard)" },
+        "z": { "type": "number", "description": "Z offset (legacy compatibility, mapped from old Y)" }
       },
-      "additionalProperties": false
+      "additionalProperties": false,
+      "description": "Origin offset in 2D ground plane (XY). Legacy files may have z instead of y."
     }
   },
   "additionalProperties": false
